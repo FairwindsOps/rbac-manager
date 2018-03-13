@@ -1,0 +1,14 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: rbac-manager
+  namespace: rbac-manager
+spec:
+  template:
+    spec:
+      serviceAccountName: rbac-manager
+      containers:
+      - name: rbac-manager
+        image: quay.io/robertjscott/rbac-manager:0.1.2
+      restartPolicy: Never
+  backoffLimit: 4

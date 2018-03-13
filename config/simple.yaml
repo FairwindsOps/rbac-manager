@@ -1,0 +1,21 @@
+- user: one@example.com
+  clusterRoleBindings:
+    - clusterRole: cluster-admin
+- user: two@example.com
+  clusterRoleBindings:
+    - clusterRole: view
+  roleBindings:
+    - clusterRole: edit
+      namespace: default
+- user: three@example.com
+  roleBindings:
+    - clusterRole: edit
+      namespace: default
+    - role: custom
+      namespace: nginx-ingress
+- user: four@example.com
+  roleBindings:
+    - clusterRole: admin
+      namespace: default
+    - role: custom2
+      namespace: kube-lego
