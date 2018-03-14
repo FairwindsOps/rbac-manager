@@ -33,13 +33,13 @@ At it's core, this is a Python script that runs with YAML configuration. There a
 
 ### As a Python Script
 
-Potentially most straightforward, this requires Python 3 to get started. From there, we'll need to install a few dependencies:
+Potentially most straightforward, this requires Python 2.7 or newer to get started. From there, we'll need to install a few dependencies:
 
 ```
 pip install -r requirements.txt
 ```
 
-Once you have a YAML config file that you're happy with (see the config directory for examples), you can run it with this command:
+Once you have a YAML config file that you're happy with (see the examples/config directory for examples), you can run it with this command:
 
 ```
 python manage_rbac.py --config path/to/your/config.yaml
@@ -65,7 +65,7 @@ kubectl delete namespace rbac-manager
 
 ### As part of a CI Workflow
 
-Example coming soon
+Ideally RBAC manager will be used in a CI workflow. We provide a `-ci` image with every release that includes some helpful dependencies for continuous integration. There is a working example of what this could look like in `examples/ci`.
 
 ## License
 Apache License 2.0

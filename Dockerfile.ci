@@ -1,0 +1,11 @@
+FROM python:2.7.14-alpine3.7
+
+WORKDIR /rbac-manager
+
+RUN apk update && apk add git curl bash
+
+COPY . .
+
+RUN pip install -r requirements.txt
+
+CMD python manage-rbac.py --config config/rbac.yaml
