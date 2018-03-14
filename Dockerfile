@@ -6,4 +6,4 @@ COPY . .
 
 RUN pip install -r requirements.txt
 
-CMD python manage-rbac.py --config config/advanced.yaml
+CMD python manage_rbac.py --config config/advanced.yaml
