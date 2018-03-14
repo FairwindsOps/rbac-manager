@@ -5,7 +5,7 @@ import yaml
 import logging
 
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
 logger = logging.getLogger(__name__)
 
 
@@ -67,7 +67,8 @@ class RBACManager(object):
                       kind="ClusterRole",
                       name=cluster_role_binding['clusterRole']
                     )
-                    role_binding_name = "{}-{}".format(re.sub('[^A-Za-z0-9]+', '-', rbac_user['user']), cluster_role_binding['clusterRole'])
+                    escaped_user_name = re.sub('[^A-Za-z0-9]+', '-', rbac_user['user'])
+                    role_binding_name = "{}-{}".format(escaped_user_name, cluster_role_binding['clusterRole'])
                     metadata = kubernetes.client.V1ObjectMeta(name=role_binding_name, labels=labels)
                     cluster_role_binding = kubernetes.client.V1ClusterRoleBinding(
                       metadata=metadata,
@@ -203,8 +204,9 @@ class RBACManager(object):
 
         logging.debug("---")
 
-    if __name__ == '__main__':
-        parser = argparse.ArgumentParser(description='Updates RBAC cluster role bindings and role bindings.')
-        parser.add_argument('--config', help='YAML configuration file to load', required=True)
-        args = parser.parse_args()
-        RBACManager(yaml.load(open(args.config)))
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='Updates RBAC cluster role bindings and role bindings.')
+    parser.add_argument('--config', help='YAML configuration file to load', required=True)
+    args = parser.parse_args()
+    RBACManager(yaml.load(open(args.config)))

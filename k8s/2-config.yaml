@@ -4,10 +4,10 @@ metadata:
   name: rbac-manager-config
   namespace: rbac-manager
 data:
-  rbac-manager-config.yaml: |-
+  rbac.yaml: |-
     - user: one@example.com
       clusterRoleBindings:
-        - clusterRole: admin
+        - clusterRole: cluster-admin
     - user: two@example.com
       clusterRoleBindings:
         - clusterRole: edit
@@ -18,23 +18,21 @@ data:
       roleBindings:
         - clusterRole: edit
           namespace: default
-        - role: custom
+        - role: nginx-ingress-role
           namespace: nginx-ingress
-        - role: custom2
+        - clusterRole: view
           namespace: kube-lego
     - user: four@example.com
       roleBindings:
-        - clusterRole: admin
+        - clusterRole: view
           namespace: default
-        - role: custom2
+        - clusterRole: edit
           namespace: kube-lego
     - user: five@example.com
       roleBindings:
         - clusterRole: admin
           namespace: default
-        - role: custom4
+        - clusterRole: edit
           namespace: nginx-ingress
-        - role: custom4
-          namespace: kube-lego
-        - role: custom5
+        - clusterRole: view
           namespace: kube-lego

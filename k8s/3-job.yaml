@@ -4,11 +4,19 @@ metadata:
   name: rbac-manager
   namespace: rbac-manager
 spec:
+  backoffLimit: 1
   template:
     spec:
+      restartPolicy: Never
       serviceAccountName: rbac-manager
       containers:
-      - name: rbac-manager
-        image: quay.io/robertjscott/rbac-manager:0.1.2
-      restartPolicy: Never
-  backoffLimit: 4
+        - name: rbac-manager
+          image: quay.io/robertjscott/rbac-manager:0.1.3
+          volumeMounts:
+          - name: rbac-manager-config
+            mountPath: /rbac-manager/config
+      volumes:
+        - name: rbac-manager-config
+          configMap:
+            name: rbac-manager-config
+

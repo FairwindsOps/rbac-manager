@@ -13,11 +13,16 @@ rules:
       - rbac.authorization.k8s.io
     resources:
       - rolebindings
-      - clusterrolebindings
+      - roles
     verbs:
-      - list
       - create
       - delete
+      - deletecollection
+      - get
+      - list
+      - patch
+      - update
+      - watch
 ---
 apiVersion: rbac.authorization.k8s.io/v1beta1
 kind: ClusterRoleBinding
@@ -26,7 +31,7 @@ metadata:
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: rbac-manager
+  name: cluster-admin
 subjects:
   - kind: ServiceAccount
     name: rbac-manager
