@@ -65,7 +65,12 @@ kubectl delete namespace rbac-manager
 
 ### As part of a CI Workflow
 
-Ideally RBAC manager will be used in a CI workflow. We provide a `-ci` image with every release that includes some helpful dependencies for continuous integration. There is a working example of what this could look like in `examples/ci`.
+Ideally RBAC manager will be used in a CI workflow. In addition to our standard Docker images, we provide a secondary image  with each release that includes some helpful dependencies for continuous integration. There is a working example of what this could look like in `examples/ci`.
+
+
+## Future Plans
+
+We're very interested in implementing this with a Kubernetes operator pattern. Instead of a single update task, this operator would run on each cluster and listen for changes to custom configuration resources.
 
 ## License
 Apache License 2.0
