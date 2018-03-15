@@ -30,8 +30,7 @@ references:
       name: Run RBAC Manager
       command: |
         cd /rbac-manager
-        kubectl config current-context
-        python manage_rbac.py --config ci/rbac-manager-config/development.yaml
+        python manage_rbac.py --config ci/rbac-manager-config/development.yaml --kubectl-auth
 
 
 jobs:

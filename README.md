@@ -49,12 +49,12 @@ As you might expect, this will run in your current Kubernetes context. If you do
 
 ### As a Kubernetes Job
 
-Also quite straightforward, you can apply the YAML from the `k8s` directory of this repository to run RBAC Manager within your cluster. In this case, you'll want to add you're RBAC Manager configuration in the ConfigMap (k8s/2-config.yaml).
+Also quite straightforward, you can apply the YAML from the `example/k8s` directory of this repository to run RBAC Manager within your cluster. In this case, you'll want to add you're RBAC Manager configuration in the ConfigMap (`example/k8s/2-config.yaml`).
 
 Once the ConfigMap represents the RBAC state you want to achieve, you can run the job with a simple command:
 
 ```
-kubectl apply -f k8s
+kubectl apply -f example/k8s
 ```
 
 Once the job has completed, you can clean things up by removing the namespace it creates with this command:

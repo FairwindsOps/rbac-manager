@@ -3,6 +3,7 @@ import kubernetes
 import re
 import yaml
 import logging
+import os
 
 
 logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
@@ -33,7 +34,7 @@ class RBACManager(object):
                 k8s_config_loaded = True
                 logging.debug("Successfully loaded kube config")
             except:
-                logging.debug("Loading kube config failed, exiting")
+                logging.error("Loading kube config failed, exiting")
                 exit(1)
 
         rbac_client = kubernetes.client.RbacAuthorizationV1Api()
@@ -146,55 +147,55 @@ class RBACManager(object):
                     role_bindings_to_delete.remove(erb)
                     break
 
-        logging.debug("---")
+        logging.info("---")
 
         if len(cluster_role_bindings_to_create) < 1:
             logging.info("No Cluster Role Bindings need to be created")
         else:
             logging.info("Creating Cluster Role Bindings")
             for crb in cluster_role_bindings_to_create:
-                logging.debug("Creating Cluster Role Binding: {}".format(crb.metadata.name))
+                logging.info("Creating Cluster Role Binding: {}".format(crb.metadata.name))
                 rbac_client.create_cluster_role_binding(
                   body=crb,
                   pretty=True
                 )
 
-        logging.debug("---")
+        logging.info("---")
 
         if len(cluster_role_bindings_to_delete) < 1:
             logging.info("No Cluster Role Bindings need to be deleted")
         else:
             logging.info("Deleting Cluster Role Bindings")
             for crb in cluster_role_bindings_to_delete:
-                logging.debug("Deleting Cluster Role Binding: {}".format(crb.metadata.name))
+                logging.info("Deleting Cluster Role Binding: {}".format(crb.metadata.name))
                 rbac_client.delete_cluster_role_binding(
                   name=crb.metadata.name,
                   body=kubernetes.client.V1DeleteOptions(),
                   pretty=True
                 )
 
-        logging.debug("---")
+        logging.info("---")
 
         if len(role_bindings_to_create) < 1:
             logging.info("No Role Bindings need to be created")
         else:
             logging.info("Creating Role Bindings")
             for rb in role_bindings_to_create:
-                logging.debug("Creating Role Binding: {} in {}".format(rb.metadata.name, rb.metadata.namespace))
+                logging.info("Creating Role Binding: {} in {} namespace".format(rb.metadata.name, rb.metadata.namespace))
                 rbac_client.create_namespaced_role_binding(
                   namespace=rb.metadata.namespace,
                   body=rb,
                   pretty=True
                 )
 
-        logging.debug("---")
+        logging.info("---")
 
         if len(role_bindings_to_delete) < 1:
             logging.info("No Role Bindings need to be deleted")
         else:
             logging.info("Deleting Role Bindings")
             for rb in role_bindings_to_delete:
-                logging.debug("Deleting Role Binding: {} in {}".format(rb.metadata.name, rb.metadata.namespace))
+                logging.info("Deleting Role Binding: {} in {} namespace".format(rb.metadata.name, rb.metadata.namespace))
                 rbac_client.delete_namespaced_role_binding(
                   namespace=rb.metadata.namespace,
                   name=rb.metadata.name,
@@ -202,11 +203,14 @@ class RBACManager(object):
                   pretty=True
                 )
 
-        logging.debug("---")
+        logging.info("---")
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Updates RBAC cluster role bindings and role bindings.')
     parser.add_argument('--config', help='YAML configuration file to load', required=True)
+    parser.add_argument('--kubectl-auth', action='store_true', help='Use kubectl command to refresh auth (useful for GKE)')
     args = parser.parse_args()
+    if args.kubectl_auth:
+        os.system('kubectl get ns >/dev/null 2>&1')
     RBACManager(yaml.load(open(args.config)))

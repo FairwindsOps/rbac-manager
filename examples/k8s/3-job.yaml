@@ -1,7 +1,7 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: rbac-manager
+  name: rbac-manager-2
   namespace: rbac-manager
 spec:
   backoffLimit: 1

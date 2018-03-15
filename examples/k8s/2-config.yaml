@@ -24,9 +24,9 @@ data:
           namespace: kube-lego
     - user: four@example.com
       roleBindings:
-        - clusterRole: view
-          namespace: default
         - clusterRole: edit
+          namespace: default
+        - clusterRole: view
           namespace: kube-lego
     - user: five@example.com
       roleBindings:
