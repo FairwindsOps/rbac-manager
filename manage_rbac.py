@@ -4,6 +4,7 @@ import re
 import oyaml as yaml
 import logging
 import os
+import sys
 
 from kubernetes.config import ConfigException
 from kubernetes.client.rest import ApiException
@@ -244,13 +245,15 @@ class RBACManager(object):
         except ConfigException:
             logging.debug("Loading incluster config failed")
             logging.debug("Attempting to load kube config")
-            kubernetes.config.load_kube_config()
-            logging.debug("Successfully loaded kube config")
-        except Exception, e:
-            logging.error("Loading kube config failed, exiting")
-            raise RBACManagerException(e)
+            try:
+                kubernetes.config.load_kube_config()
+                logging.debug("Successfully loaded kube config")
+            except Exception, e:
+                logging.error("Loading kube config failed, exiting")
+                raise RBACManagerException("Error connecting to kubernetes: {}".format(e))
 
         self._k8s_client = kubernetes.client
+        logging.debug(self._k8s_client)
 
     @property
     def k8s_client(self):
@@ -268,8 +271,11 @@ if __name__ == '__main__':
     args = parser.parse_args()
     if args.kubectl_auth:
         os.system('kubectl get ns >/dev/null 2>&1')
-
-    if args.config is not None:
-        RBACManager().update(file=args.config)
-    else:
-        RBACManager().controller()
+    try:
+        if args.config is not None:
+            RBACManager().update(file=args.config)
+        else:
+            RBACManager().controller()
+    except Exception, e:
+        logging.critical("Error running RBACManager: {}".format(e))
+        sys.exit(1)
