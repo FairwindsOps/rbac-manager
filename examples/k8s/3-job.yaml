@@ -11,7 +11,7 @@ spec:
       serviceAccountName: rbac-manager
       containers:
         - name: rbac-manager
-          image: quay.io/robertjscott/rbac-manager:0.1.3
+          image: quay.io/reactiveops/rbac-manager:0.1.3
           volumeMounts:
           - name: rbac-manager-config
             mountPath: /rbac-manager/config
