@@ -1,5 +1,6 @@
-kind: ConfigMap
-apiVersion: v1
+---
+apiVersion: rbacmanager.k8s.io/v1
+kind: RBACDefinition
 metadata:
   name: rbac-manager-config
   namespace: rbac-manager
