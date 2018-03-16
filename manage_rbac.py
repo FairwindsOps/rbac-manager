@@ -1,60 +1,74 @@
 import argparse
 import kubernetes
 import re
-import yaml
+import oyaml as yaml
 import logging
 import os
 
+from kubernetes.config import ConfigException
+from kubernetes.client.rest import ApiException
 
-logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
+
+logging.basicConfig(level=logging.DEBUG, format='%(levelname)s: %(message)s')
 logger = logging.getLogger(__name__)
+
+
+class RBACManagerException(Exception):
+    pass
 
 
 class RBACManager(object):
 
-    def __init__(self, rbac_users={}):
+    def __init__(self, *args, **kwargs):
+        pass
 
-        logging.debug("---")
-        logging.debug("Connecting to Kubernetes API")
+    def _get_config_from_custom_resource(self):
+        """ Get config from Custom Resource """
 
-        k8s_config_loaded = False
-
+        client = self.k8s_client.CustomObjectsApi()
         try:
-            logging.debug("Attempting to load incluster config")
-            kubernetes.config.load_incluster_config()
-            logging.debug("Successfully loaded incluster config")
-            k8s_config_loaded = True
-        except:
-            logging.debug("Loading incluster config failed")
+            data = client.list_namespaced_custom_object('rbacmanager.k8s.io', 'v1', 'rbac-manager', 'rbacdefinitions')
+        except Exception, e:
+            logging.error("Error retrieving Custom Resource 'rbac-manager'")
+            logging.error('e')
+        self._users = yaml.load(data['items'][0]['data']['rbac'])
+        logging.debug(self._users)
 
-        if k8s_config_loaded is not True:
-            try:
-                logging.debug("Attempting to load kube config")
-                kubernetes.config.load_kube_config()
-                k8s_config_loaded = True
-                logging.debug("Successfully loaded kube config")
-            except:
-                logging.error("Loading kube config failed, exiting")
-                exit(1)
+    def _get_config_from_config_map(self):
+        """ Get config from Config Map """
+        pass
 
-        rbac_client = kubernetes.client.RbacAuthorizationV1Api()
+    def _get_config_from_file(self, file=None):
+        """ Get config from file """
+        self._users = yaml.load(open(file))
+
+    def update(self, **kwargs):
+        file = kwargs.get('file')
+        if file is not None:
+            self._get_config_from_file(file)
+        else:
+            self._get_config_from_custom_resource()
+
+        self._update(self._users)
+
+    def _update(self, rbac_users):
+        """ Update rbac users from a list """
+
+        rbac_client = self.k8s_client.RbacAuthorizationV1Api()
 
         requested_role_bindings = []
         requested_cluster_role_bindings = []
 
-        logging.debug("---")
         logging.debug("Finding existing Cluster Role Bindings")
 
         rb_response = rbac_client.list_role_binding_for_all_namespaces(label_selector="rbac-manager=reactiveops")
         existing_managed_role_bindings = rb_response.items
 
-        logging.debug("---")
         logging.debug("Finding existing Role Bindings")
 
         crb_response = rbac_client.list_cluster_role_binding(label_selector="rbac-manager=reactiveops")
         existing_managed_cluster_role_bindings = crb_response.items
 
-        logging.debug("---")
         logging.debug("Parsing provided RBAC configuration file")
 
         labels = {"rbac-manager": "reactiveops"}
@@ -122,8 +136,6 @@ class RBACManager(object):
         cluster_role_bindings_to_create = requested_cluster_role_bindings[:]
         cluster_role_bindings_to_delete = existing_managed_cluster_role_bindings[:]
 
-        logging.debug("---")
-
         logging.debug("Comparing requested Cluster Role Bindings with existing ones")
         for rcrb in requested_cluster_role_bindings:
             for ecrb in existing_managed_cluster_role_bindings:
@@ -136,8 +148,6 @@ class RBACManager(object):
         role_bindings_to_create = requested_role_bindings[:]
         role_bindings_to_delete = existing_managed_role_bindings[:]
 
-        logging.debug("---")
-
         logging.debug("Comparing requested Role Bindings with existing ones")
         for rrb in requested_role_bindings:
             for erb in existing_managed_role_bindings:
@@ -146,8 +156,6 @@ class RBACManager(object):
                     role_bindings_to_create.remove(rrb)
                     role_bindings_to_delete.remove(erb)
                     break
-
-        logging.info("---")
 
         if len(cluster_role_bindings_to_create) < 1:
             logging.info("No Cluster Role Bindings need to be created")
@@ -159,8 +167,6 @@ class RBACManager(object):
                   body=crb,
                   pretty=True
                 )
-
-        logging.info("---")
 
         if len(cluster_role_bindings_to_delete) < 1:
             logging.info("No Cluster Role Bindings need to be deleted")
@@ -174,21 +180,21 @@ class RBACManager(object):
                   pretty=True
                 )
 
-        logging.info("---")
-
         if len(role_bindings_to_create) < 1:
             logging.info("No Role Bindings need to be created")
         else:
             logging.info("Creating Role Bindings")
             for rb in role_bindings_to_create:
                 logging.info("Creating Role Binding: {} in {} namespace".format(rb.metadata.name, rb.metadata.namespace))
-                rbac_client.create_namespaced_role_binding(
-                  namespace=rb.metadata.namespace,
-                  body=rb,
-                  pretty=True
-                )
-
-        logging.info("---")
+                try:
+                    rbac_client.create_namespaced_role_binding(
+                      namespace=rb.metadata.namespace,
+                      body=rb,
+                      pretty=True
+                    )
+                except ApiException, e:
+                    logging.error("Error creating Role Binding: {} in {} namespace".format(rb.metadata.name, rb.metadata.namespace))
+                    logging.error(e)
 
         if len(role_bindings_to_delete) < 1:
             logging.info("No Role Bindings need to be deleted")
@@ -196,21 +202,53 @@ class RBACManager(object):
             logging.info("Deleting Role Bindings")
             for rb in role_bindings_to_delete:
                 logging.info("Deleting Role Binding: {} in {} namespace".format(rb.metadata.name, rb.metadata.namespace))
-                rbac_client.delete_namespaced_role_binding(
-                  namespace=rb.metadata.namespace,
-                  name=rb.metadata.name,
-                  body=kubernetes.client.V1DeleteOptions(),
-                  pretty=True
-                )
+                try:
+                    rbac_client.delete_namespaced_role_binding(
+                      namespace=rb.metadata.namespace,
+                      name=rb.metadata.name,
+                      body=kubernetes.client.V1DeleteOptions(),
+                      pretty=True
+                    )
+                except ApiException, e:
+                    logging.error("Error deleting Role Binding: {} in {} namespace".format(rb.metadata.name, rb.metadata.namespace))
+                    logging.error(e)
 
-        logging.info("---")
+    def __connect(self):
+        """ Connect to the kubernetes API """
+
+        logging.debug("Connecting to Kubernetes API")
+        k8s_config_loaded = False
+
+        try:
+            logging.debug("Attempting to load incluster config")
+            kubernetes.config.load_incluster_config()
+            logging.debug("Successfully loaded incluster config")
+        except ConfigException:
+            logging.debug("Loading incluster config failed")
+            logging.debug("Attempting to load kube config")
+            kubernetes.config.load_kube_config()
+            logging.debug("Successfully loaded kube config")
+        except Exception, e:
+            logging.error("Loading kube config failed, exiting")
+            raise RBACManagerException(e)
+
+        self._k8s_client = kubernetes.client
+
+    @property
+    def k8s_client(self):
+        try:
+            getattr(self, "_k8s_client")
+        except AttributeError:
+            self.__connect()
+        return self._k8s_client
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Updates RBAC cluster role bindings and role bindings.')
-    parser.add_argument('--config', help='YAML configuration file to load', required=True)
+    parser.add_argument('--config', help='YAML configuration file to load')
     parser.add_argument('--kubectl-auth', action='store_true', help='Use kubectl command to refresh auth (useful for GKE)')
     args = parser.parse_args()
     if args.kubectl_auth:
         os.system('kubectl get ns >/dev/null 2>&1')
-    RBACManager(yaml.load(open(args.config)))
+    r = RBACManager()
+    r.update()
