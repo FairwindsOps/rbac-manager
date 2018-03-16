@@ -5,7 +5,7 @@ metadata:
   name: rbac-manager-config
   namespace: rbac-manager
 data:
-  rbac.yaml: |-
+  rbac: |-
     - user: one@example.com
       clusterRoleBindings:
         - clusterRole: cluster-admin

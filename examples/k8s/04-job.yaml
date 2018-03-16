@@ -1,0 +1,27 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: rbac-manager-2
+  namespace: rbac-manager
+spec:
+  backoffLimit: 1
+  template:
+    spec:
+      restartPolicy: Never
+      serviceAccountName: rbac-manager
+      containers:
+        - name: rbac-manager
+          image: quay.io/robertjscott/rbac-manager:0.1.3
+          command:
+            - python 
+            - manage-rbac.py 
+            - --config 
+            - config/rbac.yaml
+          volumeMounts:
+          - name: rbac-manager-config
+            mountPath: /rbac-manager/config
+
+      volumes:
+        - name: rbac-manager-config
+          configMap:
+            name: rbac-manager-config

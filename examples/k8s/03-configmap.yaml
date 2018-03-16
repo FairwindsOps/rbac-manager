@@ -1,0 +1,39 @@
+---
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: rbac-manager-config
+  namespace: rbac-manager
+data:
+  rbac.yaml: |-
+    - user: one@example.com
+      clusterRoleBindings:
+        - clusterRole: cluster-admin
+    - user: two@example.com
+      clusterRoleBindings:
+        - clusterRole: edit
+      roleBindings:
+        - clusterRole: cluster-admin
+          namespace: default
+    - user: three@example.com
+      roleBindings:
+        - clusterRole: edit
+          namespace: default
+        - role: nginx-ingress-role
+          namespace: nginx-ingress
+        - clusterRole: view
+          namespace: kube-lego
+    - user: four@example.com
+      roleBindings:
+        - clusterRole: edit
+          namespace: default
+        - clusterRole: view
+          namespace: kube-lego
+    - user: five@example.com
+      roleBindings:
+        - clusterRole: admin
+          namespace: default
+        - clusterRole: edit
+          namespace: nginx-ingress
+        - clusterRole: view
+          namespace: kube-lego

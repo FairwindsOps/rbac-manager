@@ -34,10 +34,6 @@ class RBACManager(object):
         self._users = yaml.load(data['items'][0]['data']['rbac'])
         logging.debug(self._users)
 
-    def _get_config_from_config_map(self):
-        """ Get config from Config Map """
-        pass
-
     def _get_config_from_file(self, file=None):
         """ Get config from file """
         self._users = yaml.load(open(file))
@@ -50,6 +46,28 @@ class RBACManager(object):
             self._get_config_from_custom_resource()
 
         self._update(self._users)
+
+    def controller(self):
+        self._controller()
+
+    def _controller(self):
+        crds = self.k8s_client.CustomObjectsApi()
+        DOMAIN = "rbacmanager.k8s.io"
+        resource_version = ''
+
+        while True:
+            stream = kubernetes.watch.Watch().stream(crds.list_namespaced_custom_object, DOMAIN, "v1", "rbac-manager", "rbacdefinitions")
+            for event in stream:
+                obj = event["object"]
+                logging.debug(obj)
+                new_resource_version = obj['metadata']['resourceVersion']
+                operation = event['type']
+                if operation in ['ADDED', 'MODIFIED'] and new_resource_version != resource_version:
+                    metadata = obj.get("metadata")
+                    name = metadata['name']
+                    logging.info("Handling %s on %s" % (operation, name))
+                    self._update(yaml.load(obj['data']['rbac']))
+                    resource_version = new_resource_version
 
     def _update(self, rbac_users):
         """ Update rbac users from a list """
@@ -250,5 +268,8 @@ if __name__ == '__main__':
     args = parser.parse_args()
     if args.kubectl_auth:
         os.system('kubectl get ns >/dev/null 2>&1')
-    r = RBACManager()
-    r.update()
+
+    if args.config is not None:
+        RBACManager().update(file=args.config)
+    else:
+        RBACManager().controller()
