@@ -36,7 +36,7 @@ references:
 jobs:
   build:
     docker:
-      - image: quay.io/robertjscott/rbac-manager:0.1.4-ci
+      - image: quay.io/reactiveops/rbac-manager:0.1.4-ci
     steps:
       - checkout:
           path: /rbac-manager/ci
