@@ -63,6 +63,22 @@ Once the job has completed, you can clean things up by removing the namespace it
 kubectl delete namespace rbac-manager
 ```
 
+### As a Kubernetes Controller
+
+RBAC Manager can also be run as a controler and uses Custom Resources to store the yaml file from above. To create the controller:
+```
+# Create the namespace
+kubectl apply -f example/k8s/00-namespaces.yaml
+# Create the serviceAccount and roleBinding for rbac_manager
+kubectl apply -f example/k8s/01-rbac.yaml
+# Create the customResourceDefinition
+kubectl apply -f example/k8s/05-customresourcedefinition.yaml
+# Create the controller
+kubectl apply -f example/k8s/07-controller.yaml
+```
+
+Once the `customResourceDefinition` is applied, you can create the resource that defines the RBAC `users`/`serviceAccounts`, the `role`s, and the `roleBinding`s. Use `kubectl apply -f example/k8s/06/customresource.yaml` as and example.
+
 ### As part of a CI Workflow
 
 Ideally RBAC manager will be used in a CI workflow. In addition to our standard Docker images, we provide a secondary image  with each release that includes some helpful dependencies for continuous integration. There is a working example of what this could look like in `examples/ci`.

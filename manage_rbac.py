@@ -273,8 +273,10 @@ if __name__ == '__main__':
         os.system('kubectl get ns >/dev/null 2>&1')
     try:
         if args.config is not None:
+            logging.debug("Updating RBAC from file.")
             RBACManager().update(file=args.config)
         else:
+            logging.debug("Starting controller.")
             RBACManager().controller()
     except Exception, e:
         logging.critical("Error running RBACManager: {}".format(e))
