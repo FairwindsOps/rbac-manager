@@ -16,6 +16,6 @@ spec:
     spec:
       serviceAccountName: rbac-manager
       containers:
-        image: quay.io/reactiveops/rbac-manager:latest
-        name: rbac-manager
-        
+        - name: rbac-manager
+          image: quay.io/reactiveops/rbac-manager:latest
+

@@ -10,7 +10,7 @@ from kubernetes.config import ConfigException
 from kubernetes.client.rest import ApiException
 
 
-logging.basicConfig(level=logging.DEBUG, format='%(levelname)s: %(message)s')
+logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
 logger = logging.getLogger(__name__)
 
 

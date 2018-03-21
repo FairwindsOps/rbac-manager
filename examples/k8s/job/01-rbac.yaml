@@ -11,23 +11,11 @@ metadata:
 rules:
   - apiGroups:
       - rbac.authorization.k8s.io
+      - authorization.k8s.io
     resources:
-      - clusterrolebindings
-      - rolebindings
+      - '*'
     verbs:
-      - create
-      - delete
-      - get
-      - list
-      - patch
-      - update
-  - apiGroups:
-      - rbacmanager.k8s.io
-    resources:
-      - rbacdefinitions
-    verbs:
-      - get
-      - list
+      - '*'
 ---
 apiVersion: rbac.authorization.k8s.io/v1beta1
 kind: ClusterRoleBinding
