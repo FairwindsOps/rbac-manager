@@ -49,12 +49,12 @@ As you might expect, this will run in your current Kubernetes context. If you do
 
 ### As a Kubernetes Job
 
-Also quite straightforward, you can apply the YAML from the `example/k8s` directory of this repository to run RBAC Manager within your cluster. In this case, you'll want to add you're RBAC Manager configuration in the ConfigMap (`example/k8s/2-config.yaml`).
+Also quite straightforward, you can apply the YAML from the `example/k8s/job` directory of this repository to run RBAC Manager within your cluster. In this case, you'll want to add you're RBAC Manager configuration in the ConfigMap (`example/k8s/controller/02-configmap.yaml`).
 
 Once the ConfigMap represents the RBAC state you want to achieve, you can run the job with a simple command:
 
 ```
-kubectl apply -f example/k8s
+kubectl apply -f example/k8s/controller
 ```
 
 Once the job has completed, you can clean things up by removing the namespace it creates with this command:
@@ -63,14 +63,19 @@ Once the job has completed, you can clean things up by removing the namespace it
 kubectl delete namespace rbac-manager
 ```
 
+### As a Kubernetes Controller
+
+RBAC Manager can also be run as a controler using custom resources to store this format of RBAC configuration. These custom resources are `rbacdefinitions`. The RBAC Manager controller listens for `rbacdefinition` updates, and will automatically make the requested changes when a `rbacdefinition` is created or updated.
+
+Sample Kubernetes configuration for this pattern is available in `example/k8s/controller`. You can run this example in your cluster with this command:
+
+```
+kubectl apply -f example/k8s/controller
+```
+
 ### As part of a CI Workflow
 
-Ideally RBAC manager will be used in a CI workflow. In addition to our standard Docker images, we provide a secondary image  with each release that includes some helpful dependencies for continuous integration. There is a working example of what this could look like in `examples/ci`.
-
-
-## Future Plans
-
-We're very interested in implementing this with a Kubernetes operator pattern. Instead of a single update task, this operator would run on each cluster and listen for changes to custom configuration resources.
+Ideally RBAC manager will be used in a CI workflow. In addition to our standard Docker images, we provide a secondary image with each release that includes some helpful dependencies for continuous integration. There is a working example of what this could look like in `examples/ci`.
 
 ## License
 Apache License 2.0

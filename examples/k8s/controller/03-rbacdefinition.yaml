@@ -1,0 +1,17 @@
+---
+apiVersion: rbacmanager.k8s.io/v1
+kind: RBACDefinition
+metadata:
+  name: rbac-manager-config
+  namespace: rbac-manager
+data:
+  rbac: |-
+    - user: one@example.com
+      clusterRoleBindings:
+        - clusterRole: cluster-admin
+    - user: two@example.com
+      clusterRoleBindings:
+        - clusterRole: edit
+      roleBindings:
+        - clusterRole: cluster-admin
+          namespace: default
