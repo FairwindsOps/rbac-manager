@@ -2,7 +2,7 @@ FROM python:2.7.14-alpine3.7
 
 WORKDIR /rbac-manager
 
-RUN apk update && apk add git curl bash
+RUN apk --update --no-cache add git curl bash
 
 COPY . .
 
