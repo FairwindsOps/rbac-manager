@@ -1,0 +1,118 @@
+# This file is generated from the helm charts
+# Please edit the helm charts and then regenerate it
+# with helm.
+---
+# Source: rbac-manager/templates/rbac.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: rops-rbac-manager
+  labels:
+    app: rbac-manager
+    chart: rbac-manager-0.1.0
+    release: rops
+    heritage: Tiller
+---
+# Source: rbac-manager/templates/rbacdefinition-crd.yml
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  name: rbacdefinitions.rbacmanager.k8s.io
+  labels:
+    app: rbac-manager
+    chart: rbac-manager-0.1.0
+    release: rops
+    heritage: Tiller
+spec:
+  group: rbacmanager.k8s.io
+  version: v1
+  scope: Namespaced
+  names:
+    plural: rbacdefinitions
+    singular: rbacdefinition
+    kind: RBACDefinition
+    shortNames:
+      - rbacdef
+      - rd
+---
+# Source: rbac-manager/templates/rbac.yaml
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: ClusterRole
+metadata:
+  name: rops-rbac-manager
+  labels:
+    app: rbac-manager
+    chart: rbac-manager-0.1.0
+    release: rops
+    heritage: Tiller
+rules:
+  - apiGroups:
+      - rbacmanager.k8s.io
+    resources:
+      - rbacdefinitions
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - rbac.authorization.k8s.io
+      - authorization.k8s.io
+    resources:
+      - '*'
+    verbs:
+      - '*'
+---
+# Source: rbac-manager/templates/rbac.yaml
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: ClusterRoleBinding
+metadata:
+  name: rops-rbac-manager
+  labels:
+    app: rbac-manager
+    chart: rbac-manager-0.1.0
+    release: rops
+    heritage: Tiller
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: rops-rbac-manager
+subjects:
+  - kind: ServiceAccount
+    name: rops-rbac-manager
+    namespace: "rbac-manager"
+---
+# Source: rbac-manager/templates/controller.yaml
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: rops-rbac-manager
+  labels:
+    app: rbac-manager
+    chart: rbac-manager-0.1.0
+    release: rops
+    heritage: Tiller
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: rbac-manager
+      release: rops
+  template:
+    metadata:
+      labels:
+        app: rbac-manager
+        release: rops
+    spec:
+      serviceAccountName: rops-rbac-manager
+      containers:
+      - name: rbac-manager
+        image: "quay.io/reactiveops/rbac-manager:0.3.0"
+        imagePullPolicy: Always
+        env:
+        - name: NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        requests:
+          cpu: 100m
+          memory: 128Mi
