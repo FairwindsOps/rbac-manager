@@ -270,9 +270,6 @@ if __name__ == '__main__':
     parser.add_argument('--namespace', help='Namespace for service accounts', default=os.environ.get('NAMESPACE'))
     parser.add_argument('--kubectl-auth', action='store_true', help='Use kubectl command to refresh auth (useful for GKE)')
     args = parser.parse_args()
-    if not args.namespace:
-        exit(parser.print_usage())
-    logging.info("Managing service accounts in namespace " + args.namespace)
     if args.kubectl_auth:
         os.system('kubectl get ns >/dev/null 2>&1')
     try:
@@ -280,6 +277,10 @@ if __name__ == '__main__':
             logging.debug("Updating RBAC from file.")
             RBACManager(args.namespace).update(file=args.config)
         else:
+            if not args.namespace:
+                logging.error("A specified namespace is required when running in controller-mode")
+                exit(parser.print_usage())
+            logging.info("Managing service accounts in namespace " + args.namespace)
             logging.debug("Starting controller.")
             RBACManager(args.namespace).controller()
     except Exception, e:
