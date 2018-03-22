@@ -1,0 +1,6 @@
+.circleci
+.git
+examples
+*.md
+LICENSE
+Dockerfile*
