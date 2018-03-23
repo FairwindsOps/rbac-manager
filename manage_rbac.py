@@ -10,7 +10,7 @@ from kubernetes.config import ConfigException
 from kubernetes.client.rest import ApiException
 
 
-logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
+logging.basicConfig(level=logging.DEBUG, format='%(levelname)s: %(message)s')
 logger = logging.getLogger(__name__)
 
 
@@ -20,15 +20,15 @@ class RBACManagerException(Exception):
 
 class RBACManager(object):
 
-    def __init__(self, *args, **kwargs):
-        pass
+    def __init__(self, namespace, *args, **kwargs):
+        self._namespace = namespace
 
     def _get_config_from_custom_resource(self):
         """ Get config from Custom Resource """
 
         client = self.k8s_client.CustomObjectsApi()
         try:
-            data = client.list_namespaced_custom_object('rbacmanager.k8s.io', 'v1', 'rbac-manager', 'rbacdefinitions')
+            data = client.list_namespaced_custom_object('rbacmanager.k8s.io', 'v1', self._namespace, 'rbacdefinitions')
         except Exception, e:
             logging.error("Error retrieving Custom Resource 'rbac-manager'")
             logging.error('e')
@@ -57,7 +57,7 @@ class RBACManager(object):
         resource_version = ''
 
         while True:
-            stream = kubernetes.watch.Watch().stream(crds.list_namespaced_custom_object, DOMAIN, "v1", "rbac-manager", "rbacdefinitions")
+            stream = kubernetes.watch.Watch().stream(crds.list_namespaced_custom_object, DOMAIN, "v1", self._namespace, "rbacdefinitions")
             for event in stream:
                 obj = event["object"]
                 logging.debug(obj)
@@ -267,6 +267,7 @@ class RBACManager(object):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Updates RBAC cluster role bindings and role bindings.')
     parser.add_argument('--config', help='YAML configuration file to load')
+    parser.add_argument('--namespace', help='Namespace for service accounts', default=os.environ.get('NAMESPACE'))
     parser.add_argument('--kubectl-auth', action='store_true', help='Use kubectl command to refresh auth (useful for GKE)')
     args = parser.parse_args()
     if args.kubectl_auth:
@@ -274,10 +275,14 @@ if __name__ == '__main__':
     try:
         if args.config is not None:
             logging.debug("Updating RBAC from file.")
-            RBACManager().update(file=args.config)
+            RBACManager(args.namespace).update(file=args.config)
         else:
+            if not args.namespace:
+                logging.error("A specified namespace is required when running in controller-mode")
+                exit(parser.print_usage())
+            logging.info("Managing service accounts in namespace " + args.namespace)
             logging.debug("Starting controller.")
-            RBACManager().controller()
+            RBACManager(args.namespace).controller()
     except Exception, e:
         logging.critical("Error running RBACManager: {}".format(e))
         sys.exit(1)
