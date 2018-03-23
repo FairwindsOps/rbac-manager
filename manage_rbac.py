@@ -113,6 +113,9 @@ class RBACManager(object):
 
             if user_kind == 'ServiceAccount':
                 sa_namespace = rbac_user.get('namespace', self._namespace)
+                subject = kubernetes.client.V1Subject(
+                    kind=user_kind, name=escaped_user_name,
+                    namespace=sa_namespace)
                 metadata = kubernetes.client.V1ObjectMeta(
                     name=escaped_user_name, labels=labels, namespace=sa_namespace)
                 service_account = kubernetes.client.V1ServiceAccount(
