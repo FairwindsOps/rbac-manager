@@ -69,6 +69,12 @@ class RBACManager(object):
                     logging.info("Handling %s on %s" % (operation, name))
                     self._update(yaml.load(obj['data']['rbac']))
                     resource_version = new_resource_version
+                elif operation in ['DELETED']:
+                    metadata = obj.get("metadata")
+                    name = metadata['name']
+                    logging.info("Handling %s on %s" % (operation, name))
+                    self._update([])
+                    resource_version = ''
 
     def _update(self, rbac_users):
         """ Update rbac users from a list """
