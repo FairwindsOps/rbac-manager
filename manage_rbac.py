@@ -80,9 +80,11 @@ class RBACManager(object):
         """ Update rbac users from a list """
 
         rbac_client = self.k8s_client.RbacAuthorizationV1Api()
+        core_client = self.k8s_client.CoreV1Api()
 
         requested_role_bindings = []
         requested_cluster_role_bindings = []
+        requested_service_accounts = []
 
         logging.debug("Finding existing Cluster Role Bindings")
 
@@ -94,12 +96,30 @@ class RBACManager(object):
         crb_response = rbac_client.list_cluster_role_binding(label_selector="rbac-manager=reactiveops")
         existing_managed_cluster_role_bindings = crb_response.items
 
+        logging.debug("Finding existing Service Accounts")
+
+        sa_response = core_client.list_service_account_for_all_namespaces(label_selector="rbac-manager=reactiveops")
+        existing_managed_service_accounts = sa_response.items
+
         logging.debug("Parsing provided RBAC configuration file")
 
         labels = {"rbac-manager": "reactiveops"}
 
         for rbac_user in rbac_users:
-            subject = kubernetes.client.V1Subject(kind="User", name=rbac_user['user'])
+            user_kind = rbac_user.get('kind', 'User')
+            subject = kubernetes.client.V1Subject(
+                kind=user_kind, name=rbac_user['user'])
+            escaped_user_name = re.sub('[^A-Za-z0-9]+', '-', rbac_user['user'])
+
+            if user_kind == 'ServiceAccount':
+                sa_namespace = rbac_user.get('namespace', self._namespace)
+                metadata = kubernetes.client.V1ObjectMeta(
+                    name=escaped_user_name, labels=labels, namespace=sa_namespace)
+                service_account = kubernetes.client.V1ServiceAccount(
+                  metadata=metadata
+                )
+                requested_service_accounts.append(service_account)
+
             if 'clusterRoleBindings' in rbac_user:
                 for cluster_role_binding in rbac_user['clusterRoleBindings']:
                     role_ref = kubernetes.client.V1RoleRef(
@@ -107,7 +127,6 @@ class RBACManager(object):
                       kind="ClusterRole",
                       name=cluster_role_binding['clusterRole']
                     )
-                    escaped_user_name = re.sub('[^A-Za-z0-9]+', '-', rbac_user['user'])
                     role_binding_name = "{}-{}".format(escaped_user_name, cluster_role_binding['clusterRole'])
                     metadata = kubernetes.client.V1ObjectMeta(name=role_binding_name, labels=labels)
                     cluster_role_binding = kubernetes.client.V1ClusterRoleBinding(
@@ -158,6 +177,18 @@ class RBACManager(object):
 
                     requested_role_bindings.append(role_binding)
 
+        service_accounts_to_create = requested_service_accounts[:]
+        service_accounts_to_delete = existing_managed_service_accounts[:]
+
+        logging.debug("Comparing requested ServiceAccounts with existing ones")
+        for rsa in requested_service_accounts:
+            for esa in existing_managed_service_accounts:
+                if rsa.metadata.name == esa.metadata.name:
+                    logging.debug("Existing ServiceAccount found for {}".format(rsa.metadata.name))
+                    service_accounts_to_create.remove(rsa)
+                    service_accounts_to_delete.remove(esa)
+                    break
+
         cluster_role_bindings_to_create = requested_cluster_role_bindings[:]
         cluster_role_bindings_to_delete = existing_managed_cluster_role_bindings[:]
 
@@ -181,6 +212,33 @@ class RBACManager(object):
                     role_bindings_to_create.remove(rrb)
                     role_bindings_to_delete.remove(erb)
                     break
+
+        if len(service_accounts_to_create) < 1:
+            logging.info("No ServiceAccounts need to be created")
+        else:
+            logging.info("Creating ServiceAccounts")
+            for sa in service_accounts_to_create:
+                logging.info("Creating ServiceAccount: {} in {}".format(
+                    sa.metadata.name, sa.metadata.namespace))
+                core_client.create_namespaced_service_account(
+                  namespace=sa.metadata.namespace,
+                  body=sa,
+                  pretty=True
+                )
+
+        if len(service_accounts_to_delete) < 1:
+            logging.info("No ServiceAccounts need to be deleted")
+        else:
+            logging.info("Deleting ServiceAccounts")
+            for sa in service_accounts_to_delete:
+                logging.info("Deleting ServiceAccount: {} in {}".format(
+                    sa.metadata.name, sa.metadata.namespace))
+                core_client.delete_namespaced_service_account(
+                  namespace=sa.metadata.namespace,
+                  name=sa.metadata.name,
+                  body=kubernetes.client.V1DeleteOptions(),
+                  pretty=True
+                )
 
         if len(cluster_role_bindings_to_create) < 1:
             logging.info("No Cluster Role Bindings need to be created")
