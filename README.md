@@ -40,7 +40,7 @@ Importantly, it will compare the requested state with the existing state and onl
 
 ## Usage
 
-At it's core, this is a Python script that runs with YAML configuration. There are many ways to use this, we'll cover 3 of them here:
+At it's core, this is a Python script that runs with YAML configuration. There are many ways to use this, we'll cover 4 of them here:
 
 ### As a Python Script
 

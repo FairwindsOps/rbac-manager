@@ -1,26 +1,62 @@
 version: 2
 
-jobs:
-  build_and_push:
-    docker:
-      - image: quay.io/reactiveops/ci-images:v7.2.8-alpine
+references:
+  docker_build_and_push: &docker_build_and_push
+    run:
+      name: Docker login, build, and push
+      command: |
+        docker login quay.io -u="reactiveops+circleci" -p="${quay_token}"
+        docker build -f Dockerfile -t quay.io/reactiveops/rbac-manager:$DOCKER_BASE_TAG .
+        docker build -f Dockerfile.ci -t quay.io/reactiveops/rbac-manager:$DOCKER_BASE_TAG-ci .
+        docker push quay.io/reactiveops/rbac-manager:$DOCKER_BASE_TAG
+        docker push quay.io/reactiveops/rbac-manager:$DOCKER_BASE_TAG-ci
 
+  github_release: &github_release
+    run:
+      name: GitHub release
+      command: |
+        git fetch --tags
+        curl -O https://raw.githubusercontent.com/reactiveops/release.sh/v0.0.2/release
+        /bin/bash release
+
+jobs:
+  build:
+    docker:
+      - image: circleci/buildpack-deps:jessie
     steps:
       - checkout
       - setup_remote_docker
-      - run:
-          name: build tag and push
-          command: |
-            tag=$(echo ${CIRCLE_BRANCH} | sed "s/\//\-/g")
-            docker login quay.io -u="reactiveops+circleci"  -p="${quay_token}"
-            docker build -t quay.io/reactiveops/rbac-manager:${tag} .
-            docker tag quay.io/reactiveops/rbac-manager:${tag} quay.io/reactiveops/rbac-manager:${CIRCLE_SHA1}
-            docker push quay.io/reactiveops/rbac-manager:${tag}
-            docker push quay.io/reactiveops/rbac-manager:${CIRCLE_SHA1}
+      - run: echo 'export DOCKER_BASE_TAG=dev-$CIRCLE_SHA1' >> $BASH_ENV
+      - *docker_build_and_push
+
+  release:
+    docker:
+      - image: circleci/buildpack-deps:jessie
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run: echo 'export GITHUB_ORGANIZATION=$CIRCLE_PROJECT_USERNAME' >> $BASH_ENV
+      - run: echo 'export GITHUB_REPOSITORY=$CIRCLE_PROJECT_REPONAME' >> $BASH_ENV
+      - run: echo 'export DOCKER_BASE_TAG=$CIRCLE_TAG' >> $BASH_ENV
+      - *github_release
+      - *docker_build_and_push
+
 
 workflows:
   version: 2
-  build_test:
+  build:
     jobs:
-      - build_and_push:
+      - build:
           context: org-global
+          filters:
+            tags:
+              only: /^testing-.*/
+  release:
+    jobs:
+      - release:
+          context: org-global
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              ignore: /^testing-.*/
