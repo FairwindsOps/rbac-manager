@@ -76,7 +76,7 @@ kubectl delete namespace rbac-manager
 
 ### As a Kubernetes Controller
 
-RBAC Manager can also be run as a controler using custom resources to store this format of RBAC configuration. These custom resources are `rbacdefinitions`. The RBAC Manager controller listens for `rbacdefinition` updates, and will automatically make the requested changes when a `rbacdefinition` is created or updated.
+RBAC Manager can also be run as a controler using custom resources to store this format of RBAC configuration. These custom resources are `RBACDefinitions`. The RBAC Manager controller listens for `RBACDefinitions` updates, and will automatically make the requested changes when a `rbacdefinition` is created or updated.
 
 You can deploy the controller using helm:
 
@@ -88,22 +88,21 @@ Then you can make changes by configuring an `RBACDefinition` in the same namespa
 
 ```
 ---
-apiVersion: rbacmanager.k8s.io/v1
+apiVersion: rbac-manager.reactiveops.io/v1beta1
 kind: RBACDefinition
 metadata:
   name: rbac-manager-config
   namespace: rbac-manager
-data:
-  rbac: |-
-    - user: one@example.com
-      clusterRoleBindings:
-        - clusterRole: cluster-admin
-    - user: two@example.com
-      clusterRoleBindings:
-        - clusterRole: edit
-      roleBindings:
-        - clusterRole: cluster-admin
-          namespace: default
+rbacUsers:
+  - user: one@example.com
+    clusterRoleBindings:
+      - clusterRole: cluster-admin
+  - user: two@example.com
+    clusterRoleBindings:
+      - clusterRole: edit
+    roleBindings:
+      - clusterRole: cluster-admin
+        namespace: default
 ```
 
 ### As part of a CI Workflow

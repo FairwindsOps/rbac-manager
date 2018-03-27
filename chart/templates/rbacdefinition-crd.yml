@@ -2,14 +2,14 @@
 apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
-  name: rbacdefinitions.rbacmanager.k8s.io
+  name: rbacdefinitions.rbac-manager.reactiveops.io
   labels:
     app: {{ template "rbac-manager.name" . }}
     chart: {{ template "rbac-manager.chart" . }}
     release: {{ .Release.Name }}
     heritage: {{ .Release.Service }}
 spec:
-  group: rbacmanager.k8s.io
+  group: rbac-manager.reactiveops.io
   version: v1
   scope: Namespaced
   names:
@@ -18,4 +18,3 @@ spec:
     kind: RBACDefinition
     shortNames:
       - rbacdef
-      - rd
