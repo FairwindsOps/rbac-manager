@@ -10,7 +10,7 @@ from kubernetes.config import ConfigException
 from kubernetes.client.rest import ApiException
 
 
-logging.basicConfig(level=logging.DEBUG, format='%(levelname)s: %(message)s')
+logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
 logger = logging.getLogger(__name__)
 
 
@@ -23,18 +23,6 @@ class RBACManager(object):
     def __init__(self, namespace, *args, **kwargs):
         self._namespace = namespace
 
-    def _get_config_from_custom_resource(self):
-        """ Get config from Custom Resource """
-
-        client = self.k8s_client.CustomObjectsApi()
-        try:
-            data = client.list_namespaced_custom_object('rbacmanager.k8s.io', 'v1', self._namespace, 'rbacdefinitions')
-        except Exception, e:
-            logging.error("Error retrieving Custom Resource 'rbac-manager'")
-            logging.error('e')
-        self._users = yaml.load(data['items'][0]['data']['rbac'])
-        logging.debug(self._users)
-
     def _get_config_from_file(self, file=None):
         """ Get config from file """
         self._users = yaml.load(open(file))
@@ -43,21 +31,20 @@ class RBACManager(object):
         file = kwargs.get('file')
         if file is not None:
             self._get_config_from_file(file)
+            self._update(self._users)
         else:
-            self._get_config_from_custom_resource()
-
-        self._update(self._users)
+            logging.info("No config file specified")
 
     def controller(self):
         self._controller()
 
     def _controller(self):
         crds = self.k8s_client.CustomObjectsApi()
-        DOMAIN = "rbacmanager.k8s.io"
+        DOMAIN = "rbac-manager.reactiveops.io"
         resource_version = ''
 
         while True:
-            stream = kubernetes.watch.Watch().stream(crds.list_namespaced_custom_object, DOMAIN, "v1", self._namespace, "rbacdefinitions")
+            stream = kubernetes.watch.Watch().stream(crds.list_namespaced_custom_object, DOMAIN, "v1beta1", self._namespace, "rbacdefinitions")
             for event in stream:
                 obj = event["object"]
                 logging.debug(obj)
@@ -67,7 +54,7 @@ class RBACManager(object):
                     metadata = obj.get("metadata")
                     name = metadata['name']
                     logging.info("Handling %s on %s" % (operation, name))
-                    self._update(yaml.load(obj['data']['rbac']))
+                    self._update(obj['rbacUsers'])
                     resource_version = new_resource_version
                 elif operation in ['DELETED']:
                     metadata = obj.get("metadata")
@@ -77,7 +64,7 @@ class RBACManager(object):
                     resource_version = ''
 
     def _update(self, rbac_users):
-        """ Update rbac users from a list """
+        """ Update RBAC users from a list """
 
         rbac_client = self.k8s_client.RbacAuthorizationV1Api()
         core_client = self.k8s_client.CoreV1Api()
@@ -300,7 +287,7 @@ class RBACManager(object):
                     logging.error(e)
 
     def __connect(self):
-        """ Connect to the kubernetes API """
+        """ Connect to the Kubernetes API """
 
         logging.debug("Connecting to Kubernetes API")
         k8s_config_loaded = False

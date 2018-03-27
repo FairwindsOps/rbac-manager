@@ -8,14 +8,14 @@ jobs:
     steps:
       - checkout
       - setup_remote_docker
-      - run: 
+      - run:
           name: build tag and push
           command: |
             tag=$(echo ${CIRCLE_BRANCH} | sed "s/\//\-/g")
             docker login quay.io -u="reactiveops+circleci"  -p="${quay_token}"
             docker build -t quay.io/reactiveops/rbac-manager:${tag} .
             docker tag quay.io/reactiveops/rbac-manager:${tag} quay.io/reactiveops/rbac-manager:${CIRCLE_SHA1}
-            docker push quay.io/reactiveops/rbac-manager:${tag} 
+            docker push quay.io/reactiveops/rbac-manager:${tag}
             docker push quay.io/reactiveops/rbac-manager:${CIRCLE_SHA1}
 
 workflows:
