@@ -1,6 +1,6 @@
 # RBAC Manager
 
-RBAC Manager simplifies the management of role bindings in Kubernetes.
+RBAC Manager simplifies the management of RBAC resources in Kubernetes.
 
 ## Purpose
 
@@ -23,9 +23,20 @@ With RBAC Manager, we can represent the state described above in a single YAML f
       namespace: namespace-2
     - clusterRole: view
       namespace: namespace-3
+- user: ci_system
+  kind: ServiceAccount
+  clusterRoleBindings:
+    - clusterRole: cluster-admin
 ```
 
-Running RBAC Manager with the above configuration will create all these requested role bindings for you. Importantly, it will compare the requested state with the existing state and only make changes necessary to reach the requested state. It uses Kubernetes labels to track which role bindings it manages. Any role bindings with that label that are not described in the configuration it is using will be removed, and any role bindings described in that configuration that do not exist will be added.
+Running RBAC Manager with the above configuration will:
+
+* Ensure the `ci_system` `ServiceAccount` exists
+* Create 2 `RoleBinding`s for the `User` a@example.com
+* Create 3 `RoleBinding`s for the `User` b@example.com
+* Create 1 `ClusterRoleBinding` for the `ServiceAccount` ci_system
+
+Importantly, it will compare the requested state with the existing state and only make changes necessary to reach the requested state. It uses Kubernetes labels to track which resources it manages. Any `ServiceAccount`, `RoleBinding`, or `ClusterRoleBinding` with that label that are not described in the configuration will be removed, and any resources described in that configuration that do not exist will be added.
 
 ## Usage
 
