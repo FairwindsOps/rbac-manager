@@ -3,6 +3,7 @@ apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
   name: {{ template "rbac-manager.fullname" . }}
+  namespace:  {{ .Values.namespace }}
   labels:
     app: {{ template "rbac-manager.name" . }}
     chart: {{ template "rbac-manager.chart" . }}

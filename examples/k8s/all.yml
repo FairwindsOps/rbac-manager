@@ -6,21 +6,22 @@
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: rops-rbac-manager
+  name: rbac-manager
+  namespace: rbac-manager
   labels:
     app: rbac-manager
     chart: rbac-manager-0.1.0
-    release: rops
+    release: rbac-manager
     heritage: Tiller
 ---
 apiVersion: rbac.authorization.k8s.io/v1beta1
 kind: ClusterRole
 metadata:
-  name: rops-rbac-manager
+  name: rbac-manager
   labels:
     app: rbac-manager
     chart: rbac-manager-0.1.0
-    release: rops
+    release: rbac-manager
     heritage: Tiller
 rules:
   - apiGroups:
@@ -48,20 +49,20 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1beta1
 kind: ClusterRoleBinding
 metadata:
-  name: rops-rbac-manager
+  name: rbac-manager
   labels:
     app: rbac-manager
     chart: rbac-manager-0.1.0
-    release: rops
+    release: rbac-manager
     heritage: Tiller
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: rops-rbac-manager
+  name: rbac-manager
 subjects:
   - kind: ServiceAccount
-    name: rops-rbac-manager
-    namespace: "default"
+    name: rbac-manager
+    namespace: "rbac-manager"
 
 ---
 # Source: rbac-manager/templates/rbacdefinition-crd.yml
@@ -70,10 +71,11 @@ apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
   name: rbacdefinitions.rbac-manager.reactiveops.io
+  namespace: rbac-manager
   labels:
     app: rbac-manager
     chart: rbac-manager-0.1.0
-    release: rops
+    release: rbac-manager
     heritage: Tiller
 spec:
   group: rbac-manager.reactiveops.io
@@ -92,25 +94,26 @@ spec:
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: rops-rbac-manager
+  name: rbac-manager
+  namespace:  rbac-manager
   labels:
     app: rbac-manager
     chart: rbac-manager-0.1.0
-    release: rops
+    release: rbac-manager
     heritage: Tiller
 spec:
   replicas: 1
   selector:
     matchLabels:
       app: rbac-manager
-      release: rops
+      release: rbac-manager
   template:
     metadata:
       labels:
         app: rbac-manager
-        release: rops
+        release: rbac-manager
     spec:
-      serviceAccountName: rops-rbac-manager
+      serviceAccountName: rbac-manager
       containers:
       - name: rbac-manager
         image: "quay.io/reactiveops/rbac-manager:0.3.0"
