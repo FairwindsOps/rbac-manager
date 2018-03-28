@@ -85,7 +85,6 @@ spec:
     kind: RBACDefinition
     shortNames:
       - rbacdef
-      - rd
 
 ---
 # Source: rbac-manager/templates/controller.yaml
