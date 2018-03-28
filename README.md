@@ -78,16 +78,15 @@ kubectl delete namespace rbac-manager
 
 RBAC Manager can also be run as a controler using custom resources to store this format of RBAC configuration. These custom resources are `RBACDefinitions`. The RBAC Manager controller listens for `RBACDefinitions` updates, and will automatically make the requested changes when a `rbacdefinition` is created or updated.
 
-You can deploy the controller using helm:
+You can deploy the controller using helm. This will install all resources in a `rbac-manager` namespace by default. An example of the Kubernetes configuration Helm generates can be found in `examples/k8s/all.yml`.
 
 ```
-helm upgrade --install rbac-manager chart/ --namespace rbac-manager
+helm upgrade --install rbac-manager chart/
 ```
 
 Then you can make changes by configuring an `RBACDefinition` in the same namespace:
 
 ```
----
 apiVersion: rbac-manager.reactiveops.io/v1beta1
 kind: RBACDefinition
 metadata:
