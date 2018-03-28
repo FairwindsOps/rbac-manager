@@ -11,14 +11,6 @@ references:
         docker push quay.io/reactiveops/rbac-manager:$DOCKER_BASE_TAG
         docker push quay.io/reactiveops/rbac-manager:$DOCKER_BASE_TAG-ci
 
-  github_release: &github_release
-    run:
-      name: GitHub release
-      command: |
-        git fetch --tags
-        curl -O https://raw.githubusercontent.com/reactiveops/release.sh/v0.0.2/release
-        /bin/bash release
-
 jobs:
   build:
     docker:
@@ -35,10 +27,7 @@ jobs:
     steps:
       - checkout
       - setup_remote_docker
-      - run: echo 'export GITHUB_ORGANIZATION=$CIRCLE_PROJECT_USERNAME' >> $BASH_ENV
-      - run: echo 'export GITHUB_REPOSITORY=$CIRCLE_PROJECT_REPONAME' >> $BASH_ENV
       - run: echo 'export DOCKER_BASE_TAG=$CIRCLE_TAG' >> $BASH_ENV
-      - *github_release
       - *docker_build_and_push
 
 
