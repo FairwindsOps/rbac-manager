@@ -10,7 +10,7 @@ metadata:
     heritage: {{ .Release.Service }}
 spec:
   group: rbac-manager.reactiveops.io
-  version: v1
+  version: v1beta1
   scope: Namespaced
   names:
     plural: rbacdefinitions
