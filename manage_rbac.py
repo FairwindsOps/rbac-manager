@@ -10,8 +10,6 @@ from kubernetes.config import ConfigException
 from kubernetes.client.rest import ApiException
 
 
-logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
-logger = logging.getLogger(__name__)
 
 
 class RBACManagerException(Exception):
@@ -323,7 +321,12 @@ if __name__ == '__main__':
     parser.add_argument('--config', help='YAML configuration file to load')
     parser.add_argument('--namespace', help='Namespace for service accounts', default=os.environ.get('NAMESPACE'))
     parser.add_argument('--kubectl-auth', action='store_true', help='Use kubectl command to refresh auth (useful for GKE)')
+    parser.add_argument('--log-level', help='Log verbosity. Possible values are DEBUG,INFO,WARN,ERROR', default='INFO')
     args = parser.parse_args()
+
+    logging.basicConfig(level=args.log_level, format='%(levelname)s: %(message)s')
+    logger = logging.getLogger(__name__)
+
     if args.kubectl_auth:
         os.system('kubectl get ns >/dev/null 2>&1')
     try:
