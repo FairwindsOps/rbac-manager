@@ -20,7 +20,7 @@ context_name="$(kubectl config current-context)"
 cluster_name="$(kubectl config view -o "jsonpath={.contexts[?(@.name==\"${context_name}\")].context.cluster}")"
 server_name="$(kubectl config view -o "jsonpath={.clusters[?(@.name==\"${cluster_name}\")].cluster.server}")"
 cacert="$(kc get secret "${sa_secret_name}" -o "jsonpath={.data.ca\.crt}" | base64 --decode)"
-token="$(kubectl get secret "${sa_secret_name}" -o "jsonpath={.data.token}" | base64 --decode)"
+token="$(kc get secret "${sa_secret_name}" -o "jsonpath={.data.token}" | base64 --decode)"
 
 export KUBECONFIG="$(mktemp)"
 kubectl config set-credentials "${serviceaccount}" --token="${token}" >/dev/null
