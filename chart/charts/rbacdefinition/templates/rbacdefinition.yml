@@ -1,8 +1,6 @@
-{{- if .Values.rbacdefinition.create }}
 ---
 apiVersion: rbac-manager.reactiveops.io/v1beta1
 kind: RBACDefinition
 metadata:
   name: {{ template "rbac-manager.fullname" . }}
-{{ toYaml .Values.rbacdefinition.content }}
-{{- end -}}
+{{ toYaml .Values.content }}
