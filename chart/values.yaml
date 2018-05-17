@@ -7,6 +7,15 @@ image:
   tag: 0.3.0
   pullPolicy: Always
 
+rbacdefinition:
+  create: false
+#  content: |
+#    rbacUsers:
+#      - user: somenewadmin
+#        kind: ServiceAccount
+#        clusterRoleBindings:
+#          - clusterRole: cluster-admin
+
 resources:
   requests:
     cpu: 100m
