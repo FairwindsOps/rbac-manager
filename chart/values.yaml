@@ -8,13 +8,13 @@ image:
   pullPolicy: Always
 
 rbacdefinition:
-  create: false
-#  content: |
-#    rbacUsers:
-#      - user: somenewadmin
-#        kind: ServiceAccount
-#        clusterRoleBindings:
-#          - clusterRole: cluster-admin
+  create: False
+  content:
+    rbacUsers:
+      - user: somenewadmin
+        kind: ServiceAccount
+        clusterRoleBindings:
+        - clusterRole: cluster-admin
 
 resources:
   requests:

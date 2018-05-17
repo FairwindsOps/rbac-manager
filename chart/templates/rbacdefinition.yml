@@ -1,4 +1,4 @@
-{{ -if .Values.rbacdefinition.create }}
+{{- if .Values.rbacdefinition.create }}
 ---
 apiVersion: rbac-manager.reactiveops.io/v1beta1
 kind: RBACDefinition
