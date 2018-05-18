@@ -1,0 +1,38 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ template "rbac-manager.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  annotations:
+    "helm.sh/hook": post-install,post-upgrade
+    "helm.sh/hook-delete-policy": hook-succeeded
+  labels:
+    app: {{ template "rbac-manager.name" . }}
+    chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  template:
+    metadata:
+      name: {{ template "rbac-manager.fullname" . }}
+      labels:
+        app: {{ template "rbac-manager.name" . }}
+        release: {{ .Release.Name }}
+    spec:
+      serviceAccountName: {{ template "rbac-manager.fullname" . }}
+      containers:
+        - name: hyperkube
+          image: "{{ .Values.global.hyperkube.repository }}:{{ .Values.global.hyperkube.tag }}"
+          command:
+            - ./kubectl
+            - apply
+            - -f
+            - /tmp/rbac-manager/custom-resources.yaml
+          volumeMounts:
+            - mountPath: "/tmp/rbac-manager"
+              name: tmp-configmap-rbac-manager
+      volumes:
+        - name: tmp-configmap-rbac-manager
+          configMap:
+            name: {{ template "rbac-manager.fullname" . }}
+      restartPolicy: Never
