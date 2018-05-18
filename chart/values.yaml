@@ -1,4 +1,4 @@
-rbac-manager-controller:
+rbacManagerController:
   enabled: True
   image:
     repository: quay.io/reactiveops/rbac-manager
@@ -15,7 +15,7 @@ rbac-manager-controller:
   tolerations: []
   affinity: {}
 
-rbac-definition:
+rbacDefinition:
   enabled: false
   content:
     rbacUsers:
