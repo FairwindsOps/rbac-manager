@@ -105,6 +105,23 @@ rbacUsers:
         namespace: default
 ```
 
+#### Deploying rbacdefinition with the helm chart
+
+You can use the helm chart to deploy the rbacdefinition along with the controller by using these values:
+
+```
+rbac-definition:
+  enabled: True
+  content:
+    rbacUsers:
+      - user: read-only
+        kind: ServiceAccount
+        clusterRoleBindings:
+        - clusterRole: view
+```
+
+*WARNING*: If you enable this on first install of the chart, it will fail.  You must install the CRD first with the rbac-definition disabled, and then enable it on upgrade.  This is due to helm's handling of dependencies and ordering (or lack thereof).  Future iterations of the chart will hope to address this.
+
 ### As part of a CI Workflow
 
 Ideally RBAC manager will be used in a CI workflow. In addition to our standard Docker images, we provide a secondary image with each release that includes some helpful dependencies for continuous integration. There is a working example of what this could look like in `examples/ci`.

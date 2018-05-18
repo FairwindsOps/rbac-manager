@@ -1,22 +1,26 @@
-# Default values for rbac-manager.
-# This is a YAML-formatted file.
-# Declare variables to be passed into your templates.
+rbac-manager-controller:
+  enabled: True
+  image:
+    repository: quay.io/reactiveops/rbac-manager
+    tag: 0.3.0
+    pullPolicy: Always
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 100m
+      memory: 128Mi
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
 
-image:
-  repository: quay.io/reactiveops/rbac-manager
-  tag: 0.3.0
-  pullPolicy: Always
+rbac-definition:
+  enabled: False
+  content:
+    rbacUsers:
+      - user: somenewadmin
+        kind: ServiceAccount
+        clusterRoleBindings:
+        - clusterRole: cluster-admin
 
-resources:
-  requests:
-    cpu: 100m
-    memory: 128Mi
-  limits:
-    cpu: 100m
-    memory: 128Mi
-
-nodeSelector: {}
-
-tolerations: []
-
-affinity: {}
