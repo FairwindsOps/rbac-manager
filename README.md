@@ -110,8 +110,8 @@ rbacUsers:
 You can use the helm chart to deploy the rbacdefinition along with the controller by using these values:
 
 ```
-rbac-definition:
-  enabled: True
+rbacDefinition:
+  enabled: true
   content:
     rbacUsers:
       - user: read-only
@@ -119,8 +119,6 @@ rbac-definition:
         clusterRoleBindings:
         - clusterRole: view
 ```
-
-*WARNING*: If you enable this on first install of the chart, it will fail.  You must install the CRD first with the rbac-definition disabled, and then enable it on upgrade.  This is due to helm's handling of dependencies and ordering (or lack thereof).  Future iterations of the chart will hope to address this.
 
 ### As part of a CI Workflow
 
