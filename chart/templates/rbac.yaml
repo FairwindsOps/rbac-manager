@@ -28,6 +28,7 @@ rules:
       - list
       - watch
       - create
+      - patch
   - apiGroups:
       - rbac.authorization.k8s.io
       - authorization.k8s.io
