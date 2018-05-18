@@ -23,6 +23,7 @@ rules:
     resources:
       - rbacdefinitions
     verbs:
+      - create
       - get
       - list
       - watch
@@ -37,8 +38,15 @@ rules:
       - "" # core
     resources:
       - serviceaccounts
+      - customresouredefinitions
     verbs:
       - '*'
+  - apiGroups:
+      - "" # core
+    resources:
+      - customresouredefinitions
+    verbs:
+      - 'create'
 ---
 apiVersion: rbac.authorization.k8s.io/v1beta1
 kind: ClusterRoleBinding
