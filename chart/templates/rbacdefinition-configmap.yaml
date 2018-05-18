@@ -11,5 +11,5 @@ metadata:
     heritage: {{ .Release.Service }}
 data:
   rbac-defintion.yaml: |-
-    {{- include ".Values.rbacDefinition.content" . | indent 4}}
+    {{- toYaml ".Values.rbacDefinition.content" . | indent 4}}
 {{ end }}
