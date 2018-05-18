@@ -23,6 +23,7 @@ rules:
     resources:
       - rbacdefinitions
     verbs:
+      - create
       - get
       - list
       - watch

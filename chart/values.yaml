@@ -1,28 +1,25 @@
-rbac-manager-controller:
-  enabled: True
-  image:
-    repository: quay.io/reactiveops/rbac-manager
-    tag: 0.3.0
-    pullPolicy: Always
-  resources:
-    requests:
-      cpu: 100m
-      memory: 128Mi
-    limits:
-      cpu: 100m
-      memory: 128Mi
-  nodeSelector: {}
-  tolerations: []
-  affinity: {}
+image:
+  repository: quay.io/reactiveops/rbac-manager
+  tag: 0.3.0
+  pullPolicy: Always
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 100m
+    memory: 128Mi
+nodeSelector: {}
+tolerations: []
+affinity: {}
 
-rbac-definition:
-  enabled: True
-  content:
-    rbacUsers:
-      - user: somenewadmin
-        kind: ServiceAccount
-        clusterRoleBindings:
-        - clusterRole: cluster-admin
+
+content:
+  rbacUsers:
+    - user: somenewadmin
+      kind: ServiceAccount
+      clusterRoleBindings:
+      - clusterRole: cluster-admin
 
 
 # Not recommended for user to configure this. Hyperkube image to use when creating custom resources
