@@ -1,0 +1,16 @@
+{{-if .Values.rbac-definition.enabled }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "rbac-manager.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: {{ template "rbac-manager.name" . }}
+    chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+data:
+  rbac-defintion.yaml: |-
+    {{- include ".Values.rbac-definition.content" . | indent 4}}
+{{- end -}}

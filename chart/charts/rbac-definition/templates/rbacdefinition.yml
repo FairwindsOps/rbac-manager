@@ -1,6 +1,0 @@
----
-apiVersion: rbac-manager.reactiveops.io/v1beta1
-kind: RBACDefinition
-metadata:
-  name: {{ template "rbac-manager.fullname" . }}
-{{ toYaml .Values.content }}
