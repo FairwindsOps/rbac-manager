@@ -1,19 +1,18 @@
-rbacManagerController:
-  enabled: True
-  image:
-    repository: quay.io/reactiveops/rbac-manager
-    tag: 0.3.0
-    pullPolicy: Always
-  resources:
-    requests:
-      cpu: 100m
-      memory: 128Mi
-    limits:
-      cpu: 100m
-      memory: 128Mi
-  nodeSelector: {}
-  tolerations: []
-  affinity: {}
+enabled: True
+image:
+  repository: quay.io/reactiveops/rbac-manager
+  tag: 0.3.0
+  pullPolicy: Always
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 100m
+    memory: 128Mi
+nodeSelector: {}
+tolerations: []
+affinity: {}
 
 rbacDefinition:
   enabled: false
