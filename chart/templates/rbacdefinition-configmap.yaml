@@ -1,4 +1,4 @@
-{{- if .Values.rbac-definition.enabled }}
+{{ if .Values.rbac-definition.enabled }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -12,4 +12,4 @@ metadata:
 data:
   rbac-defintion.yaml: |-
     {{- include ".Values.rbac-definition.content" . | indent 4}}
-{{- end -}}
+{{ end }}

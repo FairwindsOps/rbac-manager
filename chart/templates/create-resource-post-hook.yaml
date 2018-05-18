@@ -1,4 +1,4 @@
-{{- if .Values.rbac-definition.enabled }}
+{{ if .Values.rbac-definition.enabled }}
 apiVersion: batch/v1
 kind: Job
 metadata:
@@ -37,4 +37,4 @@ spec:
           configMap:
             name: {{ template "rbac-manager.fullname" . }}
       restartPolicy: Never
-{{- end -}}
+{{ end }}
