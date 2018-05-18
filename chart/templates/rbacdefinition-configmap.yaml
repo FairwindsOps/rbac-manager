@@ -10,6 +10,6 @@ metadata:
     release: {{ .Release.Name }}
     heritage: {{ .Release.Service }}
 data:
-  rbac-defintion.yaml: |-
-    {{- toYaml ".Values.rbacDefinition.content" . | indent 4}}
+  rbac-defintion.yaml:
+{{ toYaml .Values.content | indent 4 }}
 {{ end }}
