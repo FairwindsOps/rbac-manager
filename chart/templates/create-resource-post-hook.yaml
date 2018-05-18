@@ -28,7 +28,7 @@ spec:
             - ./kubectl
             - apply
             - -f
-            - /tmp/rbac-defintion/rbac-definition.yaml
+            - /tmp/rbac-definition/rbac-definition.yaml
           volumeMounts:
             - mountPath: "/tmp/rbac-definition"
               name: rbac-definition

@@ -11,5 +11,10 @@ metadata:
     heritage: {{ .Release.Service }}
 data:
   rbac-defintion.yaml:
-{{ toYaml .Values.content | indent 4 }}
+    ---
+    apiVersion: rbac-manager.reactiveops.io/v1beta1
+    kind: RBACDefinition
+    metadata:
+      name: {{ template "rbac-manager.fullname" . }}
+{{ toYaml .Values.rbacDefinition.content | indent 4 }}
 {{ end }}
