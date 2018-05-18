@@ -10,7 +10,7 @@ metadata:
     release: {{ .Release.Name }}
     heritage: {{ .Release.Service }}
 data:
-  rbac-defintion.yaml:
+  rbac-definition.yaml: |-
     ---
     apiVersion: rbac-manager.reactiveops.io/v1beta1
     kind: RBACDefinition
