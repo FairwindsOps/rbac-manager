@@ -22,6 +22,7 @@ rules:
       - rbac-manager.reactiveops.io
     resources:
       - rbacdefinitions
+      - customresourcedefinitions
     verbs:
       - get
       - list
@@ -37,8 +38,9 @@ rules:
       - "" # core
     resources:
       - serviceaccounts
+      - customresourcedefinitions
     verbs:
-      - '*'
+      - 'create'
 ---
 apiVersion: rbac.authorization.k8s.io/v1beta1
 kind: ClusterRoleBinding
