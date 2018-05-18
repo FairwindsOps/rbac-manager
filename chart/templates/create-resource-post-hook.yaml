@@ -1,4 +1,4 @@
-{{ if .Values.rbac-definition.enabled }}
+{{ if .Values.rbacDefinition.enabled }}
 apiVersion: batch/v1
 kind: Job
 metadata:
