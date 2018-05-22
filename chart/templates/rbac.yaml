@@ -21,13 +21,11 @@ rules:
   - apiGroups:
       - rbac-manager.reactiveops.io
     resources:
-      - customresourcedefinitions
+      - rbacdefinitions
     verbs:
       - get
       - list
       - watch
-      - create
-      - patch
   - apiGroups:
       - rbac.authorization.k8s.io
       - authorization.k8s.io
@@ -39,7 +37,6 @@ rules:
       - "" # core
     resources:
       - serviceaccounts
-      - customresourcedefinitions
     verbs:
       - '*'
 ---
