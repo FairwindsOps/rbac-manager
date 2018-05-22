@@ -20,7 +20,7 @@ spec:
         app: {{ template "rbac-manager.name" . }}
         release: {{ .Release.Name }}
     spec:
-      serviceAccountName: {{ template "rbac-manager.fullname" . }}-job
+      serviceAccountName: {{ template "rbac-manager.fullname" . }}-init
       containers:
         - name: hyperkube
           image: "{{ .Values.global.hyperkube.repository }}:{{ .Values.global.hyperkube.tag }}"
