@@ -1,0 +1,47 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ template "rbac-manager.fullname" . }}-init
+  labels:
+    app: {{ template "rbac-manager.name" . }}
+    chart: {{ template "rbac-manager.chart" . }}
+    component: {{ template "rbac-manager.chart" . }}-init
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+---
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: ClusterRole
+metadata:
+  name: {{ template "rbac-manager.fullname" . }}-init
+  labels:
+    app: {{ template "rbac-manager.name" . }}
+    chart: {{ template "rbac-manager.chart" . }}
+    component: {{ template "rbac-manager.chart" . }}-init
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+rules:
+  - apiGroups:
+      - rbac-manager.reactiveops.io
+    resources:
+      - rbacdefinitions
+    verbs:
+      - "*"
+---
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ template "rbac-manager.fullname" . }}-init
+  labels:
+    app: {{ template "rbac-manager.name" . }}
+    chart: {{ template "rbac-manager.chart" . }}
+    component: {{ template "rbac-manager.chart" . }}-init
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: {{ template "rbac-manager.fullname" . }}-init
+subjects:
+  - kind: ServiceAccount
+    name: {{ template "rbac-manager.fullname" . }}-init
+    namespace: {{ .Release.Namespace | quote }}
