@@ -1,0 +1,3 @@
+apiVersion: rbac-manager.reactiveops.io/v1beta1
+kind: RbacDefinition
+projectName: rbac-manager
