@@ -208,7 +208,7 @@ func processRbacDefinition(rbacdef *v1beta1.RbacDefinition) error {
 		}
 
 		if !alreadyExists {
-			logrus.Infof("Attempting to create Role Binding: %v", requestedCRB)
+			logrus.Infof("Attempting to create Role Binding: %v", requestedRB)
 			rb, err := clientset.RbacV1().RoleBindings(requestedRB.ObjectMeta.Namespace).Create(&requestedRB)
 			if err != nil {
 				logrus.Errorf("Error creating Role Binding: %v", err)
@@ -235,7 +235,7 @@ func processRbacDefinition(rbacdef *v1beta1.RbacDefinition) error {
 					logrus.Infof("Error deleting Role Binding: %v", err)
 				}
 			} else {
-				logrus.Infof("Matches requested Role Binding %v", existingRb)
+				logrus.Infof("Matches requested Role Binding %v", existingRB)
 			}
 		}
 	}
