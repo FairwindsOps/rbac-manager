@@ -19,6 +19,12 @@ import (
 )
 
 func NewHandler() handler.Handler {
+	// TODO: Finda better place for this
+	err := createRbacDefinitionCRD()
+	if err != nil {
+		logrus.Errorf("Failed to create RbacDefinition CRD: %v", err)
+		panic(err.Error())
+	}
 	return &Handler{}
 }
 
@@ -31,7 +37,7 @@ func (h *Handler) Handle(ctx types.Context, event types.Event) error {
 	case *v1beta1.RbacDefinition:
 		err := processRbacDefinition(o)
 		if err != nil && !errors.IsAlreadyExists(err) {
-			logrus.Errorf("Failed to create busybox pod : %v", err)
+			logrus.Errorf("Failed to process RbacDefinition: %v", err)
 			return err
 		}
 	}
@@ -57,8 +63,6 @@ func processRbacDefinition(rbacdef *v1beta1.RbacDefinition) error {
 	existingManagedClusterRoleBindings, err := clientset.RbacV1().ClusterRoleBindings().List(listOptions)
 	existingManagedRoleBindings, err := clientset.RbacV1().RoleBindings("").List(listOptions)
 
-	fmt.Printf("existingManagedRoleBindings ====> %v", existingManagedRoleBindings)
-
 	ownerReferences := []metav1.OwnerReference{
 		*metav1.NewControllerRef(rbacdef, schema.GroupVersionKind{
 			Group:   v1beta1.SchemeGroupVersion.Group,
@@ -67,12 +71,10 @@ func processRbacDefinition(rbacdef *v1beta1.RbacDefinition) error {
 		}),
 	}
 
-	fmt.Println("============ 1 ==============")
-	fmt.Printf("%v", rbacdef)
-	fmt.Println("============ 2 ==============")
+	logrus.Infof("RbacDefinition %v", rbacdef)
 
 	if rbacdef.Spec.RbacBindings == nil {
-		fmt.Println("No RbacBindings defined")
+		logrus.Warn("No RbacBindings defined")
 		return nil
 	}
 
@@ -84,7 +86,7 @@ func processRbacDefinition(rbacdef *v1beta1.RbacDefinition) error {
 			for _, requestedCRB := range rbacBinding.ClusterRoleBindings {
 				crbName := fmt.Sprintf("%v-%v-%v", rbacdef.Name, rbacBinding.Name, requestedCRB.ClusterRole)
 
-				fmt.Printf("=> crbName ====> %v\n", crbName)
+				logrus.Infof("Processing CRB %v")
 
 				requestedClusterRoleBindings = append(requestedClusterRoleBindings, rbacv1.ClusterRoleBinding{
 					ObjectMeta: metav1.ObjectMeta{
@@ -111,30 +113,29 @@ func processRbacDefinition(rbacdef *v1beta1.RbacDefinition) error {
 				var requestedRoleName string
 				var roleRef rbacv1.RoleRef
 
-				fmt.Printf("HELLO requested role ===================> %v <> %v <> %v", requestedRB.Role, requestedRB.Namespace, requestedRB)
-
 				if requestedRB.Namespace == "" {
-					fmt.Printf("Invalid role binding, namespace required\n")
+					logrus.Error("Invalid role binding, namespace required")
 					break
 				}
 
 				objectMeta.Namespace = requestedRB.Namespace
 
 				if requestedRB.ClusterRole != "" {
+					logrus.Infof("Processing Requested ClusterRole %v <> %v <> %v", requestedRB.ClusterRole, requestedRB.Namespace, requestedRB)
 					requestedRoleName = requestedRB.ClusterRole
 					roleRef = rbacv1.RoleRef{
 						Kind: "ClusterRole",
 						Name: requestedRB.ClusterRole,
 					}
 				} else if requestedRB.Role != "" {
-					fmt.Printf("requested role ===================> %v <> %v <> %v", requestedRB.Role, requestedRB.Namespace, requestedRB)
+					logrus.Infof("Processing Requested Role %v <> %v <> %v", requestedRB.Role, requestedRB.Namespace, requestedRB)
 					requestedRoleName = fmt.Sprintf("%v-%v", requestedRB.Role, requestedRB.Namespace)
 					roleRef = rbacv1.RoleRef{
 						Kind: "Role",
 						Name: requestedRB.Role,
 					}
 				} else {
-					fmt.Printf("Invalid role binding, role or clusterRole required\n")
+					logrus.Error("Invalid role binding, role or clusterRole required")
 					break
 				}
 
@@ -162,12 +163,13 @@ func processRbacDefinition(rbacdef *v1beta1.RbacDefinition) error {
 		}
 
 		if !alreadyExists {
-			fmt.Printf("Attempting to create %v\n", requestedCRB)
+			logrus.Infof("Attempting to create Cluster Role Binding: %v", requestedCRB)
 			crb, err := clientset.RbacV1().ClusterRoleBindings().Create(&requestedCRB)
-			fmt.Printf("err ===> %v\n", err)
-			fmt.Printf("crb ===> %v\n", crb)
+			if err != nil {
+				logrus.Errorf("Error creating Cluster Role Binding: %v", err)
+			}
 		} else {
-			fmt.Printf("Already exists %v\n", requestedCRB)
+			logrus.Infof("Cluster Role Binding already exists %v", requestedCRB)
 		}
 	}
 
@@ -182,11 +184,13 @@ func processRbacDefinition(rbacdef *v1beta1.RbacDefinition) error {
 			}
 
 			if !matchingRequest {
-				fmt.Printf("Attempting to delete %v\n", existingCRB)
+				logrus.Infof("Attempting to delete Cluster Role Binding: %v", existingCRB)
 				err := clientset.RbacV1().ClusterRoleBindings().Delete(existingCRB.Name, &metav1.DeleteOptions{})
-				fmt.Printf("err ===> %v\n", err)
+				if err != nil {
+					logrus.Errorf("Error deleting Cluster Role Binding: %v", err)
+				}
 			} else {
-				fmt.Printf("Matching request found %v\n", existingCRB)
+				logrus.Infof("Matches requested Cluster Role Binding: %v", err)
 			}
 		}
 	}
@@ -204,12 +208,13 @@ func processRbacDefinition(rbacdef *v1beta1.RbacDefinition) error {
 		}
 
 		if !alreadyExists {
-			fmt.Printf("Attempting to create %v\n", requestedRB)
+			logrus.Infof("Attempting to create Role Binding: %v", requestedCRB)
 			rb, err := clientset.RbacV1().RoleBindings(requestedRB.ObjectMeta.Namespace).Create(&requestedRB)
-			fmt.Printf("err ===> %v\n", err)
-			fmt.Printf("rb ===> %v\n", rb)
+			if err != nil {
+				logrus.Errorf("Error creating Role Binding: %v", err)
+			}
 		} else {
-			fmt.Printf("Already exists %v\n", requestedRB)
+			logrus.Infof("Role Binding already exists %v", requestedRB)
 		}
 	}
 
@@ -224,11 +229,13 @@ func processRbacDefinition(rbacdef *v1beta1.RbacDefinition) error {
 			}
 
 			if !matchingRequest {
-				fmt.Printf("Attempting to delete %v\n", existingRB)
+				logrus.Infof("Attempting to delete Role Binding %v", existingRB)
 				err := clientset.RbacV1().ClusterRoleBindings().Delete(existingRB.Name, &metav1.DeleteOptions{})
-				fmt.Printf("err ===> %v\n", err)
+				if err != nil {
+					logrus.Infof("Error deleting Role Binding: %v", err)
+				}
 			} else {
-				fmt.Printf("Matching request found %v\n", existingRB)
+				logrus.Infof("Matches requested Role Binding %v", existingRb)
 			}
 		}
 	}

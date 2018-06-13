@@ -9,15 +9,19 @@ import (
 )
 
 const (
-	version   = "v1beta1"
-	groupName = "rbac-manager.reactiveops.io"
+	CRDName        = "rbacdefinitions.rbac-manager.reactiveops.io"
+	ResourceKind   = "RbacDefinition"
+	ResourcePlural = "RbacDefinitions"
+	GroupName      = "rbac-manager.reactiveops.io"
+	ShortName      = "rbacdefinitions"
+	Version        = "v1beta1"
 )
 
 var (
 	SchemeBuilder = runtime.NewSchemeBuilder(addKnownTypes)
 	AddToScheme   = SchemeBuilder.AddToScheme
 	// SchemeGroupVersion is the group version used to register these objects.
-	SchemeGroupVersion = schema.GroupVersion{Group: groupName, Version: version}
+	SchemeGroupVersion = schema.GroupVersion{Group: GroupName, Version: Version}
 )
 
 func init() {

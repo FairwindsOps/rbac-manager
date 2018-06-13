@@ -1,0 +1,36 @@
+apiVersion: rbac-manager.reactiveops.io/v1beta1
+kind: RbacDefinition
+metadata:
+  name: rbac-manager-config
+spec:
+  rbacBindings:
+    - name: example-group
+      subjects:
+        - kind: Group
+          name: example
+      clusterRoleBindings:
+        - clusterRole: edit
+      roleBindings:
+        - clusterRole: admin
+          namespace: default
+    - name: example-users
+      subjects:
+        - kind: User
+          name: sue@example.com
+        - kind: User
+          name: joe@example.com
+      clusterRoleBindings:
+        - clusterRole: edit
+      roleBindings:
+        - clusterRole: admin
+          namespace: default
+    - name: example-service-account
+      subjects:
+        - kind: ServiceAccount
+          name: example
+          namespace: default
+      clusterRoleBindings:
+        - clusterRole: view
+      roleBindings:
+        - clusterRole: admin
+          namespace: default
