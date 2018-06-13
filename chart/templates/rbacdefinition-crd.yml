@@ -15,6 +15,6 @@ spec:
   names:
     plural: rbacdefinitions
     singular: rbacdefinition
-    kind: RBACDefinition
+    kind: RbacDefinition
     shortNames:
       - rbacdef
