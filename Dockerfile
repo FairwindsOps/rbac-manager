@@ -1,4 +1,4 @@
-FROM golang:1.10.2 AS build-env
+FROM golang:1.10.3 AS build-env
 WORKDIR /go/src/github.com/reactiveops/rbac-manager/
 COPY . .
 

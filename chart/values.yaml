@@ -16,12 +16,17 @@ affinity: {}
 
 rbacDefinition:
   enabled: false
-  content:
-    rbacUsers:
-      - user: somenewadmin
-        kind: ServiceAccount
-        clusterRoleBindings:
-        - clusterRole: cluster-admin
+  rbacBindings:
+    - name: example-service-account
+      subjects:
+        - kind: ServiceAccount
+          name: example
+          namespace: default
+      clusterRoleBindings:
+        - clusterRole: view
+      roleBindings:
+        - clusterRole: admin
+          namespace: default
 
 # Not recommended for user to configure this. Hyperkube image to use when creating custom resources
 global:

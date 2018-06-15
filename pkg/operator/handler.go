@@ -20,11 +20,6 @@ import (
 
 func NewHandler() handler.Handler {
 	// TODO: Finda better place for this
-	err := createRbacDefinitionCRD()
-	if err != nil {
-		logrus.Errorf("Failed to create RbacDefinition CRD: %v", err)
-		panic(err.Error())
-	}
 	return &Handler{}
 }
 
@@ -164,7 +159,7 @@ func processRbacDefinition(rbacdef *v1beta1.RbacDefinition) error {
 
 		if !alreadyExists {
 			logrus.Infof("Attempting to create Cluster Role Binding: %v", requestedCRB)
-			crb, err := clientset.RbacV1().ClusterRoleBindings().Create(&requestedCRB)
+			_, err := clientset.RbacV1().ClusterRoleBindings().Create(&requestedCRB)
 			if err != nil {
 				logrus.Errorf("Error creating Cluster Role Binding: %v", err)
 			}
@@ -209,7 +204,7 @@ func processRbacDefinition(rbacdef *v1beta1.RbacDefinition) error {
 
 		if !alreadyExists {
 			logrus.Infof("Attempting to create Role Binding: %v", requestedRB)
-			rb, err := clientset.RbacV1().RoleBindings(requestedRB.ObjectMeta.Namespace).Create(&requestedRB)
+			_, err := clientset.RbacV1().RoleBindings(requestedRB.ObjectMeta.Namespace).Create(&requestedRB)
 			if err != nil {
 				logrus.Errorf("Error creating Role Binding: %v", err)
 			}

@@ -294,18 +294,6 @@
   version = "kubernetes-1.9.3"
 
 [[projects]]
-  branch = "master"
-  name = "k8s.io/apiextensions-apiserver"
-  packages = [
-    "pkg/apis/apiextensions",
-    "pkg/apis/apiextensions/v1beta1",
-    "pkg/client/clientset/clientset",
-    "pkg/client/clientset/clientset/scheme",
-    "pkg/client/clientset/clientset/typed/apiextensions/v1beta1"
-  ]
-  revision = "a01914bc74d2605fef74a0248d2eec998f0bb093"
-
-[[projects]]
   name = "k8s.io/apimachinery"
   packages = [
     "pkg/api/errors",
@@ -413,6 +401,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "2207614320106f6496f3ae91a3ad2091df379d80233ac6486e376e0a513a11f0"
+  inputs-digest = "2c103b49d66a6f2753729773824fee7e223956ed9d600b61cd9dddcd16c1327d"
   solver-name = "gps-cdcl"
   solver-version = 1
