@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// +k8s:deepcopy-gen=package
-// +groupName=rbac-manager.reactiveops.io
-package v1beta1
+package version
+
+var (
+	Version = "0.4.0-dev"
+)

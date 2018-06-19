@@ -79,7 +79,6 @@ data:
 {{ toYaml .Values.rbacDefinition.rbacBindings | indent 8 }}
 
 # Job that reads RbacDefinition from ConfigMap and creates actual RbacDefinition
-
 ---
 apiVersion: batch/v1
 kind: Job
