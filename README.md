@@ -137,19 +137,24 @@ spec:
 
 There are some additional sample `RbacDefinitions` in the `examples` directory.
 
-#### Deploying an RbacDefinition with the Helm chart
+### Deploying an RbacDefinition with the Helm chart
 
-You can use the helm chart to deploy the `RbacDefinition` along with the controller by using these values:
+You can use the Helm chart to deploy the `RbacDefinition` along with the controller by adding these values:
 
 ```
 rbacDefinition:
   enabled: true
-  content:
-    rbacUsers:
-      - user: read-only
-        kind: ServiceAccount
-        clusterRoleBindings:
+  rbacBindings:
+    - name: example-service-account
+      subjects:
+        - kind: ServiceAccount
+          name: example
+          namespace: default
+      clusterRoleBindings:
         - clusterRole: view
+      roleBindings:
+        - clusterRole: admin
+          namespace: default
 ```
 
 ## License
