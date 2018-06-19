@@ -1,113 +1,145 @@
 # RBAC Manager
 
-RBAC Manager simplifies the management of RBAC resources in Kubernetes.
+RBAC Manager simplifies the management of RBAC resources in Kubernetes. It has 3 primary goals:
 
-## Purpose
+1. Provide simplified RBAC configuration that will scale.
+2. Use a syntax that can act as a centralized source of truth for RBAC configuration.
+3. Enable automation of RBAC configuration changes.
 
-Ideally RBAC role bindings should be configured to allow minimal access to a cluster. That generally means specifyinc access at a namespace and user level. For example, User A may need `edit` access to namespaces 1 and 2, while User B needs `view` access to namespaces 1, 2 and 3. Just to build out that simple state, you would need to 6 different role binding YAML files. What's worse, to make User A an `admin` of namespace 1, we could not just update the existing role binding. Instead, that role binding would have to be deleted and a new replacement one created.
+## Introduction
 
-With RBAC Manager, we can represent the state described above in a single YAML file:
+Ideally RBAC Role Bindings should be configured to allow minimal access to a cluster. That generally means specifying access at a namespace and user level. For example, User A may need `edit` access to an api and web namespace. To create those role bindings, you'd need something like the following YAML configuration:
 
 ```
-- user: a@example.com
-  roleBindings:
-    - clusterRole: admin
-      namespace: namespace-1
-    - clusterRole: edit
-      namespace: namespace-2
-- user: b@example.com
-  roleBindings:
-    - clusterRole: view
-      namespace: namespace-1
-    - clusterRole: view
-      namespace: namespace-2
-    - clusterRole: view
-      namespace: namespace-3
-- user: ci_system
-  kind: ServiceAccount
-  clusterRoleBindings:
-    - clusterRole: cluster-admin
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: user-a-access
+  namespace: web
+subjects:
+- kind: User
+  name: A
+  apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: ClusterRole
+  name: edit
+  apiGroup: rbac.authorization.k8s.io
+---
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: user-a-access
+  namespace: api
+subjects:
+- kind: User
+  name: A
+  apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: ClusterRole
+  name: edit
+  apiGroup: rbac.authorization.k8s.io
 ```
 
-Running RBAC Manager with the above configuration will:
+What's worse, to make User A an `admin` of Namespaces 1, we could not just update an existing Role Binding. Instead, that Role Binding would have to be deleted and replaced with a new one. With RBAC Manager, we can represent the state described above with some simpler YAML:
 
-* Ensure the `ci_system` `ServiceAccount` exists
-* Create 2 `RoleBinding`s for the `User` a@example.com
-* Create 3 `RoleBinding`s for the `User` b@example.com
-* Create 1 `ClusterRoleBinding` for the `ServiceAccount` ci_system
+```
+apiVersion: rbac-manager.reactiveops.io/v1beta1
+kind: RbacDefinition
+metadata:
+  name: rbac-manager-config
+spec:
+  rbacBindings:
+    - name: user-a
+      subjects:
+        - kind: User
+          name: A
+      roleBindings:
+        - clusterRole: edit
+          namespace: web
+        - clusterRole: edit
+          namespace: api
+```
 
-Importantly, it will compare the requested state with the existing state and only make changes necessary to reach the requested state. It uses Kubernetes labels to track which resources it manages. Any `ServiceAccount`, `RoleBinding`, or `ClusterRoleBinding` with that label that are not described in the configuration will be removed, and any resources described in that configuration that do not exist will be added.
+Of course, RBAC Manager is capable of so much more than that. It can manage Role Bindings and Cluster Role Bindings to Kubernetes Service Accounts, Users, and Groups. Here's a more complete example of a `RbacDefinition`:
+
+```
+apiVersion: rbac-manager.reactiveops.io/v1beta1
+kind: RbacDefinition
+metadata:
+  name: rbac-manager-config
+spec:
+  rbacBindings:
+    - name: example-group
+      subjects:
+        - kind: Group
+          name: example
+      clusterRoleBindings:
+        - clusterRole: edit
+      roleBindings:
+        - clusterRole: admin
+          namespace: default
+    - name: example-users
+      subjects:
+        - kind: User
+          name: sue@example.com
+        - kind: User
+          name: joe@example.com
+      clusterRoleBindings:
+        - clusterRole: edit
+      roleBindings:
+        - clusterRole: admin
+          namespace: default
+    - name: example-service-account
+      subjects:
+        - kind: ServiceAccount
+          name: example
+          namespace: default
+      clusterRoleBindings:
+        - clusterRole: view
+      roleBindings:
+        - clusterRole: admin
+          namespace: default
+```
+
+RBAC Manager treats an `RbacDefinition` as a source of truth. All resources created by RBAC Manager are tied to the relevant `RbacDefinition` with an owner reference. Anytime Role Bindings are removed from a `RbacDefinition`, RBAC Manager will remove the associated Role Bindings that were created.
 
 ## Usage
 
-At it's core, this is a Python script that runs with YAML configuration. There are many ways to use this, we'll cover 4 of them here:
-
-### As a Python Script
-
-Potentially most straightforward, this requires Python 2.7 or newer to get started. From there, we'll need to install a few dependencies:
+RBAC Manager is a Kubernetes operator, powered by the [operator-sdk](https://github.com/operator-framework/operator-sdk). The simplest way to install this operator is with Helm, using the chart found in this repository.
 
 ```
-pip install -r requirements.txt
+helm install reactiveops/rbac-manager
 ```
 
-Once you have a YAML config file that you're happy with (see the examples/config directory for examples), you can run it with this command:
+Once RBAC Manager is installed in your cluster, you'll be able to deploy an `RbacDefinition` to configure your RBAC Bindings. Here's an example of a simple `RbacDefinition`:
 
 ```
-python manage_rbac.py --config path/to/your/config.yaml
-```
-
-As you might expect, this will run in your current Kubernetes context. If you don't have Kube config set up locally, you'll need to do that. If you happen to be using GKE, the Python Kubernetes client often has problems renewing credentials. Running any `kubectl` command should renew credentials and allow this script to work.
-
-### As a Kubernetes Job
-
-Also quite straightforward, you can apply the YAML from the `example/k8s/job` directory of this repository to run RBAC Manager within your cluster. In this case, you'll want to add you're RBAC Manager configuration in the ConfigMap (`example/k8s/job/02-configmap.yaml`).
-
-Once the ConfigMap represents the RBAC state you want to achieve, you can run the job with a simple command:
-
-```
-kubectl apply -f example/k8s/controller
-```
-
-Once the job has completed, you can clean things up by removing the namespace it creates with this command:
-
-```
-kubectl delete namespace rbac-manager
-```
-
-### As a Kubernetes Controller
-
-RBAC Manager can also be run as a controler using custom resources to store this format of RBAC configuration. These custom resources are `RBACDefinitions`. The RBAC Manager controller listens for `RBACDefinitions` updates, and will automatically make the requested changes when a `rbacdefinition` is created or updated.
-
-You can deploy the controller using helm:
-
-```
-helm upgrade --install rbac-manager chart/ --namespace rbac-manager
-```
-
-Then you can make changes by configuring an `RBACDefinition` in the same namespace:
-
-```
----
 apiVersion: rbac-manager.reactiveops.io/v1beta1
-kind: RBACDefinition
+kind: RbacDefinition
 metadata:
   name: rbac-manager-config
-  namespace: rbac-manager
-rbacUsers:
-  - user: one@example.com
-    clusterRoleBindings:
-      - clusterRole: cluster-admin
-  - user: two@example.com
-    clusterRoleBindings:
-      - clusterRole: edit
-    roleBindings:
-      - clusterRole: cluster-admin
-        namespace: default
+spec:
+  rbacBindings:
+    - name: api-developers
+      subjects:
+        - kind: User
+          name: sue@example.com
+        - kind: User
+          name: joe@example.com
+      clusterRoleBindings:
+        - clusterRole: view
+      roleBindings:
+        - clusterRole: admin
+          namespace: api
+        - clusterRole: edit
+          namespace: web
 ```
 
-#### Deploying rbacdefinition with the helm chart
+There are some additional sample `RbacDefinitions` in the `examples` directory.
 
-You can use the helm chart to deploy the rbacdefinition along with the controller by using these values:
+#### Deploying an RbacDefinition with the Helm chart
+
+You can use the helm chart to deploy the `RbacDefinition` along with the controller by using these values:
 
 ```
 rbacDefinition:
@@ -119,10 +151,6 @@ rbacDefinition:
         clusterRoleBindings:
         - clusterRole: view
 ```
-
-### As part of a CI Workflow
-
-Ideally RBAC manager will be used in a CI workflow. In addition to our standard Docker images, we provide a secondary image with each release that includes some helpful dependencies for continuous integration. There is a working example of what this could look like in `examples/ci`.
 
 ## License
 Apache License 2.0
