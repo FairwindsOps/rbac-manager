@@ -240,7 +240,7 @@ func (bc *RBACDefinitionController) Reconcile(k types.ReconcileKey) error {
 
 			if !matchingRequest {
 				logrus.Infof("Attempting to delete Role Binding %v", existingRB)
-				err := bc.kubernetesClientSet.RbacV1().ClusterRoleBindings().Delete(existingRB.Name, &metav1.DeleteOptions{})
+				err := bc.kubernetesClientSet.RbacV1().RoleBindings(existingRB.Namespace).Delete(existingRB.Name, &metav1.DeleteOptions{})
 				if err != nil {
 					logrus.Infof("Error deleting Role Binding: %v", err)
 				}
@@ -285,7 +285,7 @@ func (bc *RBACDefinitionController) Reconcile(k types.ReconcileKey) error {
 
 			if !matchingRequest {
 				logrus.Infof("Attempting to delete Service Account %v", existingSA)
-				err := bc.kubernetesClientSet.RbacV1().ClusterRoleBindings().Delete(existingSA.Name, &metav1.DeleteOptions{})
+				err := bc.kubernetesClientSet.CoreV1().ServiceAccounts(existingSA.Namespace).Delete(existingSA.Name, &metav1.DeleteOptions{})
 				if err != nil {
 					logrus.Infof("Error deleting Service Account: %v", err)
 				}
