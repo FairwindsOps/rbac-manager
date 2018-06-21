@@ -1,66 +1,38 @@
-// Copyright 2018 ReactiveOps
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
-package operator
+package rbacdefinition
 
 import (
 	"fmt"
 	"reflect"
 
-	"github.com/reactiveops/rbac-manager/pkg/apis/rbac-manager/v1beta1"
+	"github.com/kubernetes-sigs/kubebuilder/pkg/controller"
+	"github.com/kubernetes-sigs/kubebuilder/pkg/controller/types"
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/tools/record"
 
-	"github.com/operator-framework/operator-sdk/pkg/sdk/handler"
-	"github.com/operator-framework/operator-sdk/pkg/sdk/types"
-	"github.com/sirupsen/logrus"
 	rbacv1 "k8s.io/api/rbac/v1"
-	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
-	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/rest"
+	logrus "github.com/sirupsen/logrus"
+
+	rbacmanagerv1beta1 "github.com/reactiveops/rbac-manager/pkg/apis/rbacmanager/v1beta1"
+	rbacmanagerv1beta1client "github.com/reactiveops/rbac-manager/pkg/client/clientset/versioned/typed/rbacmanager/v1beta1"
+	rbacmanagerv1beta1informer "github.com/reactiveops/rbac-manager/pkg/client/informers/externalversions/rbacmanager/v1beta1"
+	rbacmanagerv1beta1lister "github.com/reactiveops/rbac-manager/pkg/client/listers/rbacmanager/v1beta1"
+
+	"github.com/reactiveops/rbac-manager/pkg/inject/args"
 )
 
-func NewHandler() handler.Handler {
-	return &Handler{}
-}
+// EDIT THIS FILE
+// This files was created by "kubebuilder create resource" for you to edit.
+// Controller implementation logic for RBACDefinition resources goes here.
 
-type Handler struct {
-	// Fill me
-}
+func (bc *RBACDefinitionController) Reconcile(k types.ReconcileKey) error {
+	rbacDef, err := bc.rbacDefinitionClient.RBACDefinitions().Get(k.Name, metav1.GetOptions{})
 
-func (h *Handler) Handle(ctx types.Context, event types.Event) error {
-	switch o := event.Object.(type) {
-	case *v1beta1.RbacDefinition:
-		err := processRbacDefinition(o)
-		if err != nil && !errors.IsAlreadyExists(err) {
-			logrus.Errorf("Failed to process RbacDefinition: %v", err)
-			return err
-		}
-	}
-	return nil
-}
-
-func processRbacDefinition(rbacdef *v1beta1.RbacDefinition) error {
-	config, err := rest.InClusterConfig()
 	if err != nil {
-		panic(err.Error())
-	}
-
-	clientset, err := kubernetes.NewForConfig(config)
-	if err != nil {
-		panic(err.Error())
+		return err
 	}
 
 	listOptions := metav1.ListOptions{LabelSelector: "rbac-manager=reactiveops"}
@@ -68,20 +40,20 @@ func processRbacDefinition(rbacdef *v1beta1.RbacDefinition) error {
 		"rbac-manager": "reactiveops",
 	}
 
-	existingManagedClusterRoleBindings, err := clientset.RbacV1().ClusterRoleBindings().List(listOptions)
-	existingManagedRoleBindings, err := clientset.RbacV1().RoleBindings("").List(listOptions)
-
 	ownerReferences := []metav1.OwnerReference{
-		*metav1.NewControllerRef(rbacdef, schema.GroupVersionKind{
-			Group:   v1beta1.SchemeGroupVersion.Group,
-			Version: v1beta1.SchemeGroupVersion.Version,
-			Kind:    "RbacDefinition",
+		*metav1.NewControllerRef(rbacDef, schema.GroupVersionKind{
+			Group:   rbacmanagerv1beta1.SchemeGroupVersion.Group,
+			Version: rbacmanagerv1beta1.SchemeGroupVersion.Version,
+			Kind:    "RBACDefinition",
 		}),
 	}
 
-	logrus.Infof("RbacDefinition %v", rbacdef)
+	existingManagedClusterRoleBindings, err := bc.kubernetesClientSet.RbacV1().ClusterRoleBindings().List(listOptions)
+	existingManagedRoleBindings, err := bc.kubernetesClientSet.RbacV1().RoleBindings("").List(listOptions)
 
-	if rbacdef.Spec.RbacBindings == nil {
+	logrus.Infof("RbacDefinition %v\n", rbacDef)
+
+	if rbacDef.RBACBindings == nil {
 		logrus.Warn("No RbacBindings defined")
 		return nil
 	}
@@ -89,10 +61,10 @@ func processRbacDefinition(rbacdef *v1beta1.RbacDefinition) error {
 	requestedClusterRoleBindings := []rbacv1.ClusterRoleBinding{}
 	requestedRoleBindings := []rbacv1.RoleBinding{}
 
-	for _, rbacBinding := range rbacdef.Spec.RbacBindings {
+	for _, rbacBinding := range rbacDef.RBACBindings {
 		if rbacBinding.ClusterRoleBindings != nil {
 			for _, requestedCRB := range rbacBinding.ClusterRoleBindings {
-				crbName := fmt.Sprintf("%v-%v-%v", rbacdef.Name, rbacBinding.Name, requestedCRB.ClusterRole)
+				crbName := fmt.Sprintf("%v-%v-%v", rbacDef.Name, rbacBinding.Name, requestedCRB.ClusterRole)
 
 				logrus.Infof("Processing CRB %v")
 
@@ -147,7 +119,7 @@ func processRbacDefinition(rbacdef *v1beta1.RbacDefinition) error {
 					break
 				}
 
-				objectMeta.Name = fmt.Sprintf("%v-%v-%v", rbacdef.Name, rbacBinding.Name, requestedRoleName)
+				objectMeta.Name = fmt.Sprintf("%v-%v-%v", rbacDef.Name, rbacBinding.Name, requestedRoleName)
 
 				requestedRoleBindings = append(requestedRoleBindings, rbacv1.RoleBinding{
 					ObjectMeta: objectMeta,
@@ -172,7 +144,7 @@ func processRbacDefinition(rbacdef *v1beta1.RbacDefinition) error {
 
 		if !alreadyExists {
 			logrus.Infof("Attempting to create Cluster Role Binding: %v", requestedCRB)
-			_, err := clientset.RbacV1().ClusterRoleBindings().Create(&requestedCRB)
+			_, err := bc.kubernetesClientSet.RbacV1().ClusterRoleBindings().Create(&requestedCRB)
 			if err != nil {
 				logrus.Errorf("Error creating Cluster Role Binding: %v", err)
 			}
@@ -193,7 +165,7 @@ func processRbacDefinition(rbacdef *v1beta1.RbacDefinition) error {
 
 			if !matchingRequest {
 				logrus.Infof("Attempting to delete Cluster Role Binding: %v", existingCRB)
-				err := clientset.RbacV1().ClusterRoleBindings().Delete(existingCRB.Name, &metav1.DeleteOptions{})
+				err := bc.kubernetesClientSet.RbacV1().ClusterRoleBindings().Delete(existingCRB.Name, &metav1.DeleteOptions{})
 				if err != nil {
 					logrus.Errorf("Error deleting Cluster Role Binding: %v", err)
 				}
@@ -217,7 +189,7 @@ func processRbacDefinition(rbacdef *v1beta1.RbacDefinition) error {
 
 		if !alreadyExists {
 			logrus.Infof("Attempting to create Role Binding: %v", requestedRB)
-			_, err := clientset.RbacV1().RoleBindings(requestedRB.ObjectMeta.Namespace).Create(&requestedRB)
+			_, err := bc.kubernetesClientSet.RbacV1().RoleBindings(requestedRB.ObjectMeta.Namespace).Create(&requestedRB)
 			if err != nil {
 				logrus.Errorf("Error creating Role Binding: %v", err)
 			}
@@ -238,7 +210,7 @@ func processRbacDefinition(rbacdef *v1beta1.RbacDefinition) error {
 
 			if !matchingRequest {
 				logrus.Infof("Attempting to delete Role Binding %v", existingRB)
-				err := clientset.RbacV1().ClusterRoleBindings().Delete(existingRB.Name, &metav1.DeleteOptions{})
+				err := bc.kubernetesClientSet.RbacV1().ClusterRoleBindings().Delete(existingRB.Name, &metav1.DeleteOptions{})
 				if err != nil {
 					logrus.Infof("Error deleting Role Binding: %v", err)
 				}
@@ -249,4 +221,53 @@ func processRbacDefinition(rbacdef *v1beta1.RbacDefinition) error {
 	}
 
 	return nil
+}
+
+// +kubebuilder:controller:group=rbacmanager,version=v1beta1,kind=RBACDefinition,resource=rbacdefinitions
+type RBACDefinitionController struct {
+	// INSERT ADDITIONAL FIELDS HERE
+	rbacDefinitionLister rbacmanagerv1beta1lister.RBACDefinitionLister
+	rbacDefinitionClient rbacmanagerv1beta1client.RbacmanagerV1beta1Interface
+	// recorder is an event recorder for recording Event resources to the
+	// Kubernetes API.
+	rbacDefinitionRecorder record.EventRecorder
+	kubernetesClientSet    kubernetes.Interface
+}
+
+// ProvideController provides a controller that will be run at startup.  Kubebuilder will use codegeneration
+// to automatically register this controller in the inject package
+func ProvideController(arguments args.InjectArgs) (*controller.GenericController, error) {
+	// INSERT INITIALIZATIONS FOR ADDITIONAL FIELDS HERE
+	bc := &RBACDefinitionController{
+		rbacDefinitionLister: arguments.ControllerManager.GetInformerProvider(&rbacmanagerv1beta1.RBACDefinition{}).(rbacmanagerv1beta1informer.RBACDefinitionInformer).Lister(),
+
+		rbacDefinitionClient:   arguments.Clientset.RbacmanagerV1beta1(),
+		rbacDefinitionRecorder: arguments.CreateRecorder("RBACDefinitionController"),
+
+		kubernetesClientSet: arguments.KubernetesClientSet,
+	}
+
+	// Create a new controller that will call RBACDefinitionController.Reconcile on changes to RBACDefinitions
+	gc := &controller.GenericController{
+		Name:             "RBACDefinitionController",
+		Reconcile:        bc.Reconcile,
+		InformerRegistry: arguments.ControllerManager,
+	}
+	if err := gc.Watch(&rbacmanagerv1beta1.RBACDefinition{}); err != nil {
+		return gc, err
+	}
+
+	// IMPORTANT:
+	// To watch additional resource types - such as those created by your controller - add gc.Watch* function calls here
+	// Watch function calls will transform each object event into a RBACDefinition Key to be reconciled by the controller.
+	//
+	// **********
+	// For any new Watched types, you MUST add the appropriate // +kubebuilder:informer and // +kubebuilder:rbac
+	// annotations to the RBACDefinitionController and run "kubebuilder generate.
+	// This will generate the code to start the informers and create the RBAC rules needed for running in a cluster.
+	// See:
+	// https://godoc.org/github.com/kubernetes-sigs/kubebuilder/pkg/gen/controller#example-package
+	// **********
+
+	return gc, nil
 }
