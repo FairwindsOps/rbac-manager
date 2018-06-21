@@ -18,6 +18,7 @@ import (
 	"fmt"
 	"reflect"
 
+	"k8s.io/api/core/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -46,6 +47,14 @@ func rbMatches(existingRB *rbacv1.RoleBinding, requestedRB *rbacv1.RoleBinding) 
 	}
 
 	if !roleRefMatches(&existingRB.RoleRef, &requestedRB.RoleRef) {
+		return false
+	}
+
+	return true
+}
+
+func saMatches(existingSA *v1.ServiceAccount, requestedSA *v1.ServiceAccount) bool {
+	if !metaMatches(&existingSA.ObjectMeta, &requestedSA.ObjectMeta) {
 		return false
 	}
 

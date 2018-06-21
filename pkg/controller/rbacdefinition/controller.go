@@ -23,6 +23,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/record"
 
+	"k8s.io/api/core/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
@@ -64,6 +65,7 @@ func (bc *RBACDefinitionController) Reconcile(k types.ReconcileKey) error {
 
 	existingManagedClusterRoleBindings, err := bc.kubernetesClientSet.RbacV1().ClusterRoleBindings().List(listOptions)
 	existingManagedRoleBindings, err := bc.kubernetesClientSet.RbacV1().RoleBindings("").List(listOptions)
+	existingManagedServiceAccounts, err := bc.kubernetesClientSet.CoreV1().ServiceAccounts("").List(listOptions)
 
 	logrus.Infof("RBACDefinition %v\n", rbacDef)
 
@@ -74,8 +76,22 @@ func (bc *RBACDefinitionController) Reconcile(k types.ReconcileKey) error {
 
 	requestedClusterRoleBindings := []rbacv1.ClusterRoleBinding{}
 	requestedRoleBindings := []rbacv1.RoleBinding{}
+	requestedServiceAccounts := []v1.ServiceAccount{}
 
 	for _, rbacBinding := range rbacDef.RBACBindings {
+		for _, requestedSubject := range rbacBinding.Subjects {
+			if requestedSubject.Kind == "ServiceAccount" {
+				requestedServiceAccounts = append(requestedServiceAccounts, v1.ServiceAccount{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:            requestedSubject.Name,
+						Namespace:       requestedSubject.Namespace,
+						OwnerReferences: ownerReferences,
+						Labels:          labels,
+					},
+				})
+			}
+		}
+
 		if rbacBinding.ClusterRoleBindings != nil {
 			for _, requestedCRB := range rbacBinding.ClusterRoleBindings {
 				crbName := fmt.Sprintf("%v-%v-%v", rbacDef.Name, rbacBinding.Name, requestedCRB.ClusterRole)
@@ -230,6 +246,51 @@ func (bc *RBACDefinitionController) Reconcile(k types.ReconcileKey) error {
 				}
 			} else {
 				logrus.Infof("Matches requested Role Binding %v", existingRB)
+			}
+		}
+	}
+
+	matchingServiceAccounts := []v1.ServiceAccount{}
+
+	for _, requestedSA := range requestedServiceAccounts {
+		alreadyExists := false
+		for _, existingSA := range matchingServiceAccounts {
+			if saMatches(&existingSA, &requestedSA) {
+				alreadyExists = true
+				matchingServiceAccounts = append(matchingServiceAccounts, existingSA)
+				break
+			}
+		}
+
+		if !alreadyExists {
+			logrus.Infof("Attempting to create Service Account: %v", requestedSA)
+			_, err := bc.kubernetesClientSet.CoreV1().ServiceAccounts(requestedSA.ObjectMeta.Namespace).Create(&requestedSA)
+			if err != nil {
+				logrus.Errorf("Error creating Service Account: %v", err)
+			}
+		} else {
+			logrus.Infof("Service Account already exists %v", requestedSA)
+		}
+	}
+
+	for _, existingSA := range existingManagedServiceAccounts.Items {
+		if reflect.DeepEqual(existingSA.OwnerReferences, ownerReferences) {
+			matchingRequest := false
+			for _, requestedSA := range matchingServiceAccounts {
+				if saMatches(&existingSA, &requestedSA) {
+					matchingRequest = true
+					break
+				}
+			}
+
+			if !matchingRequest {
+				logrus.Infof("Attempting to delete Service Account %v", existingSA)
+				err := bc.kubernetesClientSet.RbacV1().ClusterRoleBindings().Delete(existingSA.Name, &metav1.DeleteOptions{})
+				if err != nil {
+					logrus.Infof("Error deleting Service Account: %v", err)
+				}
+			} else {
+				logrus.Infof("Matches requested Service Account %v", existingSA)
 			}
 		}
 	}
