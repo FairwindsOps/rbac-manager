@@ -1,4 +1,4 @@
-# This contains a job that will create a RbacDefinition
+# This contains a job that will create a RBACDefinition
 # based on Helm values as a post install or upgrade hook
 {{ if .Values.rbacDefinition.enabled }}
 
@@ -27,7 +27,7 @@ metadata:
     heritage: {{ .Release.Service }}
 rules:
   - apiGroups:
-      - rbac-manager.reactiveops.io
+      - rbacmanager.reactiveops.io
     resources:
       - rbacdefinitions
     verbs:
@@ -52,7 +52,7 @@ subjects:
     name: {{ template "rbac-manager.fullname" . }}-init
     namespace: {{ .Release.Namespace | quote }}
 
-# Actual RbacDefinition initially lives here
+# Actual RBACDefinition initially lives here
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -70,15 +70,15 @@ metadata:
 data:
   rbac-definition.yaml: |-
     ---
-    apiVersion: rbac-manager.reactiveops.io/v1beta1
-    kind: RbacDefinition
+    apiVersion: rbacmanager.reactiveops.io/v1beta1
+    kind: RBACDefinition
     metadata:
       name: {{ template "rbac-manager.fullname" . }}
     spec:
       rbacBindings:
 {{ toYaml .Values.rbacDefinition.rbacBindings | indent 8 }}
 
-# Job that reads RbacDefinition from ConfigMap and creates actual RbacDefinition
+# Job that reads RBACDefinition from ConfigMap and creates actual RBACDefinition
 ---
 apiVersion: batch/v1
 kind: Job

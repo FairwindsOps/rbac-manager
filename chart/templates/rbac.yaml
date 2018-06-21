@@ -19,7 +19,7 @@ metadata:
     heritage: {{ .Release.Service }}
 rules:
   - apiGroups:
-      - rbac-manager.reactiveops.io
+      - rbacmanager.reactiveops.io
     resources:
       - rbacdefinitions
     verbs:
