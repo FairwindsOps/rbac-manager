@@ -74,9 +74,8 @@ data:
     kind: RBACDefinition
     metadata:
       name: {{ template "rbac-manager.fullname" . }}
-    spec:
-      rbacBindings:
-{{ toYaml .Values.rbacDefinition.rbacBindings | indent 8 }}
+    rbacBindings:
+{{ toYaml .Values.rbacDefinition.rbacBindings | indent 6 }}
 
 # Job that reads RBACDefinition from ConfigMap and creates actual RBACDefinition
 ---
