@@ -67,10 +67,10 @@ func (bc *RBACDefinitionController) Reconcile(k types.ReconcileKey) error {
 	existingManagedRoleBindings, err := bc.kubernetesClientSet.RbacV1().RoleBindings("").List(listOptions)
 	existingManagedServiceAccounts, err := bc.kubernetesClientSet.CoreV1().ServiceAccounts("").List(listOptions)
 
-	logrus.Infof("RBACDefinition %v\n", rbacDef)
+	logrus.Infof("Processing RBACDefinition %v", rbacDef.Name)
 
 	if rbacDef.RBACBindings == nil {
-		logrus.Warn("No RbacBindings defined")
+		logrus.Warn("No RBACBindings defined")
 		return nil
 	}
 
@@ -95,8 +95,6 @@ func (bc *RBACDefinitionController) Reconcile(k types.ReconcileKey) error {
 		if rbacBinding.ClusterRoleBindings != nil {
 			for _, requestedCRB := range rbacBinding.ClusterRoleBindings {
 				crbName := fmt.Sprintf("%v-%v-%v", rbacDef.Name, rbacBinding.Name, requestedCRB.ClusterRole)
-
-				logrus.Infof("Processing CRB %v")
 
 				requestedClusterRoleBindings = append(requestedClusterRoleBindings, rbacv1.ClusterRoleBinding{
 					ObjectMeta: metav1.ObjectMeta{
@@ -131,14 +129,14 @@ func (bc *RBACDefinitionController) Reconcile(k types.ReconcileKey) error {
 				objectMeta.Namespace = requestedRB.Namespace
 
 				if requestedRB.ClusterRole != "" {
-					logrus.Infof("Processing Requested ClusterRole %v <> %v <> %v", requestedRB.ClusterRole, requestedRB.Namespace, requestedRB)
+					logrus.Debugf("Processing Requested ClusterRole %v <> %v <> %v", requestedRB.ClusterRole, requestedRB.Namespace, requestedRB)
 					requestedRoleName = requestedRB.ClusterRole
 					roleRef = rbacv1.RoleRef{
 						Kind: "ClusterRole",
 						Name: requestedRB.ClusterRole,
 					}
 				} else if requestedRB.Role != "" {
-					logrus.Infof("Processing Requested Role %v <> %v <> %v", requestedRB.Role, requestedRB.Namespace, requestedRB)
+					logrus.Debugf("Processing Requested Role %v <> %v <> %v", requestedRB.Role, requestedRB.Namespace, requestedRB)
 					requestedRoleName = fmt.Sprintf("%v-%v", requestedRB.Role, requestedRB.Namespace)
 					roleRef = rbacv1.RoleRef{
 						Kind: "Role",
@@ -179,7 +177,7 @@ func (bc *RBACDefinitionController) Reconcile(k types.ReconcileKey) error {
 				logrus.Errorf("Error creating Cluster Role Binding: %v", err)
 			}
 		} else {
-			logrus.Infof("Cluster Role Binding already exists %v", requestedCRB)
+			logrus.Debugf("Cluster Role Binding already exists %v", requestedCRB)
 		}
 	}
 
@@ -200,7 +198,7 @@ func (bc *RBACDefinitionController) Reconcile(k types.ReconcileKey) error {
 					logrus.Errorf("Error deleting Cluster Role Binding: %v", err)
 				}
 			} else {
-				logrus.Infof("Matches requested Cluster Role Binding: %v", err)
+				logrus.Debugf("Matches requested Cluster Role Binding: %v", err)
 			}
 		}
 	}
@@ -224,7 +222,7 @@ func (bc *RBACDefinitionController) Reconcile(k types.ReconcileKey) error {
 				logrus.Errorf("Error creating Role Binding: %v", err)
 			}
 		} else {
-			logrus.Infof("Role Binding already exists %v", requestedRB)
+			logrus.Debugf("Role Binding already exists %v", requestedRB)
 		}
 	}
 
@@ -245,7 +243,7 @@ func (bc *RBACDefinitionController) Reconcile(k types.ReconcileKey) error {
 					logrus.Infof("Error deleting Role Binding: %v", err)
 				}
 			} else {
-				logrus.Infof("Matches requested Role Binding %v", existingRB)
+				logrus.Debugf("Matches requested Role Binding %v", existingRB)
 			}
 		}
 	}
@@ -254,7 +252,7 @@ func (bc *RBACDefinitionController) Reconcile(k types.ReconcileKey) error {
 
 	for _, requestedSA := range requestedServiceAccounts {
 		alreadyExists := false
-		for _, existingSA := range matchingServiceAccounts {
+		for _, existingSA := range existingManagedServiceAccounts.Items {
 			if saMatches(&existingSA, &requestedSA) {
 				alreadyExists = true
 				matchingServiceAccounts = append(matchingServiceAccounts, existingSA)
@@ -263,34 +261,34 @@ func (bc *RBACDefinitionController) Reconcile(k types.ReconcileKey) error {
 		}
 
 		if !alreadyExists {
-			logrus.Infof("Attempting to create Service Account: %v", requestedSA)
+			logrus.Infof("Attempting to create Service Account: %v", requestedSA.Name)
 			_, err := bc.kubernetesClientSet.CoreV1().ServiceAccounts(requestedSA.ObjectMeta.Namespace).Create(&requestedSA)
 			if err != nil {
 				logrus.Errorf("Error creating Service Account: %v", err)
 			}
 		} else {
-			logrus.Infof("Service Account already exists %v", requestedSA)
+			logrus.Debugf("Service Account already exists %v", requestedSA.Name)
 		}
 	}
 
 	for _, existingSA := range existingManagedServiceAccounts.Items {
 		if reflect.DeepEqual(existingSA.OwnerReferences, ownerReferences) {
 			matchingRequest := false
-			for _, requestedSA := range matchingServiceAccounts {
-				if saMatches(&existingSA, &requestedSA) {
+			for _, matchingSA := range matchingServiceAccounts {
+				if saMatches(&existingSA, &matchingSA) {
 					matchingRequest = true
 					break
 				}
 			}
 
 			if !matchingRequest {
-				logrus.Infof("Attempting to delete Service Account %v", existingSA)
+				logrus.Infof("Attempting to delete Service Account %v", existingSA.Name)
 				err := bc.kubernetesClientSet.CoreV1().ServiceAccounts(existingSA.Namespace).Delete(existingSA.Name, &metav1.DeleteOptions{})
 				if err != nil {
 					logrus.Infof("Error deleting Service Account: %v", err)
 				}
 			} else {
-				logrus.Infof("Matches requested Service Account %v", existingSA)
+				logrus.Debugf("Matches requested Service Account %v", existingSA.Name)
 			}
 		}
 	}
@@ -300,7 +298,6 @@ func (bc *RBACDefinitionController) Reconcile(k types.ReconcileKey) error {
 
 // +kubebuilder:controller:group=rbacmanager,version=v1beta1,kind=RBACDefinition,resource=rbacdefinitions
 type RBACDefinitionController struct {
-	// INSERT ADDITIONAL FIELDS HERE
 	rbacDefinitionLister rbacmanagerv1beta1lister.RBACDefinitionLister
 	rbacDefinitionClient rbacmanagerv1beta1client.RbacmanagerV1beta1Interface
 	// recorder is an event recorder for recording Event resources to the
@@ -312,7 +309,6 @@ type RBACDefinitionController struct {
 // ProvideController provides a controller that will be run at startup.  Kubebuilder will use codegeneration
 // to automatically register this controller in the inject package
 func ProvideController(arguments args.InjectArgs) (*controller.GenericController, error) {
-	// INSERT INITIALIZATIONS FOR ADDITIONAL FIELDS HERE
 	bc := &RBACDefinitionController{
 		rbacDefinitionLister: arguments.ControllerManager.GetInformerProvider(&rbacmanagerv1beta1.RBACDefinition{}).(rbacmanagerv1beta1informer.RBACDefinitionInformer).Lister(),
 
@@ -331,18 +327,6 @@ func ProvideController(arguments args.InjectArgs) (*controller.GenericController
 	if err := gc.Watch(&rbacmanagerv1beta1.RBACDefinition{}); err != nil {
 		return gc, err
 	}
-
-	// IMPORTANT:
-	// To watch additional resource types - such as those created by your controller - add gc.Watch* function calls here
-	// Watch function calls will transform each object event into a RBACDefinition Key to be reconciled by the controller.
-	//
-	// **********
-	// For any new Watched types, you MUST add the appropriate // +kubebuilder:informer and // +kubebuilder:rbac
-	// annotations to the RBACDefinitionController and run "kubebuilder generate.
-	// This will generate the code to start the informers and create the RBAC rules needed for running in a cluster.
-	// See:
-	// https://godoc.org/github.com/kubernetes-sigs/kubebuilder/pkg/gen/controller#example-package
-	// **********
 
 	return gc, nil
 }

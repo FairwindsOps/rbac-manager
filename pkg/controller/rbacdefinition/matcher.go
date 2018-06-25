@@ -15,9 +15,9 @@
 package rbacdefinition
 
 import (
-	"fmt"
 	"reflect"
 
+	logrus "github.com/sirupsen/logrus"
 	"k8s.io/api/core/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -71,7 +71,7 @@ func metaMatches(existingMeta *metav1.ObjectMeta, requestedMeta *metav1.ObjectMe
 	}
 
 	if !reflect.DeepEqual(existingMeta.OwnerReferences, requestedMeta.OwnerReferences) {
-		fmt.Printf("Owner References did not match: %v != %v", existingMeta.OwnerReferences, requestedMeta.OwnerReferences)
+		logrus.Infof("Owner References did not match: %v != %v", existingMeta.OwnerReferences, requestedMeta.OwnerReferences)
 		return false
 	}
 
