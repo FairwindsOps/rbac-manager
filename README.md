@@ -2,13 +2,13 @@
 
 RBAC Manager simplifies the management of Cluster Role Bindings, Role Bindings, and Service Accounts in Kubernetes. It has 3 primary goals:
 
-1. Provide simplified RBAC configuration that will scale.
-2. Use a syntax that can act as a centralized source of truth for RBAC configuration.
+1. Simplify RBAC in a secure and scalable approach. When it's easier to use, it will be used more often resulting in better security.
+2. Declarative syntax that can be checked into source control and act as the source of truth for RBAC configuration.
 3. Enable automation of RBAC configuration changes.
 
 ## Introduction
 
-Ideally RBAC Role Bindings should be configured to allow minimal access to a cluster. That generally means specifying access at a namespace and user level. For example, User A may need `edit` access to an api and web namespace. To create those role bindings, you'd need something like the following YAML configuration:
+Ideally RBAC Role Bindings should be configured with the principle of least privilege in mind - users should have the minimum level of access possible. That generally means specifying access at a namespace and user level. For example, User A may need `edit` access to an api and web namespace. To create those role bindings, you'd need something like the following YAML configuration:
 
 ```
 kind: RoleBinding
@@ -40,7 +40,7 @@ roleRef:
   apiGroup: rbac.authorization.k8s.io
 ```
 
-What's worse, to make User A an `admin` of Namespaces 1, we could not just update an existing Role Binding. Instead, that Role Binding would have to be deleted and replaced with a new one. With RBAC Manager, we can represent the state described above with some simpler YAML:
+To make user A an `admin` of namespace 1, we are unable to update the existing Role Binding in place. Instead, we must delete the old binding and create a new binding to replace it. With RBAC Manager, we can represent the state described above with some simpler YAML:
 
 ```
 apiVersion: rbacmanager.reactiveops.io/v1beta1
@@ -112,7 +112,7 @@ rbacBindings:
         namespace: web
 ```
 
-RBAC Manager treats an `RBACDefinition` as a source of truth. All resources created by RBAC Manager are tied to the relevant `RBACDefinition` with an owner reference. If a desired role is changed in an RBACDefinition, the relevant Role Bindings are replaced with new bindings to requested role. Any time Role Bindings are removed from a `RBACDefinition`, RBAC Manager will also remove the associated Role Bindings that it had created. It's also worth noting that when a `ServiceAccount` is a subject, RBAC Manager will attempt to create the `ServiceAccount` if it doesn't already exist.
+RBAC Manager treats an `RBACDefinition` as the source of truth. All resources created by RBAC Manager are tied to the relevant `RBACDefinition` with an owner reference. If a desired role is changed in an RBACDefinition, the relevant Role Bindings are replaced with new bindings to requested role. Any time Role Bindings are removed from a `RBACDefinition`, RBAC Manager will also remove the associated Role Bindings that it had created. It's also worth noting that when a `ServiceAccount` is a subject, RBAC Manager will attempt to create the `ServiceAccount` if it doesn't already exist.
 
 ## Usage
 
@@ -175,7 +175,7 @@ rbacDefinition:
 
 ## Note on upgrades to 0.4.0
 
-For anyone that used our earliest releases of RBAC Manager, the upgrade to 0.4.0 unfortunately included some breaking changes. We've written [some docs that cover the upgrade process](docs/upgrades.md) to help here.
+This release has breaking changes. Please see our [upgrade process](docs/upgrades.md).
 
 ## License
 Apache License 2.0
