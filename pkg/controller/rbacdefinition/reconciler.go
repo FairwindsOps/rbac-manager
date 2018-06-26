@@ -41,7 +41,7 @@ func (bc *RBACDefinitionController) reconcileClusterRoleBindings(
 		}
 
 		if !alreadyExists {
-			logrus.Infof("Attempting to create Cluster Role Binding: %v", requestedCRB.Name)
+			logrus.Infof("Creating Cluster Role Binding: %v", requestedCRB.Name)
 			_, err := bc.kubernetesClientSet.RbacV1().ClusterRoleBindings().Create(&requestedCRB)
 			if err != nil {
 				logrus.Errorf("Error creating Cluster Role Binding: %v", err)
@@ -62,7 +62,7 @@ func (bc *RBACDefinitionController) reconcileClusterRoleBindings(
 			}
 
 			if !matchingRequest {
-				logrus.Infof("Attempting to delete Cluster Role Binding: %v", existingCRB.Name)
+				logrus.Infof("Deleting Cluster Role Binding: %v", existingCRB.Name)
 				err := bc.kubernetesClientSet.RbacV1().ClusterRoleBindings().Delete(existingCRB.Name, &metav1.DeleteOptions{})
 				if err != nil {
 					logrus.Errorf("Error deleting Cluster Role Binding: %v", err)
@@ -92,7 +92,7 @@ func (bc *RBACDefinitionController) reconcileRoleBindings(
 		}
 
 		if !alreadyExists {
-			logrus.Infof("Attempting to create Role Binding: %v", requestedRB.Name)
+			logrus.Infof("Creating Role Binding: %v", requestedRB.Name)
 			_, err := bc.kubernetesClientSet.RbacV1().RoleBindings(requestedRB.ObjectMeta.Namespace).Create(&requestedRB)
 			if err != nil {
 				logrus.Errorf("Error creating Role Binding: %v", err)
@@ -113,7 +113,7 @@ func (bc *RBACDefinitionController) reconcileRoleBindings(
 			}
 
 			if !matchingRequest {
-				logrus.Infof("Attempting to delete Role Binding %v", existingRB.Name)
+				logrus.Infof("Deleting Role Binding %v", existingRB.Name)
 				err := bc.kubernetesClientSet.RbacV1().RoleBindings(existingRB.Namespace).Delete(existingRB.Name, &metav1.DeleteOptions{})
 				if err != nil {
 					logrus.Infof("Error deleting Role Binding: %v", err)
@@ -143,7 +143,7 @@ func (bc *RBACDefinitionController) reconcileServiceAccounts(
 		}
 
 		if !alreadyExists {
-			logrus.Infof("Attempting to create Service Account: %v", requestedSA.Name)
+			logrus.Infof("Creating Service Account: %v", requestedSA.Name)
 			_, err := bc.kubernetesClientSet.CoreV1().ServiceAccounts(requestedSA.ObjectMeta.Namespace).Create(&requestedSA)
 			if err != nil {
 				logrus.Errorf("Error creating Service Account: %v", err)
@@ -164,7 +164,7 @@ func (bc *RBACDefinitionController) reconcileServiceAccounts(
 			}
 
 			if !matchingRequest {
-				logrus.Infof("Attempting to delete Service Account %v", existingSA.Name)
+				logrus.Infof("Deleting Service Account %v", existingSA.Name)
 				err := bc.kubernetesClientSet.CoreV1().ServiceAccounts(existingSA.Namespace).Delete(existingSA.Name, &metav1.DeleteOptions{})
 				if err != nil {
 					logrus.Infof("Error deleting Service Account: %v", err)

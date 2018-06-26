@@ -173,5 +173,9 @@ rbacDefinition:
           namespace: default
 ```
 
+## Note on upgrades to 0.4.0
+
+For anyone that used our earliest releases of RBAC Manager, the upgrade to 0.4.0 unfortunately included some breaking changes. We've written [some docs that cover the upgrade process](docs/upgrades.md) to help here.
+
 ## License
 Apache License 2.0
