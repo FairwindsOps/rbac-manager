@@ -16,7 +16,6 @@ package rbacdefinition
 
 import (
 	"fmt"
-	"reflect"
 
 	"github.com/kubernetes-sigs/kubebuilder/pkg/controller"
 	"github.com/kubernetes-sigs/kubebuilder/pkg/controller/types"
@@ -38,10 +37,6 @@ import (
 
 	"github.com/reactiveops/rbac-manager/pkg/inject/args"
 )
-
-// EDIT THIS FILE
-// This files was created by "kubebuilder create resource" for you to edit.
-// Controller implementation logic for RBACDefinition resources goes here.
 
 func (bc *RBACDefinitionController) Reconcile(k types.ReconcileKey) error {
 	rbacDef, err := bc.rbacDefinitionClient.RBACDefinitions().Get(k.Name, metav1.GetOptions{})
@@ -158,140 +153,20 @@ func (bc *RBACDefinitionController) Reconcile(k types.ReconcileKey) error {
 		}
 	}
 
-	matchingClusterRoleBindings := []rbacv1.ClusterRoleBinding{}
+	bc.reconcileServiceAccounts(
+		&requestedServiceAccounts,
+		&existingManagedServiceAccounts.Items,
+		&ownerReferences)
 
-	for _, requestedCRB := range requestedClusterRoleBindings {
-		alreadyExists := false
-		for _, existingCRB := range existingManagedClusterRoleBindings.Items {
-			if crbMatches(&existingCRB, &requestedCRB) {
-				alreadyExists = true
-				matchingClusterRoleBindings = append(matchingClusterRoleBindings, existingCRB)
-				break
-			}
-		}
+	bc.reconcileClusterRoleBindings(
+		&requestedClusterRoleBindings,
+		&existingManagedClusterRoleBindings.Items,
+		&ownerReferences)
 
-		if !alreadyExists {
-			logrus.Infof("Attempting to create Cluster Role Binding: %v", requestedCRB)
-			_, err := bc.kubernetesClientSet.RbacV1().ClusterRoleBindings().Create(&requestedCRB)
-			if err != nil {
-				logrus.Errorf("Error creating Cluster Role Binding: %v", err)
-			}
-		} else {
-			logrus.Debugf("Cluster Role Binding already exists %v", requestedCRB)
-		}
-	}
-
-	for _, existingCRB := range existingManagedClusterRoleBindings.Items {
-		if reflect.DeepEqual(existingCRB.OwnerReferences, ownerReferences) {
-			matchingRequest := false
-			for _, requestedCRB := range matchingClusterRoleBindings {
-				if crbMatches(&existingCRB, &requestedCRB) {
-					matchingRequest = true
-					break
-				}
-			}
-
-			if !matchingRequest {
-				logrus.Infof("Attempting to delete Cluster Role Binding: %v", existingCRB)
-				err := bc.kubernetesClientSet.RbacV1().ClusterRoleBindings().Delete(existingCRB.Name, &metav1.DeleteOptions{})
-				if err != nil {
-					logrus.Errorf("Error deleting Cluster Role Binding: %v", err)
-				}
-			} else {
-				logrus.Debugf("Matches requested Cluster Role Binding: %v", err)
-			}
-		}
-	}
-
-	matchingRoleBindings := []rbacv1.RoleBinding{}
-
-	for _, requestedRB := range requestedRoleBindings {
-		alreadyExists := false
-		for _, existingRB := range existingManagedRoleBindings.Items {
-			if rbMatches(&existingRB, &requestedRB) {
-				alreadyExists = true
-				matchingRoleBindings = append(matchingRoleBindings, existingRB)
-				break
-			}
-		}
-
-		if !alreadyExists {
-			logrus.Infof("Attempting to create Role Binding: %v", requestedRB)
-			_, err := bc.kubernetesClientSet.RbacV1().RoleBindings(requestedRB.ObjectMeta.Namespace).Create(&requestedRB)
-			if err != nil {
-				logrus.Errorf("Error creating Role Binding: %v", err)
-			}
-		} else {
-			logrus.Debugf("Role Binding already exists %v", requestedRB)
-		}
-	}
-
-	for _, existingRB := range existingManagedRoleBindings.Items {
-		if reflect.DeepEqual(existingRB.OwnerReferences, ownerReferences) {
-			matchingRequest := false
-			for _, requestedRB := range matchingRoleBindings {
-				if rbMatches(&existingRB, &requestedRB) {
-					matchingRequest = true
-					break
-				}
-			}
-
-			if !matchingRequest {
-				logrus.Infof("Attempting to delete Role Binding %v", existingRB)
-				err := bc.kubernetesClientSet.RbacV1().RoleBindings(existingRB.Namespace).Delete(existingRB.Name, &metav1.DeleteOptions{})
-				if err != nil {
-					logrus.Infof("Error deleting Role Binding: %v", err)
-				}
-			} else {
-				logrus.Debugf("Matches requested Role Binding %v", existingRB)
-			}
-		}
-	}
-
-	matchingServiceAccounts := []v1.ServiceAccount{}
-
-	for _, requestedSA := range requestedServiceAccounts {
-		alreadyExists := false
-		for _, existingSA := range existingManagedServiceAccounts.Items {
-			if saMatches(&existingSA, &requestedSA) {
-				alreadyExists = true
-				matchingServiceAccounts = append(matchingServiceAccounts, existingSA)
-				break
-			}
-		}
-
-		if !alreadyExists {
-			logrus.Infof("Attempting to create Service Account: %v", requestedSA.Name)
-			_, err := bc.kubernetesClientSet.CoreV1().ServiceAccounts(requestedSA.ObjectMeta.Namespace).Create(&requestedSA)
-			if err != nil {
-				logrus.Errorf("Error creating Service Account: %v", err)
-			}
-		} else {
-			logrus.Debugf("Service Account already exists %v", requestedSA.Name)
-		}
-	}
-
-	for _, existingSA := range existingManagedServiceAccounts.Items {
-		if reflect.DeepEqual(existingSA.OwnerReferences, ownerReferences) {
-			matchingRequest := false
-			for _, matchingSA := range matchingServiceAccounts {
-				if saMatches(&existingSA, &matchingSA) {
-					matchingRequest = true
-					break
-				}
-			}
-
-			if !matchingRequest {
-				logrus.Infof("Attempting to delete Service Account %v", existingSA.Name)
-				err := bc.kubernetesClientSet.CoreV1().ServiceAccounts(existingSA.Namespace).Delete(existingSA.Name, &metav1.DeleteOptions{})
-				if err != nil {
-					logrus.Infof("Error deleting Service Account: %v", err)
-				}
-			} else {
-				logrus.Debugf("Matches requested Service Account %v", existingSA.Name)
-			}
-		}
-	}
+	bc.reconcileRoleBindings(
+		&requestedRoleBindings,
+		&existingManagedRoleBindings.Items,
+		&ownerReferences)
 
 	return nil
 }

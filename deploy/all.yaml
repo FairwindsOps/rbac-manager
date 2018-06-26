@@ -1,22 +1,24 @@
-apiVersion: v1
-kind: Namespace
-metadata:
-  creationTimestamp: null
-  labels:
-    api: rbac-manager
-    kubebuilder.k8s.io: 0.1.11
-  name: rbac-manager-system
-spec: {}
-status: {}
 ---
-apiVersion: rbac.authorization.k8s.io/v1
+# Source: rbac-manager/templates/rbac.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: rbac-manager
+  labels:
+    app: rbac-manager
+    chart: rbac-manager-0.3.0
+    release: rbac-manager
+    heritage: Tiller
+---
+apiVersion: rbac.authorization.k8s.io/v1beta1
 kind: ClusterRole
 metadata:
-  creationTimestamp: null
+  name: rbac-manager
   labels:
-    api: rbac-manager
-    kubebuilder.k8s.io: 0.1.11
-  name: rbac-manager-role
+    app: rbac-manager
+    chart: rbac-manager-0.3.0
+    release: rbac-manager
+    heritage: Tiller
 rules:
   - apiGroups:
       - rbacmanager.reactiveops.io
@@ -40,31 +42,37 @@ rules:
     verbs:
       - '*'
 ---
-apiVersion: rbac.authorization.k8s.io/v1
+apiVersion: rbac.authorization.k8s.io/v1beta1
 kind: ClusterRoleBinding
 metadata:
-  creationTimestamp: null
+  name: rbac-manager
   labels:
-    api: rbac-manager
-    kubebuilder.k8s.io: 0.1.11
-  name: rbac-manager-rolebinding
-  namespace: rbac-manager-system
+    app: rbac-manager
+    chart: rbac-manager-0.3.0
+    release: rbac-manager
+    heritage: Tiller
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: rbac-manager-role
+  name: rbac-manager
 subjects:
-- kind: ServiceAccount
-  name: default
-  namespace: rbac-manager-system
+  - kind: ServiceAccount
+    name: rbac-manager
+    namespace: "rbac-manager"
+
+---
+# Source: rbac-manager/templates/customresourcedefinition.yaml
 ---
 apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
-  creationTimestamp: null
   labels:
     api: rbac-manager
     kubebuilder.k8s.io: 0.1.11
+    app: rbac-manager
+    chart: rbac-manager-0.3.0
+    release: rbac-manager
+    heritage: Tiller
   name: rbacdefinitions.rbacmanager.reactiveops.io
 spec:
   group: rbacmanager.reactiveops.io
@@ -113,8 +121,6 @@ spec:
             required:
             - name
             - subjects
-            - clusterRoleBindings
-            - roleBindings
             type: object
           type: array
         status:
@@ -129,67 +135,50 @@ status:
     kind: ""
     plural: ""
   conditions: null
+
 ---
-apiVersion: v1
-kind: Service
-metadata:
-  creationTimestamp: null
-  labels:
-    api: rbac-manager
-    control-plane: controller-manager
-    kubebuilder.k8s.io: 0.1.11
-  name: rbac-manager-controller-manager-service
-  namespace: rbac-manager-system
-spec:
-  clusterIP: None
-  selector:
-    api: rbac-manager
-    control-plane: controller-manager
-    kubebuilder.k8s.io: 0.1.11
-status:
-  loadBalancer: {}
+# Source: rbac-manager/templates/controller.yaml
 ---
-apiVersion: apps/v1
-kind: StatefulSet
+apiVersion: extensions/v1beta1
+kind: Deployment
 metadata:
-  creationTimestamp: null
+  name: rbac-manager
   labels:
-    api: rbac-manager
-    control-plane: controller-manager
-    kubebuilder.k8s.io: 0.1.11
-  name: rbac-manager-controller-manager
-  namespace: rbac-manager-system
+    app: rbac-manager
+    chart: rbac-manager-0.3.0
+    release: rbac-manager
+    heritage: Tiller
 spec:
   replicas: 1
   selector:
     matchLabels:
-      api: rbac-manager
-      control-plane: controller-manager
-      kubebuilder.k8s.io: 0.1.11
-  serviceName: rbac-manager-controller-manager-service
+      app: rbac-manager
+      release: rbac-manager
   template:
     metadata:
-      creationTimestamp: null
       labels:
-        api: rbac-manager
-        control-plane: controller-manager
-        kubebuilder.k8s.io: 0.1.11
+        app: rbac-manager
+        release: rbac-manager
     spec:
+      serviceAccountName: rbac-manager
       containers:
-      - args:
-        - --install-crds=false
-        command:
-        - /root/controller-manager
-        image: quay.io/robertjscott/rbac-manager:dev-kb4
-        name: controller-manager
+      - name: rbac-manager
+        image: "quay.io/reactiveops/rbac-manager:0.4.0"
+        imagePullPolicy: Always
+        env:
+        - name: NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
         resources:
           limits:
             cpu: 100m
-            memory: 30Mi
+            memory: 128Mi
           requests:
             cpu: 100m
-            memory: 20Mi
-      terminationGracePeriodSeconds: 10
-  updateStrategy: {}
-status:
-  replicas: 0
+            memory: 128Mi
+
+---
+# Source: rbac-manager/templates/create-rbac-definition.yaml
+# This contains a job that will create a RBACDefinition
+# based on Helm values as a post install or upgrade hook

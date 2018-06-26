@@ -10,9 +10,6 @@ import (
 	. "github.com/reactiveops/rbac-manager/pkg/client/clientset/versioned/typed/rbacmanager/v1beta1"
 )
 
-// EDIT THIS FILE!
-// Created by "kubebuilder create resource" for you to implement the RBACDefinition resource tests
-
 var _ = Describe("RBACDefinition", func() {
 	var instance RBACDefinition
 	var expected RBACDefinition
@@ -29,8 +26,6 @@ var _ = Describe("RBACDefinition", func() {
 	AfterEach(func() {
 		client.Delete(instance.Name, &metav1.DeleteOptions{})
 	})
-
-	// INSERT YOUR CODE HERE - add more "Describe" tests
 
 	// Automatically created storage tests
 	Describe("when sending a storage request", func() {

@@ -1,7 +1,6 @@
-enabled: True
 image:
   repository: quay.io/reactiveops/rbac-manager
-  tag: 0.3.0
+  tag: 0.4.0
   pullPolicy: Always
 resources:
   requests:

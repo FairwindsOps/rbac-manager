@@ -1,11 +1,11 @@
 apiVersion: rbacmanager.reactiveops.io/v1beta1
 kind: RBACDefinition
 metadata:
-  name: rbac-manager-config
+  name: rbac-manager-everything-example
 rbacBindings:
-  - name: example-group
+  - name: admins
     subjects:
-      - kind: Group
+      - kind: User
         name: example
     clusterRoleBindings:
       - clusterRole: edit

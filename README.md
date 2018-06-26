@@ -1,6 +1,6 @@
 # RBAC Manager
 
-RBAC Manager simplifies the management of RBAC resources in Kubernetes. It has 3 primary goals:
+RBAC Manager simplifies the management of Cluster Role Bindings, Role Bindings, and Service Accounts in Kubernetes. It has 3 primary goals:
 
 1. Provide simplified RBAC configuration that will scale.
 2. Use a syntax that can act as a centralized source of truth for RBAC configuration.
@@ -65,48 +65,67 @@ Of course, RBAC Manager is capable of so much more than that. It can manage Role
 apiVersion: rbacmanager.reactiveops.io/v1beta1
 kind: RBACDefinition
 metadata:
-  name: rbac-manager-config
+  name: rbac-manager-users-example
 rbacBindings:
-  - name: example-group
-    subjects:
-      - kind: Group
-        name: example
-    clusterRoleBindings:
-      - clusterRole: edit
-    roleBindings:
-      - clusterRole: admin
-        namespace: default
-  - name: example-users
+  - name: cluster-admins
     subjects:
       - kind: User
         name: sue@example.com
       - kind: User
         name: joe@example.com
     clusterRoleBindings:
-      - clusterRole: edit
+      - clusterRole: cluster-admin
+  - name: web-developers
+    subjects:
+      - kind: User
+        name: sarah@example.com
+      - kind: User
+        name: john@example.com
+      - kind: User
+        name: daniel@example.com
     roleBindings:
-      - clusterRole: admin
-        namespace: default
-  - name: example-service-account
+      - clusterRole: edit
+        namespace: web
+      - clusterRole: view
+        namespace: api
+  - name: api-developers
+    subjects:
+      - kind: User
+        name: jess@example.com
+      - kind: User
+        name: lance@example.com
+      - kind: User
+        name: rob@example.com
+    roleBindings:
+      - clusterRole: edit
+        namespace: api
+      - clusterRole: view
+        namespace: web
+  - name: ci-bot
     subjects:
       - kind: ServiceAccount
-        name: example
-        namespace: default
-    clusterRoleBindings:
-      - clusterRole: view
+        name: ci-bot
     roleBindings:
-      - clusterRole: admin
-        namespace: default
+      - clusterRole: edit
+        namespace: api
+      - clusterRole: edit
+        namespace: web
 ```
 
-RBAC Manager treats an `RBACDefinition` as a source of truth. All resources created by RBAC Manager are tied to the relevant `RBACDefinition` with an owner reference. Anytime Role Bindings are removed from a `RBACDefinition`, RBAC Manager will remove the associated Role Bindings that were created.
+RBAC Manager treats an `RBACDefinition` as a source of truth. All resources created by RBAC Manager are tied to the relevant `RBACDefinition` with an owner reference. If a desired role is changed in an RBACDefinition, the relevant Role Bindings are replaced with new bindings to requested role. Any time Role Bindings are removed from a `RBACDefinition`, RBAC Manager will also remove the associated Role Bindings that it had created. It's also worth noting that when a `ServiceAccount` is a subject, RBAC Manager will attempt to create the `ServiceAccount` if it doesn't already exist.
 
 ## Usage
 
-RBAC Manager is a Kubernetes operator, powered by [kubebuilder](https://github.com/kubernetes-sigs/kubebuilder). The simplest way to install this operator is with Helm, using the chart found in this repository.
+RBAC Manager is a Kubernetes operator, powered by [Kubebuilder](https://github.com/kubernetes-sigs/kubebuilder). The simplest way to install this operator is with Helm, using the chart found in this repository.
 
 ```
-helm install reactiveops/rbac-manager
+helm install chart/ --name rbac-manager --namespace rbac-manager
+```
+
+Alternatively, the YAML template Helm generates are available in the `deploy` directory of this repo. If you'd prefer to deploy this directly with `kubectl`, you can do that with this command:
+
+```
+kubectl apply -f deploy/
 ```
 
 Once RBAC Manager is installed in your cluster, you'll be able to deploy an `RBACDefinition` to configure your RBAC Bindings. Here's an example of a simple `RBACDefinition`:
@@ -116,21 +135,20 @@ apiVersion: rbacmanager.reactiveops.io/v1beta1
 kind: RBACDefinition
 metadata:
   name: rbac-manager-config
-spec:
-  rbacBindings:
-    - name: api-developers
-      subjects:
-        - kind: User
-          name: sue@example.com
-        - kind: User
-          name: joe@example.com
-      clusterRoleBindings:
-        - clusterRole: view
-      roleBindings:
-        - clusterRole: admin
-          namespace: api
-        - clusterRole: edit
-          namespace: web
+rbacBindings:
+  - name: api-developers
+    subjects:
+      - kind: User
+        name: sue@example.com
+      - kind: User
+        name: joe@example.com
+    clusterRoleBindings:
+      - clusterRole: view
+    roleBindings:
+      - clusterRole: admin
+        namespace: api
+      - clusterRole: edit
+        namespace: web
 ```
 
 There are some additional sample `RBACDefinitions` in the `examples` directory.

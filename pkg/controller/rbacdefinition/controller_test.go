@@ -66,8 +66,6 @@ var _ = Describe("RBACDefinition controller", func() {
 
 			// Wait for reconcile to happen
 			Eventually(after, "10s", "100ms").Should(BeClosed())
-
-			// INSERT YOUR CODE HERE - test conditions post reconcile
 		})
 	})
 })
