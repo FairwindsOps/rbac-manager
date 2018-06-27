@@ -1,4 +1,3 @@
+tmp
+vendor
 .vscode
-venv
-*.pyc
-*.egg-info

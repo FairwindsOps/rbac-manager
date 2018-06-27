@@ -1,9 +1,19 @@
-FROM python:2.7.14-alpine3.7
+FROM golang:1.10.3 AS build-env
+WORKDIR /go/src/github.com/reactiveops/rbac-manager/
 
-WORKDIR /rbac-manager
+RUN go get -u github.com/golang/dep/...
+
+COPY Gopkg.toml Gopkg.lock ./
+RUN dep ensure -vendor-only
 
 COPY . .
 
-RUN pip install -r requirements.txt
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -o controller-manager ./cmd/controller-manager/main.go
 
-CMD python manage_rbac.py
+FROM alpine:latest
+RUN apk --no-cache add ca-certificates
+WORKDIR /root/
+COPY --from=build-env /go/src/github.com/reactiveops/rbac-manager/controller-manager .
+
+ENTRYPOINT ["./controller-manager"]
+CMD ["--install-crds=false"]

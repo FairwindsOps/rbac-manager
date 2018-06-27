@@ -1,6 +1,4 @@
-.circleci
-.git
+vendor
 examples
-*.md
-LICENSE
-Dockerfile*
+deploy
+.vscode

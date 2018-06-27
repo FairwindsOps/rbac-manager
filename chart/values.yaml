@@ -1,7 +1,6 @@
-enabled: True
 image:
   repository: quay.io/reactiveops/rbac-manager
-  tag: 0.3.0
+  tag: 0.4.0
   pullPolicy: Always
 resources:
   requests:
@@ -16,12 +15,17 @@ affinity: {}
 
 rbacDefinition:
   enabled: false
-  content:
-    rbacUsers:
-      - user: somenewadmin
-        kind: ServiceAccount
-        clusterRoleBindings:
-        - clusterRole: cluster-admin
+  rbacBindings:
+    - name: example-service-account
+      subjects:
+        - kind: ServiceAccount
+          name: example
+          namespace: default
+      clusterRoleBindings:
+        - clusterRole: view
+      roleBindings:
+        - clusterRole: admin
+          namespace: default
 
 # Not recommended for user to configure this. Hyperkube image to use when creating custom resources
 global:

@@ -7,9 +7,7 @@ references:
       command: |
         docker login quay.io -u="reactiveops+circleci" -p="${quay_token}"
         docker build -f Dockerfile -t quay.io/reactiveops/rbac-manager:$DOCKER_BASE_TAG .
-        docker build -f Dockerfile.ci -t quay.io/reactiveops/rbac-manager:$DOCKER_BASE_TAG-ci .
         docker push quay.io/reactiveops/rbac-manager:$DOCKER_BASE_TAG
-        docker push quay.io/reactiveops/rbac-manager:$DOCKER_BASE_TAG-ci
 
 jobs:
   build:
