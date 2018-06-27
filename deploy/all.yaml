@@ -1,4 +1,12 @@
 ---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: rbac-manager
+  labels:
+    app: rbac-manager
+
+---
 # Source: rbac-manager/templates/rbac.yaml
 apiVersion: v1
 kind: ServiceAccount
@@ -6,9 +14,6 @@ metadata:
   name: rbac-manager
   labels:
     app: rbac-manager
-    chart: rbac-manager-0.3.0
-    release: rbac-manager
-    heritage: Tiller
 ---
 apiVersion: rbac.authorization.k8s.io/v1beta1
 kind: ClusterRole
@@ -16,9 +21,6 @@ metadata:
   name: rbac-manager
   labels:
     app: rbac-manager
-    chart: rbac-manager-0.3.0
-    release: rbac-manager
-    heritage: Tiller
 rules:
   - apiGroups:
       - rbacmanager.reactiveops.io
@@ -48,9 +50,6 @@ metadata:
   name: rbac-manager
   labels:
     app: rbac-manager
-    chart: rbac-manager-0.3.0
-    release: rbac-manager
-    heritage: Tiller
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
@@ -67,12 +66,9 @@ apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
   labels:
+    app: rbac-manager
     api: rbac-manager
     kubebuilder.k8s.io: 0.1.11
-    app: rbac-manager
-    chart: rbac-manager-0.3.0
-    release: rbac-manager
-    heritage: Tiller
   name: rbacdefinitions.rbacmanager.reactiveops.io
 spec:
   group: rbacmanager.reactiveops.io
@@ -145,9 +141,6 @@ metadata:
   name: rbac-manager
   labels:
     app: rbac-manager
-    chart: rbac-manager-0.3.0
-    release: rbac-manager
-    heritage: Tiller
 spec:
   replicas: 1
   selector:
