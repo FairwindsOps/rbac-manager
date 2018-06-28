@@ -20,7 +20,7 @@ Beyond those benefits, here are the key new changes involved with this release:
 - Some basic testing in place
 
 ### The Upgrade Process
-Unfortunately with the changes to the custom resource definition, this process will essentially involve deleting the previous configuration and creating new replacement configuration with the updated syntax.
+Unfortunately with the changes to the custom resource definition, this process will essentially involve deleting the previous configuration and creating new replacement configuration with the updated syntax. Before beginning this process, ensure that you have cluster-admin access that is not managed by RBAC Manager. Part of this process will involve temporarily deleting those roles, so it's important to ensure you have cluster-admin access through a separate Cluster Role Binding.
 
 1. Delete any existing RBAC Definitions - this allows the original RBAC Manager version to delete any associated role bindings.
 2. Delete the RBAC Manager deployment configuration.
