@@ -29,6 +29,7 @@ func (bc *RBACDefinitionController) reconcileClusterRoleBindings(
 	ownerReferences *[]metav1.OwnerReference) {
 
 	matchingClusterRoleBindings := []rbacv1.ClusterRoleBinding{}
+	clusterRoleBindingsToCreate := []rbacv1.ClusterRoleBinding{}
 
 	for _, requestedCRB := range *requestedClusterRoleBindings {
 		alreadyExists := false
@@ -41,11 +42,7 @@ func (bc *RBACDefinitionController) reconcileClusterRoleBindings(
 		}
 
 		if !alreadyExists {
-			logrus.Infof("Creating Cluster Role Binding: %v", requestedCRB.Name)
-			_, err := bc.kubernetesClientSet.RbacV1().ClusterRoleBindings().Create(&requestedCRB)
-			if err != nil {
-				logrus.Errorf("Error creating Cluster Role Binding: %v", err)
-			}
+			clusterRoleBindingsToCreate = append(clusterRoleBindingsToCreate, requestedCRB)
 		} else {
 			logrus.Debugf("Cluster Role Binding already exists %v", requestedCRB.Name)
 		}
@@ -72,6 +69,14 @@ func (bc *RBACDefinitionController) reconcileClusterRoleBindings(
 			}
 		}
 	}
+
+	for _, clusterRoleBindingToCreate := range clusterRoleBindingsToCreate {
+		logrus.Infof("Creating Cluster Role Binding: %v", clusterRoleBindingToCreate.Name)
+		_, err := bc.kubernetesClientSet.RbacV1().ClusterRoleBindings().Create(&clusterRoleBindingToCreate)
+		if err != nil {
+			logrus.Errorf("Error creating Cluster Role Binding: %v", err)
+		}
+	}
 }
 
 func (bc *RBACDefinitionController) reconcileRoleBindings(
@@ -80,6 +85,7 @@ func (bc *RBACDefinitionController) reconcileRoleBindings(
 	ownerReferences *[]metav1.OwnerReference) {
 
 	matchingRoleBindings := []rbacv1.RoleBinding{}
+	roleBindingsToCreate := []rbacv1.RoleBinding{}
 
 	for _, requestedRB := range *requestedRoleBindings {
 		alreadyExists := false
@@ -92,11 +98,7 @@ func (bc *RBACDefinitionController) reconcileRoleBindings(
 		}
 
 		if !alreadyExists {
-			logrus.Infof("Creating Role Binding: %v", requestedRB.Name)
-			_, err := bc.kubernetesClientSet.RbacV1().RoleBindings(requestedRB.ObjectMeta.Namespace).Create(&requestedRB)
-			if err != nil {
-				logrus.Errorf("Error creating Role Binding: %v", err)
-			}
+			roleBindingsToCreate = append(roleBindingsToCreate, requestedRB)
 		} else {
 			logrus.Debugf("Role Binding already exists %v", requestedRB.Name)
 		}
@@ -123,6 +125,14 @@ func (bc *RBACDefinitionController) reconcileRoleBindings(
 			}
 		}
 	}
+
+	for _, roleBindingToCreate := range roleBindingsToCreate {
+		logrus.Infof("Creating Role Binding: %v", roleBindingToCreate.Name)
+		_, err := bc.kubernetesClientSet.RbacV1().RoleBindings(roleBindingToCreate.ObjectMeta.Namespace).Create(&roleBindingToCreate)
+		if err != nil {
+			logrus.Errorf("Error creating Role Binding: %v", err)
+		}
+	}
 }
 
 func (bc *RBACDefinitionController) reconcileServiceAccounts(
@@ -131,6 +141,7 @@ func (bc *RBACDefinitionController) reconcileServiceAccounts(
 	ownerReferences *[]metav1.OwnerReference) {
 
 	matchingServiceAccounts := []v1.ServiceAccount{}
+	serviceAccountsToCreate := []v1.ServiceAccount{}
 
 	for _, requestedSA := range *requestedServiceAccounts {
 		alreadyExists := false
@@ -143,11 +154,7 @@ func (bc *RBACDefinitionController) reconcileServiceAccounts(
 		}
 
 		if !alreadyExists {
-			logrus.Infof("Creating Service Account: %v", requestedSA.Name)
-			_, err := bc.kubernetesClientSet.CoreV1().ServiceAccounts(requestedSA.ObjectMeta.Namespace).Create(&requestedSA)
-			if err != nil {
-				logrus.Errorf("Error creating Service Account: %v", err)
-			}
+			serviceAccountsToCreate = append(serviceAccountsToCreate, requestedSA)
 		} else {
 			logrus.Debugf("Service Account already exists %v", requestedSA.Name)
 		}
@@ -172,6 +179,14 @@ func (bc *RBACDefinitionController) reconcileServiceAccounts(
 			} else {
 				logrus.Debugf("Matches requested Service Account %v", existingSA.Name)
 			}
+		}
+	}
+
+	for _, serviceAccountToCreate := range serviceAccountsToCreate {
+		logrus.Infof("Creating Service Account: %v", serviceAccountToCreate.Name)
+		_, err := bc.kubernetesClientSet.CoreV1().ServiceAccounts(serviceAccountToCreate.ObjectMeta.Namespace).Create(&serviceAccountToCreate)
+		if err != nil {
+			logrus.Errorf("Error creating Service Account: %v", err)
 		}
 	}
 }
