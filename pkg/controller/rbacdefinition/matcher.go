@@ -15,9 +15,6 @@
 package rbacdefinition
 
 import (
-	"reflect"
-
-	logrus "github.com/sirupsen/logrus"
 	"k8s.io/api/core/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -70,8 +67,40 @@ func metaMatches(existingMeta *metav1.ObjectMeta, requestedMeta *metav1.ObjectMe
 		return false
 	}
 
-	if !reflect.DeepEqual(existingMeta.OwnerReferences, requestedMeta.OwnerReferences) {
-		logrus.Infof("Owner References did not match: %v != %v", existingMeta.OwnerReferences, requestedMeta.OwnerReferences)
+	if !ownerRefsMatch(&existingMeta.OwnerReferences, &requestedMeta.OwnerReferences) {
+		return false
+	}
+
+	return true
+}
+
+func ownerRefsMatch(existingOwnerRefs *[]metav1.OwnerReference, requestedOwnerRefs *[]metav1.OwnerReference) bool {
+	requested := *requestedOwnerRefs
+	existing := *existingOwnerRefs
+
+	if len(requested) != len(existing) {
+		return false
+	}
+
+	for index, existingOwnerRef := range existing {
+		if !ownerRefMatches(&existingOwnerRef, &requested[index]) {
+			return false
+		}
+	}
+
+	return true
+}
+
+func ownerRefMatches(existingOwnerRef *metav1.OwnerReference, requestedOwnerRef *metav1.OwnerReference) bool {
+	if existingOwnerRef.Kind != requestedOwnerRef.Kind {
+		return false
+	}
+
+	if existingOwnerRef.Name != requestedOwnerRef.Name {
+		return false
+	}
+
+	if existingOwnerRef.APIVersion != requestedOwnerRef.APIVersion {
 		return false
 	}
 
