@@ -69,27 +69,27 @@ func TestCrbMatches(t *testing.T) {
 	}
 
 	if crbMatches(&crb1, &crb2) {
-		t.Error("CRB 1 should not match CRB 2")
+		t.Fatal("CRB 1 should not match CRB 2")
 	}
 
 	if crbMatches(&crb1, &crb3) {
-		t.Error("CRB 1 should not match CRB 3")
+		t.Fatal("CRB 1 should not match CRB 3")
 	}
 
 	if crbMatches(&crb2, &crb3) {
-		t.Error("CRB 2 should not match CRB 3")
+		t.Fatal("CRB 2 should not match CRB 3")
 	}
 
 	if !crbMatches(&crb1, &crb1) {
-		t.Error("CRB 1 should match CRB 1")
+		t.Fatal("CRB 1 should match CRB 1")
 	}
 
 	if !crbMatches(&crb2, &crb2) {
-		t.Error("CRB 2 should match CRB 2")
+		t.Fatal("CRB 2 should match CRB 2")
 	}
 
 	if !crbMatches(&crb3, &crb3) {
-		t.Error("CRB 3 should match CRB 3")
+		t.Fatal("CRB 3 should match CRB 3")
 	}
 }
 
@@ -144,26 +144,26 @@ func TestRbMatches(t *testing.T) {
 	}
 
 	if rbMatches(&rb1, &rb2) {
-		t.Error("RB 1 should not match RB 2")
+		t.Fatal("RB 1 should not match RB 2")
 	}
 
 	if rbMatches(&rb1, &rb3) {
-		t.Error("RB 1 should not match RB 3")
+		t.Fatal("RB 1 should not match RB 3")
 	}
 
 	if rbMatches(&rb2, &rb3) {
-		t.Error("RB 2 should not match RB 3")
+		t.Fatal("RB 2 should not match RB 3")
 	}
 
 	if !rbMatches(&rb1, &rb1) {
-		t.Error("RB 1 should match RB 1")
+		t.Fatal("RB 1 should match RB 1")
 	}
 
 	if !rbMatches(&rb2, &rb2) {
-		t.Error("RB 2 should match RB 2")
+		t.Fatal("RB 2 should match RB 2")
 	}
 
 	if !rbMatches(&rb3, &rb3) {
-		t.Error("RB 3 should match RB 3")
+		t.Fatal("RB 3 should match RB 3")
 	}
 }
