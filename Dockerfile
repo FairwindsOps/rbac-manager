@@ -1,4 +1,4 @@
-FROM golang:1.10.3 AS build-env
+FROM golang:1.10.4 AS build-env
 WORKDIR /go/src/github.com/reactiveops/rbac-manager/
 
 RUN go get -u github.com/golang/dep/...
@@ -10,7 +10,7 @@ COPY . .
 
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -o controller-manager ./cmd/controller-manager/main.go
 
-FROM alpine:latest
+FROM alpine:3.8
 RUN apk --no-cache add ca-certificates
 WORKDIR /root/
 COPY --from=build-env /go/src/github.com/reactiveops/rbac-manager/controller-manager .
