@@ -2,4 +2,4 @@ apiVersion: v1
 appVersion: "0.4.2"
 description: Simplified RBAC management for Kubernetes
 name: rbac-manager
-version: 0.3.1
+version: 0.4.2
