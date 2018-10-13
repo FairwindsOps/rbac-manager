@@ -1,19 +1,17 @@
-FROM golang:1.10.4 AS build-env
+FROM golang:1.11 AS build-env
 WORKDIR /go/src/github.com/reactiveops/rbac-manager/
-
-RUN go get -u github.com/golang/dep/...
-
-COPY Gopkg.toml Gopkg.lock ./
-RUN dep ensure -vendor-only
+ENV GO111MODULE "on"
 
 COPY . .
-
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -o controller-manager ./cmd/controller-manager/main.go
+RUN go mod download && go mod verify
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -o rbac-manager ./cmd/controller-manager/main.go
 
 FROM alpine:3.8
+WORKDIR /usr/local/bin
 RUN apk --no-cache add ca-certificates
-WORKDIR /root/
-COPY --from=build-env /go/src/github.com/reactiveops/rbac-manager/controller-manager .
 
-ENTRYPOINT ["./controller-manager"]
+USER nobody
+COPY --from=build-env /go/src/github.com/reactiveops/rbac-manager/rbac-manager .
+
+ENTRYPOINT ["rbac-manager"]
 CMD ["--install-crds=false"]

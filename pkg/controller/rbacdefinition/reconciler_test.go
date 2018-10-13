@@ -76,7 +76,7 @@ func TestReconcileRbacDef(t *testing.T) {
 		t.Fatal("Expected roleRef kind to be ClusterRole")
 	}
 
-	if roleRef.Name != "admisn" {
+	if roleRef.Name != "admin" {
 		t.Fatal("Expected roleRef name to be admin")
 	}
 }
