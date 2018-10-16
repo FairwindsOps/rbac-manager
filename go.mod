@@ -30,7 +30,7 @@ require (
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/sirupsen/logrus v1.0.5
 	github.com/spf13/pflag v1.0.1 // indirect
-	github.com/stretchr/testify v1.2.2 // indirect
+	github.com/stretchr/testify v1.2.2
 	golang.org/x/crypto v0.0.0-20180505025534-4ec37c66abab // indirect
 	golang.org/x/net v0.0.0-20180502164142-640f4622ab69 // indirect
 	golang.org/x/oauth2 v0.0.0-20180503012634-cdc340f7c179 // indirect
