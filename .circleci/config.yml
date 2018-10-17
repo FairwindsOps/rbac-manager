@@ -9,6 +9,14 @@ references:
         docker build -f Dockerfile -t quay.io/reactiveops/rbac-manager:$DOCKER_BASE_TAG .
         docker push quay.io/reactiveops/rbac-manager:$DOCKER_BASE_TAG
 
+  kubebuilder_setup: &kubebuilder_setup
+    run:
+      name: Setup Kubebuilder
+      command: |
+        curl -L -O https://github.com/kubernetes-sigs/kubebuilder/releases/download/v0.1.12/kubebuilder_0.1.12_linux_amd64.tar.gz
+        tar -zxvf kubebuilder_0.1.12_linux_amd64.tar.gz
+        sudo mv kubebuilder_0.1.12_linux_amd64 /usr/local/kubebuilder
+
 jobs:
   test:
     docker:
