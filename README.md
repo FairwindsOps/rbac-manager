@@ -1,5 +1,7 @@
 # RBAC Manager
 
+[![Go Report Card](https://goreportcard.com/badge/github.com/reactiveops/rbac-manager)](https://goreportcard.com/report/github.com/reactiveops/rbac-manager) [![CircleCI](https://circleci.com/gh/reactiveops/rbac-manager.svg?style=svg)](https://circleci.com/gh/reactiveops/rbac-manager)
+
 RBAC Manager simplifies the management of Cluster Role Bindings, Role Bindings, and Service Accounts in Kubernetes. It has 3 primary goals:
 
 1. Simplify RBAC in a secure and scalable approach. When it's easier to use, it will be used more often resulting in better security.
@@ -176,6 +178,10 @@ rbacDefinition:
 ## Note on upgrades to 0.4.0
 
 This release has breaking changes. Please see our [upgrade process](docs/upgrades.md).
+
+## RBAC Lookup
+
+We have a related open source tool that allows you to easily find roles and cluster roles attached to any user, service account, or group name in your Kubernetes cluster. If that sounds interesting, take a look at [rbac-lookup](https://github.com/reactiveops/rbac-lookup) on GitHub.
 
 ## License
 Apache License 2.0

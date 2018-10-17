@@ -12,6 +12,7 @@ apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: rbac-manager
+  namespace: rbac-manager
   labels:
     app: rbac-manager
 ---
@@ -139,6 +140,7 @@ apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
   name: rbac-manager
+  namespace: rbac-manager
   labels:
     app: rbac-manager
 spec:
@@ -156,13 +158,13 @@ spec:
       serviceAccountName: rbac-manager
       containers:
       - name: rbac-manager
-        image: "quay.io/reactiveops/rbac-manager:0.4.2"
+        image: "quay.io/reactiveops/rbac-manager:0.4.3"
         imagePullPolicy: Always
-        env:
-        - name: NAMESPACE
-          valueFrom:
-            fieldRef:
-              fieldPath: metadata.namespace
+        securityContext:
+          runAsUser: 1200
+          capabilities:
+            drop:
+              - ALL
         resources:
           limits:
             cpu: 100m
