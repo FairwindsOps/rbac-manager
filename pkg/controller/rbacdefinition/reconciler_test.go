@@ -148,6 +148,29 @@ func TestReconcileRbacDefServiceAccounts(t *testing.T) {
 	testEmptyExample(t, client, rbacDef.Name)
 }
 
+func TestReconcileRbacDefInvalid(t *testing.T) {
+	client := fake.NewSimpleClientset()
+	rbacDef := rbacmanagerv1beta1.RBACDefinition{}
+	rbacDef.Name = "invalid-example"
+	testEmptyExample(t, client, rbacDef.Name)
+
+	// missing namespace in RoleBinding
+	rbacDef.RBACBindings = []rbacmanagerv1beta1.RBACBinding{{
+		Name: "ci-bot",
+		Subjects: []rbacv1.Subject{{
+			Kind: rbacv1.UserKind,
+			Name: "joe",
+		}},
+		ClusterRoleBindings: []rbacmanagerv1beta1.ClusterRoleBinding{},
+		RoleBindings: []rbacmanagerv1beta1.RoleBinding{{
+			ClusterRole: "view",
+		}},
+	}}
+
+	// nothing should get created
+	newReconcileTest(t, client, rbacDef, []rbacv1.RoleBinding{}, []rbacv1.ClusterRoleBinding{}, []corev1.ServiceAccount{})
+}
+
 func newReconcileTest(t *testing.T, client *fake.Clientset, rbacDef rbacmanagerv1beta1.RBACDefinition, expectedRb []rbacv1.RoleBinding, expectedCrb []rbacv1.ClusterRoleBinding, expectedSa []corev1.ServiceAccount) {
 	rdc := RBACDefinitionController{}
 	rdc.kubernetesClientSet = client
@@ -173,7 +196,7 @@ func expectClusterRoleBindings(t *testing.T, client *fake.Clientset, expected []
 		t.Fatal(err)
 	}
 
-	assert.Len(t, expected, len(actual.Items), "Expected length to match")
+	assert.Len(t, actual.Items, len(expected), "Expected length to match")
 
 	for _, expectedCrb := range expected {
 		matchFound := false
@@ -199,7 +222,7 @@ func expectRoleBindings(t *testing.T, client *fake.Clientset, expected []rbacv1.
 		t.Fatal(err)
 	}
 
-	assert.Len(t, expected, len(actual.Items), "Expected length to match")
+	assert.Len(t, actual.Items, len(expected), "Expected length to match")
 
 	for _, expectedRb := range expected {
 		matchFound := false
@@ -225,7 +248,7 @@ func expectServiceAccounts(t *testing.T, client *fake.Clientset, expected []core
 		t.Fatal(err)
 	}
 
-	assert.Len(t, expected, len(actual.Items), "Expected length to match")
+	assert.Len(t, actual.Items, len(expected), "Expected length to match")
 
 	for _, expectedSa := range expected {
 		matchFound := false
