@@ -10,7 +10,7 @@ kubectl get configmap -n kube-system aws-auth -oyaml
 More [information about configuring aws-iam-authenticator](https://github.com/kubernetes-sigs/aws-iam-authenticator#full-configuration-format) is available in the official readme.
 
 ## Mapping Roles to Groups
-One of the most common uses of aws-iam-authenticator involves mapping the AWS IAM Roles to Kubernetes Groups. The examples here use a bit of a shortcut to use a group that already is bound to a cluster-admin role (`system:masters`).
+One of the most common uses of aws-iam-authenticator involves mapping the AWS IAM Roles to Kubernetes Groups. The example aws-iam-authenticator configuration below uses a bit of a shortcut to use a group that already is bound to a cluster-admin role (`system:masters`).
 
 ```yaml
 mapRoles:
@@ -20,7 +20,7 @@ mapRoles:
     - system:masters
 ```
 
-Although this works, it's rather inelegant and doesn't allow you to modify the access this group has with RBAC without also affecting the system:masters group. A better alternative would be to map this to a new Kubernetes group that you can attach specific RBAC bindings to:
+Although this works, it's rather inelegant and doesn't allow you to modify the access this group has with RBAC without also affecting the system:masters group. A better alternative would be to use aws-iam-authenticator to map this to a new Kubernetes group that you can attach specific RBAC bindings to:
 
 ```yaml
 mapRoles:
@@ -49,7 +49,7 @@ rbacBindings:
 A downside to this approach is that authorization configuration ends up getting split between AWS IAM Roles assigned to users and RBAC bindings. To understand what a user has access to in Kubernetes, you first have to determine what IAM roles they can assume, then what Kubernetes groups those roles map to, then what roles are bound to those Kubernetes groups. It can get quite complex to understand the level of access granted to your cluster.
 
 ## Mapping Specific Users
-An alternative approach involves mapping specific IAM users to RBAC users. The configuration looks like this.
+An alternative approach involves configuring aws-iam-authenticator to map specific IAM users to RBAC users. The configuration looks like this.
 
 ```yaml
 mapUsers:
@@ -81,7 +81,7 @@ rbacBindings:
 Although we no longer need to understand which AWS IAM users can assume specific IAM roles. To understand what a user has access to in Kubernetes, you still need to understand what IAM users have been mapped to which usernames, then what roles are bound to those Kubernetes users. Although this is simpler, it still requires understanding 2 different sets of config.
 
 ## Mapping All Users in an AWS Account Automatically
-If you like the above approach, but would prefer to just map all IAM users automatically to RBAC users, there's a configuration option for that as well:
+If you like the above approach, but would prefer to just map all IAM users automatically to RBAC users, there's an [aws-iam-authenticator configuration](https://github.com/kubernetes-sigs/aws-iam-authenticator#full-configuration-format) option for that as well:
 
 ```yaml
 mapAccounts:
@@ -94,7 +94,7 @@ With this approach, all IAM users are mapped to Kubernetes users with the full A
 rbac-lookup system:authenticated
 ```
 
-To grant specific permissions to users we can use an RBAC Definition:
+To grant specific permissions to users with RBAC Manager we can use an RBAC Definition:
 
 ```yaml
 apiVersion: rbacmanager.reactiveops.io/v1beta1
