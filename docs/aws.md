@@ -1,6 +1,14 @@
 # Authentication With AWS
 On AWS, we recommend using [aws-iam-authenticator](https://github.com/kubernetes-sigs/aws-iam-authenticator) for Kubernetes authentication. With EKS, this is included by default, and it's fairly straightforward to [setup with Kops](https://github.com/kubernetes-sigs/aws-iam-authenticator#kops-usage) or other methods of cluster provisioning. This library provides a variety of ways of mapping IAM roles and users to Kubernetes groups and users.
 
+In the examples below, we'll show how aws-iam-authenticator configuration can work with rbac-manager. In all cases, the aws-iam-authenticator configuration snippets will represent part of the Kubernetes ConfigMap it reads config from. With EKS, the ConfigMap is named `aws-auth`, though other deployment patterns may use different naming.
+
+```
+kubectl get configmap -n kube-system aws-auth -oyaml
+```
+
+More [information about configuring aws-iam-authenticator](https://github.com/kubernetes-sigs/aws-iam-authenticator#full-configuration-format) is available in the official readme.
+
 ## Mapping Roles to Groups
 One of the most common uses of aws-iam-authenticator involves mapping the AWS IAM Roles to Kubernetes Groups. The examples here use a bit of a shortcut to use a group that already is bound to a cluster-admin role (`system:masters`).
 
@@ -80,7 +88,13 @@ mapAccounts:
   - "012345678901"
 ```
 
-With this approach, all IAM users are mapped to Kubernetes users with the full ARN as the username. To grant specific permissions to users we can use an RBAC Definition:
+With this approach, all IAM users are mapped to Kubernetes users with the full ARN as the username. By default, these users will be part of the `system:authenticated` group. That group is generally granted minimal permissions. With [rbac-lookup](http://github.com/reactiveops/rbac-lookup), you can view exactly what has been granted to that group with the following command:
+
+```
+rbac-lookup system:authenticated
+```
+
+To grant specific permissions to users we can use an RBAC Definition:
 
 ```yaml
 apiVersion: rbacmanager.reactiveops.io/v1beta1
