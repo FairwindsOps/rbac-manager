@@ -27,8 +27,7 @@ jobs:
     steps:
       - checkout
       - *kubebuilder_setup
-      - run: go mod download && go mod verify
-      - run: go test ./pkg/controller/rbacdefinition/...
+      - run: go test -mod vendor ./pkg/controller/rbacdefinition/...
 
   build:
     docker:
