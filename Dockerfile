@@ -1,5 +1,6 @@
 FROM golang:1.11 AS build-env
 WORKDIR /go/src/github.com/reactiveops/rbac-manager/
+ENV GO111MODULE "on"
 
 COPY . .
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -mod vendor -a -o rbac-manager ./cmd/controller-manager/main.go
