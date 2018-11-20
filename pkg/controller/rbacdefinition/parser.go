@@ -13,7 +13,6 @@ import (
 )
 
 type rbacDefinitionParser struct {
-	rbacDef                   rbacmanagerv1beta1.RBACDefinition
 	k8sClientSet              kubernetes.Interface
 	listOptions               metav1.ListOptions
 	labels                    map[string]string
@@ -23,14 +22,16 @@ type rbacDefinitionParser struct {
 	parsedServiceAccounts     []v1.ServiceAccount
 }
 
-func (rdp *rbacDefinitionParser) parse() error {
-	if rdp.rbacDef.RBACBindings == nil {
+func (rdp *rbacDefinitionParser) parse(rbacDef rbacmanagerv1beta1.RBACDefinition) error {
+	if rbacDef.RBACBindings == nil {
 		logrus.Warn("No RBACBindings defined")
 		return nil
 	}
 
-	for _, rbacBinding := range rdp.rbacDef.RBACBindings {
-		err := rdp.parseRBACBinding(rbacBinding)
+	for _, rbacBinding := range rbacDef.RBACBindings {
+		namePrefix := fmt.Sprintf("%v-%v", rbacDef.Name, rbacBinding.Name)
+
+		err := rdp.parseRBACBinding(rbacBinding, namePrefix)
 		if err != nil {
 			return err
 		}
@@ -39,7 +40,7 @@ func (rdp *rbacDefinitionParser) parse() error {
 	return nil
 }
 
-func (rdp *rbacDefinitionParser) parseRBACBinding(rbacBinding rbacmanagerv1beta1.RBACBinding) error {
+func (rdp *rbacDefinitionParser) parseRBACBinding(rbacBinding rbacmanagerv1beta1.RBACBinding, namePrefix string) error {
 	for _, requestedSubject := range rbacBinding.Subjects {
 		if requestedSubject.Kind == "ServiceAccount" {
 			rdp.parsedServiceAccounts = append(rdp.parsedServiceAccounts, v1.ServiceAccount{
@@ -51,8 +52,6 @@ func (rdp *rbacDefinitionParser) parseRBACBinding(rbacBinding rbacmanagerv1beta1
 				},
 			})
 		}
-
-		namePrefix := fmt.Sprintf("%v-%v", rdp.rbacDef.Name, rbacBinding.Name)
 
 		if rbacBinding.ClusterRoleBindings != nil {
 			for _, requestedCRB := range rbacBinding.ClusterRoleBindings {

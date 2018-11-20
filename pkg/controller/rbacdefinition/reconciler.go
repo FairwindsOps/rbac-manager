@@ -43,10 +43,9 @@ func (bc *RBACDefinitionController) reconcileRbacDef(
 		labels:       map[string]string{"rbac-manager": "reactiveops"},
 		listOptions:  metav1.ListOptions{LabelSelector: "rbac-manager=reactiveops"},
 		ownerRefs:    ownerRefs,
-		rbacDef:      *rbacDef,
 	}
 
-	err := rdp.parse()
+	err := rdp.parse(*rbacDef)
 	if err != nil {
 		return err
 	}
