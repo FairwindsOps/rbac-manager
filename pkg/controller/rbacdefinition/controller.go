@@ -30,6 +30,7 @@ import (
 	"github.com/reactiveops/rbac-manager/pkg/inject/args"
 )
 
+// Reconcile achieves the desired stated defined by an RBACDefinition
 func (bc *RBACDefinitionController) Reconcile(k types.ReconcileKey) error {
 	rbacDef, err := bc.rbacDefinitionClient.RBACDefinitions().Get(k.Name, metav1.GetOptions{})
 

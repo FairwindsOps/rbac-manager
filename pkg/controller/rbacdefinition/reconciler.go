@@ -15,7 +15,6 @@
 package rbacdefinition
 
 import (
-	"fmt"
 	"reflect"
 
 	rbacmanagerv1beta1 "github.com/reactiveops/rbac-manager/pkg/apis/rbacmanager/v1beta1"
@@ -29,12 +28,9 @@ import (
 func (bc *RBACDefinitionController) reconcileRbacDef(
 	rbacDef *rbacmanagerv1beta1.RBACDefinition) error {
 
-	listOptions := metav1.ListOptions{LabelSelector: "rbac-manager=reactiveops"}
-	labels := map[string]string{
-		"rbac-manager": "reactiveops",
-	}
+	logrus.Infof("Processing RBACDefinition %v", rbacDef.Name)
 
-	ownerReferences := []metav1.OwnerReference{
+	ownerRefs := []metav1.OwnerReference{
 		*metav1.NewControllerRef(rbacDef, schema.GroupVersionKind{
 			Group:   rbacmanagerv1beta1.SchemeGroupVersion.Group,
 			Version: rbacmanagerv1beta1.SchemeGroupVersion.Version,
@@ -42,126 +38,48 @@ func (bc *RBACDefinitionController) reconcileRbacDef(
 		}),
 	}
 
-	existingManagedClusterRoleBindings, err := bc.kubernetesClientSet.RbacV1().ClusterRoleBindings().List(listOptions)
+	rdp := rbacDefinitionParser{
+		k8sClientSet: bc.kubernetesClientSet,
+		labels:       map[string]string{"rbac-manager": "reactiveops"},
+		listOptions:  metav1.ListOptions{LabelSelector: "rbac-manager=reactiveops"},
+		ownerRefs:    ownerRefs,
+		rbacDef:      *rbacDef,
+	}
+
+	err := rdp.parse()
 	if err != nil {
 		return err
 	}
 
-	existingManagedRoleBindings, err := bc.kubernetesClientSet.RbacV1().RoleBindings("").List(listOptions)
+	existingManagedClusterRoleBindings, err := bc.kubernetesClientSet.RbacV1().ClusterRoleBindings().List(rdp.listOptions)
 	if err != nil {
 		return err
 	}
 
-	existingManagedServiceAccounts, err := bc.kubernetesClientSet.CoreV1().ServiceAccounts("").List(listOptions)
+	existingManagedRoleBindings, err := bc.kubernetesClientSet.RbacV1().RoleBindings("").List(rdp.listOptions)
 	if err != nil {
 		return err
 	}
 
-	logrus.Infof("Processing RBACDefinition %v", rbacDef.Name)
-
-	if rbacDef.RBACBindings == nil {
-		logrus.Warn("No RBACBindings defined")
-		return nil
-	}
-
-	requestedClusterRoleBindings := []rbacv1.ClusterRoleBinding{}
-	requestedRoleBindings := []rbacv1.RoleBinding{}
-	requestedServiceAccounts := []v1.ServiceAccount{}
-
-	for _, rbacBinding := range rbacDef.RBACBindings {
-		for _, requestedSubject := range rbacBinding.Subjects {
-			if requestedSubject.Kind == "ServiceAccount" {
-				requestedServiceAccounts = append(requestedServiceAccounts, v1.ServiceAccount{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:            requestedSubject.Name,
-						Namespace:       requestedSubject.Namespace,
-						OwnerReferences: ownerReferences,
-						Labels:          labels,
-					},
-				})
-			}
-		}
-
-		if rbacBinding.ClusterRoleBindings != nil {
-			for _, requestedCRB := range rbacBinding.ClusterRoleBindings {
-				crbName := fmt.Sprintf("%v-%v-%v", rbacDef.Name, rbacBinding.Name, requestedCRB.ClusterRole)
-
-				requestedClusterRoleBindings = append(requestedClusterRoleBindings, rbacv1.ClusterRoleBinding{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:            crbName,
-						OwnerReferences: ownerReferences,
-						Labels:          labels,
-					},
-					RoleRef: rbacv1.RoleRef{
-						Kind: "ClusterRole",
-						Name: requestedCRB.ClusterRole,
-					},
-					Subjects: rbacBinding.Subjects,
-				})
-			}
-		}
-
-		if rbacBinding.RoleBindings != nil {
-			for _, requestedRB := range rbacBinding.RoleBindings {
-				objectMeta := metav1.ObjectMeta{
-					OwnerReferences: ownerReferences,
-					Labels:          labels,
-				}
-
-				var requestedRoleName string
-				var roleRef rbacv1.RoleRef
-
-				if requestedRB.Namespace == "" {
-					logrus.Error("Invalid role binding, namespace required")
-					break
-				}
-
-				objectMeta.Namespace = requestedRB.Namespace
-
-				if requestedRB.ClusterRole != "" {
-					logrus.Debugf("Processing Requested ClusterRole %v <> %v <> %v", requestedRB.ClusterRole, requestedRB.Namespace, requestedRB)
-					requestedRoleName = requestedRB.ClusterRole
-					roleRef = rbacv1.RoleRef{
-						Kind: "ClusterRole",
-						Name: requestedRB.ClusterRole,
-					}
-				} else if requestedRB.Role != "" {
-					logrus.Debugf("Processing Requested Role %v <> %v <> %v", requestedRB.Role, requestedRB.Namespace, requestedRB)
-					requestedRoleName = fmt.Sprintf("%v-%v", requestedRB.Role, requestedRB.Namespace)
-					roleRef = rbacv1.RoleRef{
-						Kind: "Role",
-						Name: requestedRB.Role,
-					}
-				} else {
-					logrus.Error("Invalid role binding, role or clusterRole required")
-					break
-				}
-
-				objectMeta.Name = fmt.Sprintf("%v-%v-%v", rbacDef.Name, rbacBinding.Name, requestedRoleName)
-
-				requestedRoleBindings = append(requestedRoleBindings, rbacv1.RoleBinding{
-					ObjectMeta: objectMeta,
-					RoleRef:    roleRef,
-					Subjects:   rbacBinding.Subjects,
-				})
-			}
-		}
+	existingManagedServiceAccounts, err := bc.kubernetesClientSet.CoreV1().ServiceAccounts("").List(rdp.listOptions)
+	if err != nil {
+		return err
 	}
 
 	bc.reconcileServiceAccounts(
-		&requestedServiceAccounts,
+		&rdp.parsedServiceAccounts,
 		&existingManagedServiceAccounts.Items,
-		&ownerReferences)
+		&rdp.ownerRefs)
 
 	bc.reconcileClusterRoleBindings(
-		&requestedClusterRoleBindings,
+		&rdp.parsedClusterRoleBindings,
 		&existingManagedClusterRoleBindings.Items,
-		&ownerReferences)
+		&rdp.ownerRefs)
 
 	bc.reconcileRoleBindings(
-		&requestedRoleBindings,
+		&rdp.parsedRoleBindings,
 		&existingManagedRoleBindings.Items,
-		&ownerReferences)
+		&rdp.ownerRefs)
 
 	return nil
 }
