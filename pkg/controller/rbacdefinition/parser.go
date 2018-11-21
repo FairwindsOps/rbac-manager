@@ -9,6 +9,7 @@ import (
 	"k8s.io/api/core/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/client-go/kubernetes"
 )
 
@@ -41,6 +42,10 @@ func (rdp *rbacDefinitionParser) parse(rbacDef rbacmanagerv1beta1.RBACDefinition
 }
 
 func (rdp *rbacDefinitionParser) parseRBACBinding(rbacBinding rbacmanagerv1beta1.RBACBinding, namePrefix string) error {
+	if len(rbacBinding.Subjects) < 1 {
+		return errors.New("No subjects specified for RBAC Binding: " + namePrefix)
+	}
+
 	for _, requestedSubject := range rbacBinding.Subjects {
 		if requestedSubject.Kind == "ServiceAccount" {
 			rdp.parsedServiceAccounts = append(rdp.parsedServiceAccounts, v1.ServiceAccount{
@@ -52,22 +57,22 @@ func (rdp *rbacDefinitionParser) parseRBACBinding(rbacBinding rbacmanagerv1beta1
 				},
 			})
 		}
+	}
 
-		if rbacBinding.ClusterRoleBindings != nil {
-			for _, requestedCRB := range rbacBinding.ClusterRoleBindings {
-				err := rdp.parseClusterRoleBinding(requestedCRB, rbacBinding.Subjects, namePrefix)
-				if err != nil {
-					return err
-				}
+	if rbacBinding.ClusterRoleBindings != nil {
+		for _, requestedCRB := range rbacBinding.ClusterRoleBindings {
+			err := rdp.parseClusterRoleBinding(requestedCRB, rbacBinding.Subjects, namePrefix)
+			if err != nil {
+				return err
 			}
 		}
+	}
 
-		if rbacBinding.RoleBindings != nil {
-			for _, requestedRB := range rbacBinding.RoleBindings {
-				err := rdp.parseRoleBinding(requestedRB, rbacBinding.Subjects, namePrefix)
-				if err != nil {
-					return err
-				}
+	if rbacBinding.RoleBindings != nil {
+		for _, requestedRB := range rbacBinding.RoleBindings {
+			err := rdp.parseRoleBinding(requestedRB, rbacBinding.Subjects, namePrefix)
+			if err != nil {
+				return err
 			}
 		}
 	}
@@ -125,11 +130,11 @@ func (rdp *rbacDefinitionParser) parseRoleBinding(
 
 	objectMeta.Name = fmt.Sprintf("%v-%v", prefix, requestedRoleName)
 
-	if rb.NamespaceSelector != nil {
+	if rb.NamespaceSelector.MatchLabels != nil {
 		listOptions := rdp.listOptions
 		logrus.Debugf("Processing Namespace Selector %v", rb.NamespaceSelector)
 
-		listOptions.LabelSelector = rb.NamespaceSelector.String()
+		listOptions.LabelSelector = labels.Set(rb.NamespaceSelector.MatchLabels).String()
 		namespaces, err := rdp.k8sClientSet.CoreV1().Namespaces().List(listOptions)
 		if err != nil {
 			return err

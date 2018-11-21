@@ -13,9 +13,144 @@ import (
 
 func TestParseEmpty(t *testing.T) {
 	client := fake.NewSimpleClientset()
+	testEmpty(t, client, "empty-example")
+}
+
+func TestParseStandard(t *testing.T) {
+	client := fake.NewSimpleClientset()
 	rbacDef := rbacmanagerv1beta1.RBACDefinition{}
-	rbacDef.Name = "empty-example"
-	testEmpty(t, client, rbacDef.Name)
+	rbacDef.Name = "rbac-config"
+
+	createNamespace(t, client, "web", map[string]string{"app": "web", "team": "devs"})
+	createNamespace(t, client, "api", map[string]string{"app": "api", "team": "devs"})
+	createNamespace(t, client, "db", map[string]string{"app": "db", "team": "db"})
+
+	rbacDef.RBACBindings = []rbacmanagerv1beta1.RBACBinding{{
+		Name: "ci-bot",
+		Subjects: []rbacv1.Subject{{
+			Kind:      rbacv1.ServiceAccountKind,
+			Name:      "ci-bot",
+			Namespace: "bots",
+		}},
+		RoleBindings: []rbacmanagerv1beta1.RoleBinding{{
+			Namespace: "bots",
+			Role:      "custom",
+		}},
+	}, {
+		Name: "devs",
+		Subjects: []rbacv1.Subject{{
+			Kind: rbacv1.UserKind,
+			Name: "joe",
+		}, {
+			Kind: rbacv1.UserKind,
+			Name: "sue",
+		}},
+		RoleBindings: []rbacmanagerv1beta1.RoleBinding{{
+			NamespaceSelector: metav1.LabelSelector{MatchLabels: map[string]string{"team": "devs"}},
+			ClusterRole:       "edit",
+		}},
+	}}
+
+	newParseTest(t, client, rbacDef, []rbacv1.RoleBinding{{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "rbac-config-ci-bot-custom-bots",
+			Namespace: "bots",
+		},
+		RoleRef: rbacv1.RoleRef{
+			Kind: "Role",
+			Name: "custom",
+		},
+		Subjects: []rbacv1.Subject{{
+			Kind:      rbacv1.ServiceAccountKind,
+			Name:      "ci-bot",
+			Namespace: "bots",
+		}},
+	}, {
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "rbac-config-devs-edit",
+			Namespace: "web",
+		},
+		RoleRef: rbacv1.RoleRef{
+			Kind: "ClusterRole",
+			Name: "edit",
+		},
+		Subjects: []rbacv1.Subject{{
+			Kind: rbacv1.UserKind,
+			Name: "joe",
+		}, {
+			Kind: rbacv1.UserKind,
+			Name: "sue",
+		}},
+	}, {
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "rbac-config-devs-edit",
+			Namespace: "api",
+		},
+		RoleRef: rbacv1.RoleRef{
+			Kind: "ClusterRole",
+			Name: "edit",
+		},
+		Subjects: []rbacv1.Subject{{
+			Kind: rbacv1.UserKind,
+			Name: "joe",
+		}, {
+			Kind: rbacv1.UserKind,
+			Name: "sue",
+		}},
+	}}, []rbacv1.ClusterRoleBinding{}, []corev1.ServiceAccount{{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "ci-bot",
+			Namespace: "bots",
+		},
+	}})
+}
+
+func TestParseMissingNamespace(t *testing.T) {
+	client := fake.NewSimpleClientset()
+	rbacDef := rbacmanagerv1beta1.RBACDefinition{}
+	rbacDef.Name = "rbac-config"
+
+	createNamespace(t, client, "web", map[string]string{"app": "web", "team": "devs"})
+	createNamespace(t, client, "api", map[string]string{"app": "api", "team": "devs"})
+	createNamespace(t, client, "db", map[string]string{"app": "db", "team": "db"})
+
+	rbacDef.RBACBindings = []rbacmanagerv1beta1.RBACBinding{{
+		Name: "devs",
+		Subjects: []rbacv1.Subject{{
+			Kind: rbacv1.UserKind,
+			Name: "joe",
+		}, {
+			Kind: rbacv1.UserKind,
+			Name: "sue",
+		}},
+		RoleBindings: []rbacmanagerv1beta1.RoleBinding{{
+			NamespaceSelector: metav1.LabelSelector{MatchLabels: map[string]string{"team": "other-devs"}},
+			ClusterRole:       "edit",
+		}},
+	}}
+
+	newParseTest(t, client, rbacDef, []rbacv1.RoleBinding{}, []rbacv1.ClusterRoleBinding{}, []corev1.ServiceAccount{})
+}
+
+func TestParseMissingSubjects(t *testing.T) {
+	client := fake.NewSimpleClientset()
+	rbacDef := rbacmanagerv1beta1.RBACDefinition{}
+	rbacDef.Name = "rbac-config"
+
+	createNamespace(t, client, "web", map[string]string{"app": "web", "team": "devs"})
+	createNamespace(t, client, "api", map[string]string{"app": "api", "team": "devs"})
+	createNamespace(t, client, "db", map[string]string{"app": "db", "team": "db"})
+
+	rbacDef.RBACBindings = []rbacmanagerv1beta1.RBACBinding{{
+		Name:     "devs",
+		Subjects: []rbacv1.Subject{},
+		RoleBindings: []rbacmanagerv1beta1.RoleBinding{{
+			NamespaceSelector: metav1.LabelSelector{MatchLabels: map[string]string{"team": "devs"}},
+			ClusterRole:       "edit",
+		}},
+	}}
+
+	newParseTest(t, client, rbacDef, []rbacv1.RoleBinding{}, []rbacv1.ClusterRoleBinding{}, []corev1.ServiceAccount{})
 }
 
 func newParseTest(t *testing.T, client *fake.Clientset, rbacDef rbacmanagerv1beta1.RBACDefinition, expectedRb []rbacv1.RoleBinding, expectedCrb []rbacv1.ClusterRoleBinding, expectedSa []corev1.ServiceAccount) {
@@ -26,7 +161,12 @@ func newParseTest(t *testing.T, client *fake.Clientset, rbacDef rbacmanagerv1bet
 		k8sClientSet: client,
 		listOptions:  metav1.ListOptions{LabelSelector: "rbac-manager=reactiveops"},
 	}
-	rdp.parse(rbacDef)
+
+	err := rdp.parse(rbacDef)
+	if err != nil {
+		t.Logf("Error parsing RBAC Definition: %v", err)
+	}
+
 	expectParsedRB(t, rdp, expectedRb)
 	expectParsedCRB(t, rdp, expectedCrb)
 	expectParsedSA(t, rdp, expectedSa)
@@ -95,5 +235,20 @@ func expectParsedSA(t *testing.T, rdp rbacDefinitionParser, expected []corev1.Se
 		if !matchFound {
 			t.Fatalf("Matching service account not found for %v", expectedSa.Name)
 		}
+	}
+}
+
+func createNamespace(t *testing.T, client *fake.Clientset, name string, labels map[string]string) {
+	_, err := client.CoreV1().Namespaces().Create(
+		&corev1.Namespace{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:   name,
+				Labels: labels,
+			},
+		},
+	)
+
+	if err != nil {
+		t.Fatalf("Error creating namespace %v", err)
 	}
 }
