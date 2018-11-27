@@ -1,77 +1,124 @@
-// Copyright 2018 ReactiveOps
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+/*
+Copyright 2018 ReactiveOps.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
 
 package rbacdefinition
 
 import (
-	"github.com/kubernetes-sigs/kubebuilder/pkg/controller"
-	"github.com/kubernetes-sigs/kubebuilder/pkg/controller/types"
-	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/tools/record"
-
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"context"
 
 	rbacmanagerv1beta1 "github.com/reactiveops/rbac-manager/pkg/apis/rbacmanager/v1beta1"
-	rbacmanagerv1beta1client "github.com/reactiveops/rbac-manager/pkg/client/clientset/versioned/typed/rbacmanager/v1beta1"
-	rbacmanagerv1beta1informer "github.com/reactiveops/rbac-manager/pkg/client/informers/externalversions/rbacmanager/v1beta1"
-	rbacmanagerv1beta1lister "github.com/reactiveops/rbac-manager/pkg/client/listers/rbacmanager/v1beta1"
-
-	"github.com/reactiveops/rbac-manager/pkg/inject/args"
+	appsv1 "k8s.io/api/apps/v1"
+	"k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/client-go/kubernetes"
+	rest "k8s.io/client-go/rest"
+	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/controller"
+	"sigs.k8s.io/controller-runtime/pkg/handler"
+	"sigs.k8s.io/controller-runtime/pkg/manager"
+	"sigs.k8s.io/controller-runtime/pkg/reconcile"
+	"sigs.k8s.io/controller-runtime/pkg/source"
 )
 
-// Reconcile achieves the desired stated defined by an RBACDefinition
-func (bc *RBACDefinitionController) Reconcile(k types.ReconcileKey) error {
-	rbacDef, err := bc.rbacDefinitionClient.RBACDefinitions().Get(k.Name, metav1.GetOptions{})
+/**
+* USER ACTION REQUIRED: This is a scaffold file intended for the user to modify with their own Controller
+* business logic.  Delete these comments after modifying this file.*
+ */
 
+// Add creates a new RBACDefinition Controller and adds it to the Manager with default RBAC. The Manager will set fields on the Controller
+// and Start it when the Manager is Started.
+// USER ACTION REQUIRED: update cmd/manager/main.go to call this rbacmanager.Add(mgr) to install this Controller
+func Add(mgr manager.Manager) error {
+	return add(mgr, newReconciler(mgr))
+}
+
+// newReconciler returns a new reconcile.Reconciler
+func newReconciler(mgr manager.Manager) reconcile.Reconciler {
+	return &ReconcileRBACDefinition{Client: mgr.GetClient(), config: mgr.GetConfig(), scheme: mgr.GetScheme()}
+}
+
+// add adds a new Controller to mgr with r as the reconcile.Reconciler
+func add(mgr manager.Manager, r reconcile.Reconciler) error {
+	// Create a new controller
+	c, err := controller.New("rbacdefinition-controller", mgr, controller.Options{Reconciler: r})
 	if err != nil {
 		return err
 	}
 
-	return bc.reconcileRbacDef(rbacDef)
+	// Watch for changes to RBACDefinition
+	err = c.Watch(&source.Kind{Type: &rbacmanagerv1beta1.RBACDefinition{}}, &handler.EnqueueRequestForObject{})
+	if err != nil {
+		return err
+	}
+
+	// TODO(user): Modify this to be the types you create
+	// Uncomment watch a Deployment created by RBACDefinition - change this for objects you create
+	err = c.Watch(&source.Kind{Type: &appsv1.Deployment{}}, &handler.EnqueueRequestForOwner{
+		IsController: true,
+		OwnerType:    &rbacmanagerv1beta1.RBACDefinition{},
+	})
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
-// +kubebuilder:controller:group=rbacmanager,version=v1beta1,kind=RBACDefinition,resource=rbacdefinitions
-type RBACDefinitionController struct {
-	rbacDefinitionLister rbacmanagerv1beta1lister.RBACDefinitionLister
-	rbacDefinitionClient rbacmanagerv1beta1client.RbacmanagerV1beta1Interface
-	// recorder is an event recorder for recording Event resources to the
-	// Kubernetes API.
-	rbacDefinitionRecorder record.EventRecorder
-	kubernetesClientSet    kubernetes.Interface
+var _ reconcile.Reconciler = &ReconcileRBACDefinition{}
+
+// ReconcileRBACDefinition reconciles a RBACDefinition object
+type ReconcileRBACDefinition struct {
+	client.Client
+	scheme *runtime.Scheme
+	config *rest.Config
 }
 
-// ProvideController provides a controller that will be run at startup.  Kubebuilder will use codegeneration
-// to automatically register this controller in the inject package
-func ProvideController(arguments args.InjectArgs) (*controller.GenericController, error) {
-	bc := &RBACDefinitionController{
-		rbacDefinitionLister: arguments.ControllerManager.GetInformerProvider(&rbacmanagerv1beta1.RBACDefinition{}).(rbacmanagerv1beta1informer.RBACDefinitionInformer).Lister(),
+// Reconcile reads that state of the cluster for a RBACDefinition object and makes changes based on the state read
+// and what is in the RBACDefinition.Spec
+// TODO(user): Modify this Reconcile function to implement your Controller logic.  The scaffolding writes
+// a Deployment as an example
+// Automatically generate RBAC rules to allow the Controller to read and write Deployments
+// +kubebuilder:rbac:groups=apps,resources=deployments,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=rbacmanager.reactiveops.io,resources=rbacdefinitions,verbs=get;list;watch;create;update;patch;delete
+func (r *ReconcileRBACDefinition) Reconcile(request reconcile.Request) (reconcile.Result, error) {
+	var err error
+	rdr := Reconciler{}
 
-		rbacDefinitionClient:   arguments.Clientset.RbacmanagerV1beta1(),
-		rbacDefinitionRecorder: arguments.CreateRecorder("RBACDefinitionController"),
+	// Full Kubernetes ClientSet is required because RBAC types don't
+	//   implement methods required for Kubebuilder methods to work
+	rdr.k8sClientSet, err = kubernetes.NewForConfig(r.config)
 
-		kubernetesClientSet: arguments.KubernetesClientSet,
+	if err != nil {
+		return reconcile.Result{}, err
 	}
 
-	// Create a new controller that will call RBACDefinitionController.Reconcile on changes to RBACDefinitions
-	gc := &controller.GenericController{
-		Name:             "RBACDefinitionController",
-		Reconcile:        bc.Reconcile,
-		InformerRegistry: arguments.ControllerManager,
-	}
-	if err := gc.Watch(&rbacmanagerv1beta1.RBACDefinition{}); err != nil {
-		return gc, err
+	// Fetch the RBACDefinition instance
+	rbacDef := &rbacmanagerv1beta1.RBACDefinition{}
+	err = r.Get(context.TODO(), request.NamespacedName, rbacDef)
+	if err != nil {
+		if errors.IsNotFound(err) {
+			// Object not found, return.  Created objects are automatically garbage collected.
+			// For additional cleanup logic use finalizers.
+			return reconcile.Result{}, nil
+		}
+		// Error reading the object - requeue the request.
+		return reconcile.Result{}, err
 	}
 
-	return gc, nil
+	rdr.reconcile(rbacDef)
+
+	return reconcile.Result{}, nil
 }

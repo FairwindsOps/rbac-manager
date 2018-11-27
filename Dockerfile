@@ -13,4 +13,4 @@ USER nobody
 COPY --from=build-env /go/src/github.com/reactiveops/rbac-manager/rbac-manager .
 
 ENTRYPOINT ["rbac-manager"]
-CMD ["--install-crds=false"]
+CMD ["--log-level=info"]
