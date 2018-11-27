@@ -154,7 +154,7 @@ func TestParseMissingSubjects(t *testing.T) {
 }
 
 func newParseTest(t *testing.T, client *fake.Clientset, rbacDef rbacmanagerv1beta1.RBACDefinition, expectedRb []rbacv1.RoleBinding, expectedCrb []rbacv1.ClusterRoleBinding, expectedSa []corev1.ServiceAccount) {
-	p := Parser{k8sClientSet: client}
+	p := Parser{Clientset: client}
 
 	err := p.parse(rbacDef)
 	if err != nil {

@@ -172,7 +172,7 @@ func TestReconcileRbacDefInvalid(t *testing.T) {
 }
 
 func newReconcileTest(t *testing.T, client *fake.Clientset, rbacDef rbacmanagerv1beta1.RBACDefinition, expectedRb []rbacv1.RoleBinding, expectedCrb []rbacv1.ClusterRoleBinding, expectedSa []corev1.ServiceAccount) {
-	r := Reconciler{k8sClientSet: client}
+	r := Reconciler{Clientset: client}
 	r.reconcile(&rbacDef)
 	expectRoleBindings(t, client, expectedRb)
 	expectClusterRoleBindings(t, client, expectedCrb)

@@ -28,9 +28,24 @@ import (
 
 // Reconciler creates and deletes Kubernetes resources to achieve the desired state of an RBAC Definition
 type Reconciler struct {
-	k8sClientSet kubernetes.Interface
-	listOptions  metav1.ListOptions
-	ownerRefs    []metav1.OwnerReference
+	Clientset   kubernetes.Interface
+	listOptions metav1.ListOptions
+	ownerRefs   []metav1.OwnerReference
+}
+
+func (r *Reconciler) ReconcileNamespaces(rbacDef *rbacmanagerv1beta1.RBACDefinition) error {
+	p := Parser{
+		Clientset: r.Clientset,
+		labels:    map[string]string{"rbac-manager": "reactiveops"},
+		ownerRefs: r.ownerRefs,
+	}
+
+	if p.hasNamespaceSelectors(rbacDef) {
+		logrus.Debugf("Reconciling RBAC Definition due to Namespace Change %v", rbacDef.Name)
+		r.reconcile(rbacDef)
+	}
+
+	return nil
 }
 
 func (r *Reconciler) reconcile(rbacDef *rbacmanagerv1beta1.RBACDefinition) error {
@@ -46,9 +61,9 @@ func (r *Reconciler) reconcile(rbacDef *rbacmanagerv1beta1.RBACDefinition) error
 	}
 
 	p := Parser{
-		k8sClientSet: r.k8sClientSet,
-		labels:       map[string]string{"rbac-manager": "reactiveops"},
-		ownerRefs:    r.ownerRefs,
+		Clientset: r.Clientset,
+		labels:    map[string]string{"rbac-manager": "reactiveops"},
+		ownerRefs: r.ownerRefs,
 	}
 
 	var err error
@@ -77,7 +92,7 @@ func (r *Reconciler) reconcile(rbacDef *rbacmanagerv1beta1.RBACDefinition) error
 }
 
 func (r *Reconciler) reconcileServiceAccounts(requested *[]v1.ServiceAccount) error {
-	existing, err := r.k8sClientSet.CoreV1().ServiceAccounts("").List(r.listOptions)
+	existing, err := r.Clientset.CoreV1().ServiceAccounts("").List(r.listOptions)
 	if err != nil {
 		return err
 	}
@@ -114,7 +129,7 @@ func (r *Reconciler) reconcileServiceAccounts(requested *[]v1.ServiceAccount) er
 
 			if !matchingRequest {
 				logrus.Infof("Deleting Service Account %v", existingSA.Name)
-				err := r.k8sClientSet.CoreV1().ServiceAccounts(existingSA.Namespace).Delete(existingSA.Name, &metav1.DeleteOptions{})
+				err := r.Clientset.CoreV1().ServiceAccounts(existingSA.Namespace).Delete(existingSA.Name, &metav1.DeleteOptions{})
 				if err != nil {
 					logrus.Infof("Error deleting Service Account: %v", err)
 				}
@@ -126,7 +141,7 @@ func (r *Reconciler) reconcileServiceAccounts(requested *[]v1.ServiceAccount) er
 
 	for _, serviceAccountToCreate := range serviceAccountsToCreate {
 		logrus.Infof("Creating Service Account: %v", serviceAccountToCreate.Name)
-		_, err := r.k8sClientSet.CoreV1().ServiceAccounts(serviceAccountToCreate.ObjectMeta.Namespace).Create(&serviceAccountToCreate)
+		_, err := r.Clientset.CoreV1().ServiceAccounts(serviceAccountToCreate.ObjectMeta.Namespace).Create(&serviceAccountToCreate)
 		if err != nil {
 			logrus.Errorf("Error creating Service Account: %v", err)
 		}
@@ -136,7 +151,7 @@ func (r *Reconciler) reconcileServiceAccounts(requested *[]v1.ServiceAccount) er
 }
 
 func (r *Reconciler) reconcileClusterRoleBindings(requested *[]rbacv1.ClusterRoleBinding) error {
-	existing, err := r.k8sClientSet.RbacV1().ClusterRoleBindings().List(r.listOptions)
+	existing, err := r.Clientset.RbacV1().ClusterRoleBindings().List(r.listOptions)
 	if err != nil {
 		return err
 	}
@@ -173,7 +188,7 @@ func (r *Reconciler) reconcileClusterRoleBindings(requested *[]rbacv1.ClusterRol
 
 			if !matchingRequest {
 				logrus.Infof("Deleting Cluster Role Binding: %v", existingCRB.Name)
-				err := r.k8sClientSet.RbacV1().ClusterRoleBindings().Delete(existingCRB.Name, &metav1.DeleteOptions{})
+				err := r.Clientset.RbacV1().ClusterRoleBindings().Delete(existingCRB.Name, &metav1.DeleteOptions{})
 				if err != nil {
 					logrus.Errorf("Error deleting Cluster Role Binding: %v", err)
 				}
@@ -185,7 +200,7 @@ func (r *Reconciler) reconcileClusterRoleBindings(requested *[]rbacv1.ClusterRol
 
 	for _, clusterRoleBindingToCreate := range clusterRoleBindingsToCreate {
 		logrus.Infof("Creating Cluster Role Binding: %v", clusterRoleBindingToCreate.Name)
-		_, err := r.k8sClientSet.RbacV1().ClusterRoleBindings().Create(&clusterRoleBindingToCreate)
+		_, err := r.Clientset.RbacV1().ClusterRoleBindings().Create(&clusterRoleBindingToCreate)
 		if err != nil {
 			logrus.Errorf("Error creating Cluster Role Binding: %v", err)
 		}
@@ -195,7 +210,7 @@ func (r *Reconciler) reconcileClusterRoleBindings(requested *[]rbacv1.ClusterRol
 }
 
 func (r *Reconciler) reconcileRoleBindings(requested *[]rbacv1.RoleBinding) error {
-	existing, err := r.k8sClientSet.RbacV1().RoleBindings("").List(r.listOptions)
+	existing, err := r.Clientset.RbacV1().RoleBindings("").List(r.listOptions)
 	if err != nil {
 		return err
 	}
@@ -232,7 +247,7 @@ func (r *Reconciler) reconcileRoleBindings(requested *[]rbacv1.RoleBinding) erro
 
 			if !matchingRequest {
 				logrus.Infof("Deleting Role Binding %v", existingRB.Name)
-				err := r.k8sClientSet.RbacV1().RoleBindings(existingRB.Namespace).Delete(existingRB.Name, &metav1.DeleteOptions{})
+				err := r.Clientset.RbacV1().RoleBindings(existingRB.Namespace).Delete(existingRB.Name, &metav1.DeleteOptions{})
 				if err != nil {
 					logrus.Infof("Error deleting Role Binding: %v", err)
 				}
@@ -244,7 +259,7 @@ func (r *Reconciler) reconcileRoleBindings(requested *[]rbacv1.RoleBinding) erro
 
 	for _, roleBindingToCreate := range roleBindingsToCreate {
 		logrus.Infof("Creating Role Binding: %v", roleBindingToCreate.Name)
-		_, err := r.k8sClientSet.RbacV1().RoleBindings(roleBindingToCreate.ObjectMeta.Namespace).Create(&roleBindingToCreate)
+		_, err := r.Clientset.RbacV1().RoleBindings(roleBindingToCreate.ObjectMeta.Namespace).Create(&roleBindingToCreate)
 		if err != nil {
 			logrus.Errorf("Error creating Role Binding: %v", err)
 		}

@@ -22,7 +22,9 @@ rbacBindings:
       - clusterRole: edit
     roleBindings:
       - clusterRole: admin
-        namespace: default
+        namespaceSelector:
+          matchLabels:
+            team: dev
   - name: example-service-account
     subjects:
       - kind: ServiceAccount

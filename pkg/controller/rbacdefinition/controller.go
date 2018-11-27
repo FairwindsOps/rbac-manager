@@ -20,7 +20,6 @@ import (
 	"context"
 
 	rbacmanagerv1beta1 "github.com/reactiveops/rbac-manager/pkg/apis/rbacmanager/v1beta1"
-	appsv1 "k8s.io/api/apps/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes"
@@ -33,14 +32,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/source"
 )
 
-/**
-* USER ACTION REQUIRED: This is a scaffold file intended for the user to modify with their own Controller
-* business logic.  Delete these comments after modifying this file.*
- */
-
-// Add creates a new RBACDefinition Controller and adds it to the Manager with default RBAC. The Manager will set fields on the Controller
-// and Start it when the Manager is Started.
-// USER ACTION REQUIRED: update cmd/manager/main.go to call this rbacmanager.Add(mgr) to install this Controller
+// Add creates a new RBACDefinition Controller and adds it to the Manager.
+// The Manager will set fields on the Controller and Start it.
 func Add(mgr manager.Manager) error {
 	return add(mgr, newReconciler(mgr))
 }
@@ -64,20 +57,8 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 		return err
 	}
 
-	// TODO(user): Modify this to be the types you create
-	// Uncomment watch a Deployment created by RBACDefinition - change this for objects you create
-	err = c.Watch(&source.Kind{Type: &appsv1.Deployment{}}, &handler.EnqueueRequestForOwner{
-		IsController: true,
-		OwnerType:    &rbacmanagerv1beta1.RBACDefinition{},
-	})
-	if err != nil {
-		return err
-	}
-
 	return nil
 }
-
-var _ reconcile.Reconciler = &ReconcileRBACDefinition{}
 
 // ReconcileRBACDefinition reconciles a RBACDefinition object
 type ReconcileRBACDefinition struct {
@@ -86,20 +67,14 @@ type ReconcileRBACDefinition struct {
 	config *rest.Config
 }
 
-// Reconcile reads that state of the cluster for a RBACDefinition object and makes changes based on the state read
-// and what is in the RBACDefinition.Spec
-// TODO(user): Modify this Reconcile function to implement your Controller logic.  The scaffolding writes
-// a Deployment as an example
-// Automatically generate RBAC rules to allow the Controller to read and write Deployments
-// +kubebuilder:rbac:groups=apps,resources=deployments,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups=rbacmanager.reactiveops.io,resources=rbacdefinitions,verbs=get;list;watch;create;update;patch;delete
+// Reconcile makes changes in response to RBACDefinition changes
 func (r *ReconcileRBACDefinition) Reconcile(request reconcile.Request) (reconcile.Result, error) {
 	var err error
 	rdr := Reconciler{}
 
 	// Full Kubernetes ClientSet is required because RBAC types don't
 	//   implement methods required for Kubebuilder methods to work
-	rdr.k8sClientSet, err = kubernetes.NewForConfig(r.config)
+	rdr.Clientset, err = kubernetes.NewForConfig(r.config)
 
 	if err != nil {
 		return reconcile.Result{}, err

@@ -15,7 +15,7 @@ import (
 
 // Parser parses RBAC Definitions and determines the Kubernetes resources that it specifies
 type Parser struct {
-	k8sClientSet              kubernetes.Interface
+	Clientset                 kubernetes.Interface
 	labels                    map[string]string
 	ownerRefs                 []metav1.OwnerReference
 	parsedClusterRoleBindings []rbacv1.ClusterRoleBinding
@@ -134,7 +134,7 @@ func (p *Parser) parseRoleBinding(
 		logrus.Debugf("Processing Namespace Selector %v", rb.NamespaceSelector)
 
 		listOptions := metav1.ListOptions{LabelSelector: labels.Set(rb.NamespaceSelector.MatchLabels).String()}
-		namespaces, err := p.k8sClientSet.CoreV1().Namespaces().List(listOptions)
+		namespaces, err := p.Clientset.CoreV1().Namespaces().List(listOptions)
 		if err != nil {
 			return err
 		}
@@ -166,4 +166,15 @@ func (p *Parser) parseRoleBinding(
 	}
 
 	return nil
+}
+
+func (p *Parser) hasNamespaceSelectors(rbacDef *rbacmanagerv1beta1.RBACDefinition) bool {
+	for _, rbacBinding := range rbacDef.RBACBindings {
+		for _, roleBinding := range rbacBinding.RoleBindings {
+			if roleBinding.Namespace == "" && roleBinding.NamespaceSelector.MatchLabels != nil {
+				return true
+			}
+		}
+	}
+	return false
 }
