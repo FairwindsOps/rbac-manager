@@ -28,47 +28,47 @@ import (
 
 // Reconciler creates and deletes Kubernetes resources to achieve the desired state of an RBAC Definition
 type Reconciler struct {
-	Clientset   kubernetes.Interface
-	listOptions metav1.ListOptions
-	ownerRefs   []metav1.OwnerReference
+	Clientset kubernetes.Interface
+	ownerRefs []metav1.OwnerReference
 }
 
-func (r *Reconciler) ReconcileNamespaces(rbacDef *rbacmanagerv1beta1.RBACDefinition) error {
+// ReconcileNamespaceChange reconciles relevant portions of RBAC Definitions
+//   after changes to namespaces within the cluster
+func (r *Reconciler) ReconcileNamespaceChange(rbacDef *rbacmanagerv1beta1.RBACDefinition) error {
+	r.ownerRefs = rbacDefOwnerRefs(rbacDef)
+
 	p := Parser{
 		Clientset: r.Clientset,
-		labels:    map[string]string{"rbac-manager": "reactiveops"},
 		ownerRefs: r.ownerRefs,
 	}
 
 	if p.hasNamespaceSelectors(rbacDef) {
-		logrus.Debugf("Reconciling RBAC Definition due to Namespace Change %v", rbacDef.Name)
-		r.reconcile(rbacDef)
+		logrus.Infof("Partial reconcile due to Namespace change %v", rbacDef.Name)
+		p.parseRoleBindings(rbacDef)
+		err := r.reconcileRoleBindings(&p.parsedRoleBindings)
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil
 }
 
-func (r *Reconciler) reconcile(rbacDef *rbacmanagerv1beta1.RBACDefinition) error {
+// Reconcile creates, updates, or deletes Kubernetes resources to match
+//   the desired state defined in an RBAC Definition
+func (r *Reconciler) Reconcile(rbacDef *rbacmanagerv1beta1.RBACDefinition) error {
 	logrus.Infof("Reconciling RBACDefinition %v", rbacDef.Name)
 
-	r.listOptions = metav1.ListOptions{LabelSelector: "rbac-manager=reactiveops"}
-	r.ownerRefs = []metav1.OwnerReference{
-		*metav1.NewControllerRef(rbacDef, schema.GroupVersionKind{
-			Group:   rbacmanagerv1beta1.SchemeGroupVersion.Group,
-			Version: rbacmanagerv1beta1.SchemeGroupVersion.Version,
-			Kind:    "RBACDefinition",
-		}),
-	}
+	r.ownerRefs = rbacDefOwnerRefs(rbacDef)
 
 	p := Parser{
 		Clientset: r.Clientset,
-		labels:    map[string]string{"rbac-manager": "reactiveops"},
 		ownerRefs: r.ownerRefs,
 	}
 
 	var err error
 
-	err = p.parse(*rbacDef)
+	err = p.Parse(*rbacDef)
 	if err != nil {
 		return err
 	}
@@ -92,7 +92,7 @@ func (r *Reconciler) reconcile(rbacDef *rbacmanagerv1beta1.RBACDefinition) error
 }
 
 func (r *Reconciler) reconcileServiceAccounts(requested *[]v1.ServiceAccount) error {
-	existing, err := r.Clientset.CoreV1().ServiceAccounts("").List(r.listOptions)
+	existing, err := r.Clientset.CoreV1().ServiceAccounts("").List(ListOptions)
 	if err != nil {
 		return err
 	}
@@ -151,7 +151,7 @@ func (r *Reconciler) reconcileServiceAccounts(requested *[]v1.ServiceAccount) er
 }
 
 func (r *Reconciler) reconcileClusterRoleBindings(requested *[]rbacv1.ClusterRoleBinding) error {
-	existing, err := r.Clientset.RbacV1().ClusterRoleBindings().List(r.listOptions)
+	existing, err := r.Clientset.RbacV1().ClusterRoleBindings().List(ListOptions)
 	if err != nil {
 		return err
 	}
@@ -210,7 +210,7 @@ func (r *Reconciler) reconcileClusterRoleBindings(requested *[]rbacv1.ClusterRol
 }
 
 func (r *Reconciler) reconcileRoleBindings(requested *[]rbacv1.RoleBinding) error {
-	existing, err := r.Clientset.RbacV1().RoleBindings("").List(r.listOptions)
+	existing, err := r.Clientset.RbacV1().RoleBindings("").List(ListOptions)
 	if err != nil {
 		return err
 	}
@@ -266,4 +266,14 @@ func (r *Reconciler) reconcileRoleBindings(requested *[]rbacv1.RoleBinding) erro
 	}
 
 	return nil
+}
+
+func rbacDefOwnerRefs(rbacDef *rbacmanagerv1beta1.RBACDefinition) []metav1.OwnerReference {
+	return []metav1.OwnerReference{
+		*metav1.NewControllerRef(rbacDef, schema.GroupVersionKind{
+			Group:   rbacmanagerv1beta1.SchemeGroupVersion.Group,
+			Version: rbacmanagerv1beta1.SchemeGroupVersion.Version,
+			Kind:    "RBACDefinition",
+		}),
+	}
 }

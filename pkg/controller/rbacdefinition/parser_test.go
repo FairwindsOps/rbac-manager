@@ -156,7 +156,7 @@ func TestParseMissingSubjects(t *testing.T) {
 func newParseTest(t *testing.T, client *fake.Clientset, rbacDef rbacmanagerv1beta1.RBACDefinition, expectedRb []rbacv1.RoleBinding, expectedCrb []rbacv1.ClusterRoleBinding, expectedSa []corev1.ServiceAccount) {
 	p := Parser{Clientset: client}
 
-	err := p.parse(rbacDef)
+	err := p.Parse(rbacDef)
 	if err != nil {
 		t.Logf("Error parsing RBAC Definition: %v", err)
 	}

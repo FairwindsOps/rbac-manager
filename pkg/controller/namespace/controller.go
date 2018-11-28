@@ -110,32 +110,35 @@ func reconcileNamespace(config *rest.Config) error {
 		return err
 	}
 
-	rbacmanagerv1beta1.AddToScheme(scheme.Scheme)
-	crdConfig := *config
-	crdConfig.ContentConfig.GroupVersion = &rbacmanagerv1beta1.SchemeGroupVersion
-	crdConfig.APIPath = "/apis"
-	crdConfig.NegotiatedSerializer = serializer.DirectCodecFactory{CodecFactory: scheme.Codecs}
-	crdConfig.UserAgent = rest.DefaultKubernetesUserAgent()
+	rbacDefList, err := getRbacDefinitions(config)
 
-	exampleRestClient, err := rest.UnversionedRESTClientFor(&crdConfig)
-
-	if err != nil {
-		return err
-	}
-
-	result := rbacmanagerv1beta1.RBACDefinitionList{}
-	err = exampleRestClient.Get().Resource("rbacdefinitions").Do().Into(&result)
-
-	if err != nil {
-		return err
-	}
-
-	for _, rbacDef := range result.Items {
-		err = rdr.ReconcileNamespaces(&rbacDef)
+	for _, rbacDef := range rbacDefList.Items {
+		err = rdr.ReconcileNamespaceChange(&rbacDef)
 		if err != nil {
 			return err
 		}
 	}
 
 	return nil
+}
+
+func getRbacDefinitions(config *rest.Config) (rbacmanagerv1beta1.RBACDefinitionList, error) {
+	list := rbacmanagerv1beta1.RBACDefinitionList{}
+
+	rbacmanagerv1beta1.AddToScheme(scheme.Scheme)
+	clientConfig := *config
+	clientConfig.ContentConfig.GroupVersion = &rbacmanagerv1beta1.SchemeGroupVersion
+	clientConfig.APIPath = "/apis"
+	clientConfig.NegotiatedSerializer = serializer.DirectCodecFactory{CodecFactory: scheme.Codecs}
+	clientConfig.UserAgent = rest.DefaultKubernetesUserAgent()
+
+	client, err := rest.UnversionedRESTClientFor(&clientConfig)
+
+	if err != nil {
+		return list, err
+	}
+
+	err = client.Get().Resource("rbacdefinitions").Do().Into(&list)
+
+	return list, err
 }

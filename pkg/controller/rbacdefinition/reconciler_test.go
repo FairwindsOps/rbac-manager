@@ -171,12 +171,137 @@ func TestReconcileRbacDefInvalid(t *testing.T) {
 	newReconcileTest(t, client, rbacDef, []rbacv1.RoleBinding{}, []rbacv1.ClusterRoleBinding{}, []corev1.ServiceAccount{})
 }
 
+func TestReconcileNamespaceChanges(t *testing.T) {
+	var err error
+
+	client := fake.NewSimpleClientset()
+	rbacDef := rbacmanagerv1beta1.RBACDefinition{}
+	rbacDef.Name = "namespace-selector-example"
+
+	_, err = client.CoreV1().Namespaces().Create(&corev1.Namespace{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:   "web",
+			Labels: map[string]string{"team": "dev", "app": "web"},
+		},
+	})
+	if err != nil {
+		t.Fatalf("Error creating namespace %#v", err)
+	}
+
+	_, err = client.CoreV1().Namespaces().Create(&corev1.Namespace{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:   "api",
+			Labels: map[string]string{"team": "dev", "app": "api"},
+		},
+	})
+	if err != nil {
+		t.Fatalf("Error creating namespace %#v", err)
+	}
+
+	testEmptyExample(t, client, rbacDef.Name)
+
+	rbacDef.RBACBindings = []rbacmanagerv1beta1.RBACBinding{{
+		Name: "web-app",
+		Subjects: []rbacv1.Subject{{
+			Kind: rbacv1.UserKind,
+			Name: "Joe",
+		}, {
+			Kind: rbacv1.UserKind,
+			Name: "Sue",
+		}},
+		RoleBindings: []rbacmanagerv1beta1.RoleBinding{{
+			ClusterRole:       "edit",
+			NamespaceSelector: metav1.LabelSelector{MatchLabels: map[string]string{"app": "web"}},
+		}},
+	}, {
+		Name: "dev-team",
+		Subjects: []rbacv1.Subject{{
+			Kind: rbacv1.UserKind,
+			Name: "Joe",
+		}, {
+			Kind: rbacv1.UserKind,
+			Name: "Sue",
+		}, {
+			Kind: rbacv1.UserKind,
+			Name: "Kay",
+		}},
+		RoleBindings: []rbacmanagerv1beta1.RoleBinding{{
+			ClusterRole:       "view",
+			NamespaceSelector: metav1.LabelSelector{MatchLabels: map[string]string{"team": "dev"}},
+		}},
+	}}
+
+	newReconcileNamespaceChangesTest(t, client, rbacDef, []rbacv1.RoleBinding{{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "namespace-selector-example-web-app-edit",
+			Namespace: "web",
+		},
+		RoleRef: rbacv1.RoleRef{
+			Kind: "ClusterRole",
+			Name: "edit",
+		},
+		Subjects: []rbacv1.Subject{{
+			Kind: rbacv1.UserKind,
+			Name: "Joe",
+		}, {
+			Kind: rbacv1.UserKind,
+			Name: "Sue",
+		}},
+	}, {
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "namespace-selector-example-dev-team-view",
+			Namespace: "web",
+		},
+		RoleRef: rbacv1.RoleRef{
+			Kind: "ClusterRole",
+			Name: "view",
+		},
+		Subjects: []rbacv1.Subject{{
+			Kind: rbacv1.UserKind,
+			Name: "Joe",
+		}, {
+			Kind: rbacv1.UserKind,
+			Name: "Sue",
+		}, {
+			Kind: rbacv1.UserKind,
+			Name: "Kay",
+		}},
+	}, {
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "namespace-selector-example-dev-team-view",
+			Namespace: "api",
+		},
+		RoleRef: rbacv1.RoleRef{
+			Kind: "ClusterRole",
+			Name: "view",
+		},
+		Subjects: []rbacv1.Subject{{
+			Kind: rbacv1.UserKind,
+			Name: "Joe",
+		}, {
+			Kind: rbacv1.UserKind,
+			Name: "Sue",
+		}, {
+			Kind: rbacv1.UserKind,
+			Name: "Kay",
+		}},
+	}})
+
+	testEmptyExample(t, client, rbacDef.Name)
+}
+
 func newReconcileTest(t *testing.T, client *fake.Clientset, rbacDef rbacmanagerv1beta1.RBACDefinition, expectedRb []rbacv1.RoleBinding, expectedCrb []rbacv1.ClusterRoleBinding, expectedSa []corev1.ServiceAccount) {
 	r := Reconciler{Clientset: client}
-	r.reconcile(&rbacDef)
+	r.Reconcile(&rbacDef)
 	expectRoleBindings(t, client, expectedRb)
 	expectClusterRoleBindings(t, client, expectedCrb)
 	expectServiceAccounts(t, client, expectedSa)
+}
+
+func newReconcileNamespaceChangesTest(t *testing.T, client *fake.Clientset, rbacDef rbacmanagerv1beta1.RBACDefinition, expectedRb []rbacv1.RoleBinding) {
+	r := Reconciler{Clientset: client}
+	r.Reconcile(&rbacDef)
+	expectRoleBindings(t, client, expectedRb)
 }
 
 func testEmptyExample(t *testing.T, client *fake.Clientset, name string) {

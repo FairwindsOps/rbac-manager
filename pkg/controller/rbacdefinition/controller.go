@@ -93,7 +93,7 @@ func (r *ReconcileRBACDefinition) Reconcile(request reconcile.Request) (reconcil
 		return reconcile.Result{}, err
 	}
 
-	rdr.reconcile(rbacDef)
+	rdr.Reconcile(rbacDef)
 
 	return reconcile.Result{}, nil
 }

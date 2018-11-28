@@ -16,21 +16,21 @@ import (
 // Parser parses RBAC Definitions and determines the Kubernetes resources that it specifies
 type Parser struct {
 	Clientset                 kubernetes.Interface
-	labels                    map[string]string
 	ownerRefs                 []metav1.OwnerReference
 	parsedClusterRoleBindings []rbacv1.ClusterRoleBinding
 	parsedRoleBindings        []rbacv1.RoleBinding
 	parsedServiceAccounts     []v1.ServiceAccount
 }
 
-func (p *Parser) parse(rbacDef rbacmanagerv1beta1.RBACDefinition) error {
+// Parse determines the desired Kubernetes resources an RBAC Definition refers to
+func (p *Parser) Parse(rbacDef rbacmanagerv1beta1.RBACDefinition) error {
 	if rbacDef.RBACBindings == nil {
 		logrus.Warn("No RBACBindings defined")
 		return nil
 	}
 
 	for _, rbacBinding := range rbacDef.RBACBindings {
-		namePrefix := fmt.Sprintf("%v-%v", rbacDef.Name, rbacBinding.Name)
+		namePrefix := rdNamePrefix(&rbacDef, &rbacBinding)
 
 		err := p.parseRBACBinding(rbacBinding, namePrefix)
 		if err != nil {
@@ -53,7 +53,7 @@ func (p *Parser) parseRBACBinding(rbacBinding rbacmanagerv1beta1.RBACBinding, na
 					Name:            requestedSubject.Name,
 					Namespace:       requestedSubject.Namespace,
 					OwnerReferences: p.ownerRefs,
-					Labels:          p.labels,
+					Labels:          Labels,
 				},
 			})
 		}
@@ -87,7 +87,7 @@ func (p *Parser) parseClusterRoleBinding(
 		ObjectMeta: metav1.ObjectMeta{
 			Name:            crbName,
 			OwnerReferences: p.ownerRefs,
-			Labels:          p.labels,
+			Labels:          Labels,
 		},
 		RoleRef: rbacv1.RoleRef{
 			Kind: "ClusterRole",
@@ -104,7 +104,7 @@ func (p *Parser) parseRoleBinding(
 
 	objectMeta := metav1.ObjectMeta{
 		OwnerReferences: p.ownerRefs,
-		Labels:          p.labels,
+		Labels:          Labels,
 	}
 
 	var requestedRoleName string
@@ -177,4 +177,17 @@ func (p *Parser) hasNamespaceSelectors(rbacDef *rbacmanagerv1beta1.RBACDefinitio
 		}
 	}
 	return false
+}
+
+func (p *Parser) parseRoleBindings(rbacDef *rbacmanagerv1beta1.RBACDefinition) {
+	for _, rbacBinding := range rbacDef.RBACBindings {
+		for _, roleBinding := range rbacBinding.RoleBindings {
+			namePrefix := rdNamePrefix(rbacDef, &rbacBinding)
+			p.parseRoleBinding(roleBinding, rbacBinding.Subjects, namePrefix)
+		}
+	}
+}
+
+func rdNamePrefix(rbacDef *rbacmanagerv1beta1.RBACDefinition, rbacBinding *rbacmanagerv1beta1.RBACBinding) string {
+	return fmt.Sprintf("%v-%v", rbacDef.Name, rbacBinding.Name)
 }
