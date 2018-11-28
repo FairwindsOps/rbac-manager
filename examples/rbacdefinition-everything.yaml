@@ -5,7 +5,7 @@ metadata:
 rbacBindings:
   - name: admins
     subjects:
-      - kind: User
+      - kind: Group
         name: example
     clusterRoleBindings:
       - clusterRole: edit
@@ -22,7 +22,9 @@ rbacBindings:
       - clusterRole: edit
     roleBindings:
       - clusterRole: admin
-        namespace: default
+        namespaceSelector:
+          matchLabels:
+            team: dev
   - name: example-service-account
     subjects:
       - kind: ServiceAccount

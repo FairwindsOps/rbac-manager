@@ -1,3 +1,17 @@
+// Copyright 2018 ReactiveOps
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package rbacdefinition
 
 import (
@@ -154,22 +168,16 @@ func TestParseMissingSubjects(t *testing.T) {
 }
 
 func newParseTest(t *testing.T, client *fake.Clientset, rbacDef rbacmanagerv1beta1.RBACDefinition, expectedRb []rbacv1.RoleBinding, expectedCrb []rbacv1.ClusterRoleBinding, expectedSa []corev1.ServiceAccount) {
-	rdc := RBACDefinitionController{}
-	rdc.kubernetesClientSet = client
+	p := Parser{Clientset: client}
 
-	rdp := rbacDefinitionParser{
-		k8sClientSet: client,
-		listOptions:  metav1.ListOptions{LabelSelector: "rbac-manager=reactiveops"},
-	}
-
-	err := rdp.parse(rbacDef)
+	err := p.Parse(rbacDef)
 	if err != nil {
 		t.Logf("Error parsing RBAC Definition: %v", err)
 	}
 
-	expectParsedRB(t, rdp, expectedRb)
-	expectParsedCRB(t, rdp, expectedCrb)
-	expectParsedSA(t, rdp, expectedSa)
+	expectParsedRB(t, p, expectedRb)
+	expectParsedCRB(t, p, expectedCrb)
+	expectParsedSA(t, p, expectedSa)
 }
 
 func testEmpty(t *testing.T, client *fake.Clientset, name string) {
@@ -180,12 +188,12 @@ func testEmpty(t *testing.T, client *fake.Clientset, name string) {
 	newParseTest(t, client, rbacDef, []rbacv1.RoleBinding{}, []rbacv1.ClusterRoleBinding{}, []corev1.ServiceAccount{})
 }
 
-func expectParsedCRB(t *testing.T, rdp rbacDefinitionParser, expected []rbacv1.ClusterRoleBinding) {
-	assert.Len(t, rdp.parsedClusterRoleBindings, len(expected), "Expected length to match")
+func expectParsedCRB(t *testing.T, p Parser, expected []rbacv1.ClusterRoleBinding) {
+	assert.Len(t, p.parsedClusterRoleBindings, len(expected), "Expected length to match")
 
 	for _, expectedCrb := range expected {
 		matchFound := false
-		for _, actualCrb := range rdp.parsedClusterRoleBindings {
+		for _, actualCrb := range p.parsedClusterRoleBindings {
 			if actualCrb.Name == expectedCrb.Name {
 				matchFound = true
 				assert.ElementsMatch(t, expectedCrb.Subjects, actualCrb.Subjects, "Expected subjects to match")
@@ -200,12 +208,12 @@ func expectParsedCRB(t *testing.T, rdp rbacDefinitionParser, expected []rbacv1.C
 	}
 }
 
-func expectParsedRB(t *testing.T, rdp rbacDefinitionParser, expected []rbacv1.RoleBinding) {
-	assert.Len(t, rdp.parsedRoleBindings, len(expected), "Expected length to match")
+func expectParsedRB(t *testing.T, p Parser, expected []rbacv1.RoleBinding) {
+	assert.Len(t, p.parsedRoleBindings, len(expected), "Expected length to match")
 
 	for _, expectedRb := range expected {
 		matchFound := false
-		for _, actualRb := range rdp.parsedRoleBindings {
+		for _, actualRb := range p.parsedRoleBindings {
 			if actualRb.Name == expectedRb.Name && expectedRb.Namespace == actualRb.Namespace {
 				matchFound = true
 				assert.ElementsMatch(t, expectedRb.Subjects, actualRb.Subjects, "Expected subjects to match")
@@ -220,12 +228,12 @@ func expectParsedRB(t *testing.T, rdp rbacDefinitionParser, expected []rbacv1.Ro
 	}
 }
 
-func expectParsedSA(t *testing.T, rdp rbacDefinitionParser, expected []corev1.ServiceAccount) {
-	assert.Len(t, rdp.parsedServiceAccounts, len(expected), "Expected length to match")
+func expectParsedSA(t *testing.T, p Parser, expected []corev1.ServiceAccount) {
+	assert.Len(t, p.parsedServiceAccounts, len(expected), "Expected length to match")
 
 	for _, expectedSa := range expected {
 		matchFound := false
-		for _, actualSa := range rdp.parsedServiceAccounts {
+		for _, actualSa := range p.parsedServiceAccounts {
 			if actualSa.Name == expectedSa.Name && expectedSa.Namespace == actualSa.Namespace {
 				matchFound = true
 				break

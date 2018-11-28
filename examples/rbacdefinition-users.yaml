@@ -41,6 +41,7 @@ rbacBindings:
     subjects:
       - kind: ServiceAccount
         name: ci-bot
+        namespace: default
     roleBindings:
       - clusterRole: edit
         namespace: api

@@ -89,6 +89,28 @@ kubectl apply -f deploy/
 
 Once RBAC Manager is installed in your cluster, you'll be able to deploy RBAC Definitions to your cluster. There are examples of these custom resources above as well as in the examples directory of this repository.
 
+## Dynamic Namespaces and Labels
+RBAC Definitions can now include `namespaceSelectors` in place of `namespace` attributes when specifying Role Binding configuration. This can be incredibly helpful when working with dynamically provisioned namespaces.
+
+```yaml
+apiVersion: rbacmanager.reactiveops.io/v1beta1
+kind: RBACDefinition
+metadata:
+  name: dev-access
+rbacBindings:
+  - name: dev-team
+    subjects:
+      - kind: Group
+        name: dev-team
+    roleBindings:
+      - clusterRole: edit
+        namespaceSelector:
+          matchLabels:
+            team: dev
+```
+
+In the example above, Role Bindings would automatically get created for each Namespace with a `team=dev` label.
+
 ## Further Reading
 
 ### RBAC Definitions
