@@ -1,3 +1,17 @@
+// Copyright 2018 ReactiveOps
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package rbacdefinition
 
 import (
@@ -10,8 +24,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/fake"
 )
-
-var listOptions = metav1.ListOptions{LabelSelector: "rbac-manager=reactiveops"}
 
 func TestReconcileRbacDefEmpty(t *testing.T) {
 	client := fake.NewSimpleClientset()
@@ -300,7 +312,7 @@ func newReconcileTest(t *testing.T, client *fake.Clientset, rbacDef rbacmanagerv
 
 func newReconcileNamespaceChangesTest(t *testing.T, client *fake.Clientset, rbacDef rbacmanagerv1beta1.RBACDefinition, expectedRb []rbacv1.RoleBinding) {
 	r := Reconciler{Clientset: client}
-	r.Reconcile(&rbacDef)
+	r.ReconcileNamespaceChange(&rbacDef)
 	expectRoleBindings(t, client, expectedRb)
 }
 
@@ -313,7 +325,7 @@ func testEmptyExample(t *testing.T, client *fake.Clientset, name string) {
 }
 
 func expectClusterRoleBindings(t *testing.T, client *fake.Clientset, expected []rbacv1.ClusterRoleBinding) {
-	actual, err := client.RbacV1().ClusterRoleBindings().List(listOptions)
+	actual, err := client.RbacV1().ClusterRoleBindings().List(ListOptions)
 
 	if err != nil {
 		t.Fatal(err)
@@ -339,7 +351,7 @@ func expectClusterRoleBindings(t *testing.T, client *fake.Clientset, expected []
 }
 
 func expectRoleBindings(t *testing.T, client *fake.Clientset, expected []rbacv1.RoleBinding) {
-	actual, err := client.RbacV1().RoleBindings("").List(listOptions)
+	actual, err := client.RbacV1().RoleBindings("").List(ListOptions)
 
 	if err != nil {
 		t.Fatal(err)

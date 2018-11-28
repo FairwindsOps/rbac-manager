@@ -23,7 +23,6 @@ import (
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes"
-	rest "k8s.io/client-go/rest"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
@@ -40,7 +39,14 @@ func Add(mgr manager.Manager) error {
 
 // newReconciler returns a new reconcile.Reconciler
 func newReconciler(mgr manager.Manager) reconcile.Reconciler {
-	return &ReconcileRBACDefinition{Client: mgr.GetClient(), config: mgr.GetConfig(), scheme: mgr.GetScheme()}
+	clientset, err := kubernetes.NewForConfig(mgr.GetConfig())
+
+	if err != nil {
+		// If we can't get a clientset we can't do anything else
+		panic(err)
+	}
+
+	return &ReconcileRBACDefinition{Client: mgr.GetClient(), clientset: clientset, scheme: mgr.GetScheme()}
 }
 
 // add adds a new Controller to mgr with r as the reconcile.Reconciler
@@ -63,22 +69,14 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 // ReconcileRBACDefinition reconciles a RBACDefinition object
 type ReconcileRBACDefinition struct {
 	client.Client
-	scheme *runtime.Scheme
-	config *rest.Config
+	scheme    *runtime.Scheme
+	clientset kubernetes.Interface
 }
 
 // Reconcile makes changes in response to RBACDefinition changes
 func (r *ReconcileRBACDefinition) Reconcile(request reconcile.Request) (reconcile.Result, error) {
 	var err error
-	rdr := Reconciler{}
-
-	// Full Kubernetes ClientSet is required because RBAC types don't
-	//   implement methods required for Kubebuilder methods to work
-	rdr.Clientset, err = kubernetes.NewForConfig(r.config)
-
-	if err != nil {
-		return reconcile.Result{}, err
-	}
+	rdr := Reconciler{Clientset: r.clientset}
 
 	// Fetch the RBACDefinition instance
 	rbacDef := &rbacmanagerv1beta1.RBACDefinition{}
