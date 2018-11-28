@@ -18,8 +18,7 @@ jobs:
 
     steps:
       - checkout
-      - *kubebuilder_setup
-      - run: go test -mod vendor ./pkg/controller/rbacdefinition/... -coverprofile cover.out
+      - run: go test -mod vendor ./pkg/controller/... -coverprofile cover.out
 
   build:
     docker:
