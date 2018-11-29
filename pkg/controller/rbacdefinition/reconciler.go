@@ -34,7 +34,7 @@ type Reconciler struct {
 
 // ReconcileNamespaceChange reconciles relevant portions of RBAC Definitions
 //   after changes to namespaces within the cluster
-func (r *Reconciler) ReconcileNamespaceChange(rbacDef *rbacmanagerv1beta1.RBACDefinition) error {
+func (r *Reconciler) ReconcileNamespaceChange(rbacDef *rbacmanagerv1beta1.RBACDefinition, namespace *v1.Namespace) error {
 	r.ownerRefs = rbacDefOwnerRefs(rbacDef)
 
 	p := Parser{
@@ -43,7 +43,7 @@ func (r *Reconciler) ReconcileNamespaceChange(rbacDef *rbacmanagerv1beta1.RBACDe
 	}
 
 	if p.hasNamespaceSelectors(rbacDef) {
-		logrus.Infof("Partial reconcile due to Namespace change %v", rbacDef.Name)
+		logrus.Infof("Reconciling %v namespace for %v", namespace.Name, rbacDef.Name)
 		p.parseRoleBindings(rbacDef)
 		err := r.reconcileRoleBindings(&p.parsedRoleBindings)
 		if err != nil {

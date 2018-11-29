@@ -80,7 +80,7 @@ func (r *ReconcileNamespace) Reconcile(request reconcile.Request) (reconcile.Res
 	err = r.Get(context.TODO(), request.NamespacedName, namespace)
 	if err != nil {
 		if errors.IsNotFound(err) {
-			err = reconcileNamespace(r.config)
+			err = reconcileNamespace(r.config, namespace)
 			if err != nil {
 				return reconcile.Result{}, err
 			}
@@ -90,7 +90,7 @@ func (r *ReconcileNamespace) Reconcile(request reconcile.Request) (reconcile.Res
 		return reconcile.Result{}, err
 	}
 
-	err = reconcileNamespace(r.config)
+	err = reconcileNamespace(r.config, namespace)
 	if err != nil {
 		return reconcile.Result{}, err
 	}
@@ -98,7 +98,7 @@ func (r *ReconcileNamespace) Reconcile(request reconcile.Request) (reconcile.Res
 	return reconcile.Result{}, nil
 }
 
-func reconcileNamespace(config *rest.Config) error {
+func reconcileNamespace(config *rest.Config, namespace *v1.Namespace) error {
 	var err error
 	rdr := rbacdefinition.Reconciler{}
 
@@ -113,7 +113,7 @@ func reconcileNamespace(config *rest.Config) error {
 	rbacDefList, err := getRbacDefinitions(config)
 
 	for _, rbacDef := range rbacDefList.Items {
-		err = rdr.ReconcileNamespaceChange(&rbacDef)
+		err = rdr.ReconcileNamespaceChange(&rbacDef, namespace)
 		if err != nil {
 			return err
 		}
