@@ -312,7 +312,10 @@ func newReconcileTest(t *testing.T, client *fake.Clientset, rbacDef rbacmanagerv
 
 func newReconcileNamespaceChangesTest(t *testing.T, client *fake.Clientset, rbacDef rbacmanagerv1beta1.RBACDefinition, expectedRb []rbacv1.RoleBinding) {
 	r := Reconciler{Clientset: client}
-	r.ReconcileNamespaceChange(&rbacDef)
+	// Namespace doesn't matter here, just used for logging
+	r.ReconcileNamespaceChange(&rbacDef, &corev1.Namespace{
+		ObjectMeta: metav1.ObjectMeta{Name: "test"},
+	})
 	expectRoleBindings(t, client, expectedRb)
 }
 
