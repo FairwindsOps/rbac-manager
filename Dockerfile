@@ -3,7 +3,7 @@ WORKDIR /go/src/github.com/reactiveops/rbac-manager/
 ENV GO111MODULE "on"
 
 COPY . .
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -mod vendor -a -o rbac-manager ./cmd/controller-manager/main.go
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -mod vendor -a -o rbac-manager ./cmd/manager/main.go
 
 FROM alpine:3.8
 WORKDIR /usr/local/bin
@@ -13,4 +13,4 @@ USER nobody
 COPY --from=build-env /go/src/github.com/reactiveops/rbac-manager/rbac-manager .
 
 ENTRYPOINT ["rbac-manager"]
-CMD ["--install-crds=false"]
+CMD ["--log-level=info"]

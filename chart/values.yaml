@@ -1,6 +1,6 @@
 image:
   repository: quay.io/reactiveops/rbac-manager
-  tag: 0.4.3
+  tag: 0.5.0
   pullPolicy: Always
 resources:
   requests:
@@ -32,4 +32,3 @@ global:
   hyperkube:
     repository: quay.io/coreos/hyperkube
     tag: v1.7.6_coreos.0
-

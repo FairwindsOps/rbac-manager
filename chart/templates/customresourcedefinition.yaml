@@ -2,14 +2,12 @@
 apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
+  name: rbacdefinitions.rbacmanager.reactiveops.io
   labels:
-    api: rbac-manager
-    kubebuilder.k8s.io: 0.1.11
     app: {{ template "rbac-manager.name" . }}
     chart: {{ template "rbac-manager.chart" . }}
     release: {{ .Release.Name }}
     heritage: {{ .Release.Service }}
-  name: rbacdefinitions.rbacmanager.reactiveops.io
 spec:
   group: rbacmanager.reactiveops.io
   names:
@@ -46,6 +44,11 @@ spec:
                       type: string
                     namespace:
                       type: string
+                    namespaceSelector:
+                      type: object
+                      properties:
+                        matchLabels:
+                          type: object
                     role:
                       type: string
                   type: object
