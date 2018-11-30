@@ -15,5 +15,6 @@
 package version
 
 var (
+	// Version represents the current version of RBAC Manager
 	Version = "0.5.0"
 )
