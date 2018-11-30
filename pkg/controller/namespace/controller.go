@@ -100,6 +100,7 @@ func (r *ReconcileNamespace) Reconcile(request reconcile.Request) (reconcile.Res
 
 func reconcileNamespace(config *rest.Config, namespace *v1.Namespace) error {
 	var err error
+	var rbacDefList rbacmanagerv1beta1.RBACDefinitionList
 	rdr := rbacdefinition.Reconciler{}
 
 	// Full Kubernetes ClientSet is required because RBAC types don't
@@ -110,7 +111,7 @@ func reconcileNamespace(config *rest.Config, namespace *v1.Namespace) error {
 		return err
 	}
 
-	rbacDefList, err := getRbacDefinitions(config)
+	rbacDefList, err = getRbacDefinitions(config)
 
 	for _, rbacDef := range rbacDefList.Items {
 		err = rdr.ReconcileNamespaceChange(&rbacDef, namespace)
