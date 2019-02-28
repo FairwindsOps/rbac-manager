@@ -80,7 +80,8 @@ With RBAC Manager, each RBAC Definition "owns" any resources it creates, and wil
 RBAC Manager is simple to install with either the Helm chart or Kubernetes deployment YAML included in this repo:
 
 ```
-helm install chart/ --name rbac-manager --namespace rbac-manager
+helm repo add reactiveops-stable https://charts.reactiveops.com/stable
+helm install reactiveops-stable/rbac-manager --name rbac-manager --namespace rbac-manager
 ```
 
 ```
