@@ -15,8 +15,9 @@
 package rbacdefinition
 
 import (
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 
 	rbacmanagerv1beta1 "github.com/reactiveops/rbac-manager/pkg/apis/rbacmanager/v1beta1"
 	corev1 "k8s.io/api/core/v1"
@@ -60,8 +61,10 @@ func TestParseStandard(t *testing.T) {
 			Name: "sue",
 		}},
 		RoleBindings: []rbacmanagerv1beta1.RoleBinding{{
-			NamespaceSelector: metav1.LabelSelector{MatchLabels: map[string]string{"team": "devs"}},
-			ClusterRole:       "edit",
+			NamespaceSelector: metav1.LabelSelector{
+				MatchLabels: map[string]string{"team": "devs"},
+			},
+			ClusterRole: "edit",
 		}},
 	}}
 
@@ -119,6 +122,108 @@ func TestParseStandard(t *testing.T) {
 	}})
 }
 
+func TestParseLabels(t *testing.T) {
+	client := fake.NewSimpleClientset()
+	rbacDef := rbacmanagerv1beta1.RBACDefinition{}
+	rbacDef.Name = "rbac-config"
+
+	createNamespace(t, client, "web", map[string]string{"app": "web", "team": "devs"})
+	createNamespace(t, client, "api", map[string]string{"app": "api", "team": "devs"})
+
+	rbacDef.RBACBindings = []rbacmanagerv1beta1.RBACBinding{{
+		Name: "devs",
+		Subjects: []rbacv1.Subject{{
+			Kind: rbacv1.UserKind,
+			Name: "sue",
+		}},
+		RoleBindings: []rbacmanagerv1beta1.RoleBinding{{
+			NamespaceSelector: metav1.LabelSelector{
+				MatchLabels: map[string]string{"team": "devs"},
+			},
+			ClusterRole: "edit",
+		}},
+	}}
+
+	// api and web edit access
+	newParseTest(t, client, rbacDef, []rbacv1.RoleBinding{{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "rbac-config-devs-edit",
+			Namespace: "web",
+		},
+		RoleRef: rbacv1.RoleRef{
+			Kind: "ClusterRole",
+			Name: "edit",
+		},
+		Subjects: []rbacv1.Subject{{
+			Kind: rbacv1.UserKind,
+			Name: "sue",
+		}},
+	}, {
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "rbac-config-devs-edit",
+			Namespace: "api",
+		},
+		RoleRef: rbacv1.RoleRef{
+			Kind: "ClusterRole",
+			Name: "edit",
+		},
+		Subjects: []rbacv1.Subject{{
+			Kind: rbacv1.UserKind,
+			Name: "sue",
+		}},
+	}}, []rbacv1.ClusterRoleBinding{}, []corev1.ServiceAccount{})
+
+	rbacDef.RBACBindings[0].RoleBindings[0].NamespaceSelector = metav1.LabelSelector{
+		MatchLabels: map[string]string{"team": "devs"},
+		MatchExpressions: []metav1.LabelSelectorRequirement{{
+			Key:      "app",
+			Operator: metav1.LabelSelectorOpIn,
+			Values:   []string{"web", "queue"},
+		}},
+	}
+
+	// api edit access
+	newParseTest(t, client, rbacDef, []rbacv1.RoleBinding{{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "rbac-config-devs-edit",
+			Namespace: "web",
+		},
+		RoleRef: rbacv1.RoleRef{
+			Kind: "ClusterRole",
+			Name: "edit",
+		},
+		Subjects: []rbacv1.Subject{{
+			Kind: rbacv1.UserKind,
+			Name: "sue",
+		}},
+	}}, []rbacv1.ClusterRoleBinding{}, []corev1.ServiceAccount{})
+
+	rbacDef.RBACBindings[0].RoleBindings[0].NamespaceSelector = metav1.LabelSelector{
+		MatchExpressions: []metav1.LabelSelectorRequirement{{
+			Key:      "app",
+			Operator: metav1.LabelSelectorOpNotIn,
+			Values:   []string{"api", "queue"},
+		}},
+	}
+
+	// web edit access
+	newParseTest(t, client, rbacDef, []rbacv1.RoleBinding{{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "rbac-config-devs-edit",
+			Namespace: "web",
+		},
+		RoleRef: rbacv1.RoleRef{
+			Kind: "ClusterRole",
+			Name: "edit",
+		},
+		Subjects: []rbacv1.Subject{{
+			Kind: rbacv1.UserKind,
+			Name: "sue",
+		}},
+	}}, []rbacv1.ClusterRoleBinding{}, []corev1.ServiceAccount{})
+
+}
+
 func TestParseMissingNamespace(t *testing.T) {
 	client := fake.NewSimpleClientset()
 	rbacDef := rbacmanagerv1beta1.RBACDefinition{}
@@ -159,8 +264,10 @@ func TestParseMissingSubjects(t *testing.T) {
 		Name:     "devs",
 		Subjects: []rbacv1.Subject{},
 		RoleBindings: []rbacmanagerv1beta1.RoleBinding{{
-			NamespaceSelector: metav1.LabelSelector{MatchLabels: map[string]string{"team": "devs"}},
-			ClusterRole:       "edit",
+			NamespaceSelector: metav1.LabelSelector{
+				MatchLabels: map[string]string{"team": "devs"},
+			},
+			ClusterRole: "edit",
 		}},
 	}}
 
