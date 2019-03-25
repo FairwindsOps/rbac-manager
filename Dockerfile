@@ -1,11 +1,10 @@
-FROM golang:1.11 AS build-env
+FROM golang:1.12 AS build-env
 WORKDIR /go/src/github.com/reactiveops/rbac-manager/
-ENV GO111MODULE "on"
 
 COPY . .
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -mod vendor -a -o rbac-manager ./cmd/manager/main.go
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -o rbac-manager ./cmd/manager/main.go
 
-FROM alpine:3.8
+FROM alpine:3.9
 WORKDIR /usr/local/bin
 RUN apk --no-cache add ca-certificates
 

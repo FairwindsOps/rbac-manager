@@ -12,13 +12,13 @@ references:
 jobs:
   test:
     docker:
-      - image: circleci/golang:1.11
-        environment:
-          GO111MODULE: "on"
+      - image: circleci/golang:1.12
+
+    working_directory: /go/src/github.com/reactiveops/rbac-manager
 
     steps:
       - checkout
-      - run: go test -mod vendor ./pkg/controller/... -coverprofile cover.out
+      - run: go test ./pkg/controller/... -coverprofile cover.out
 
   build:
     docker:
