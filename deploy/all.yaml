@@ -178,8 +178,3 @@ spec:
           requests:
             cpu: 100m
             memory: 128Mi
-
----
-# Source: rbac-manager/templates/create-rbac-definition.yaml
-# This contains a job that will create a RBACDefinition
-# based on Helm values as a post install or upgrade hook
