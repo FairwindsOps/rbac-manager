@@ -36,8 +36,12 @@ rbacBindings:
             ci: edit
       - clusterRole: admin
         namespaceSelector:
-          matchLabels:
-            ci: admin
+          matchExpressions:
+            - key: app
+              operator: In
+              values:
+                - web
+                - queue
 ```
 
 In the above example, RBAC Manager will create the following resources:
@@ -45,7 +49,7 @@ In the above example, RBAC Manager will create the following resources:
 - A Role Binding that gives Dave and Joe edit access in the web namespace
 - A Role Binding that gives Dave and Joe view access in the api namespace
 - A Service Account named ci-bot in the rbac-manager namespace
-- Role Binding(s) that grant the ci-bot Service Account edit access in all namespaces with `ci=edit` namespaces
-- Role Binding(s) that grant the ci-bot Service Account view access in all namespaces with `ci=view` namespaces
+- Role Binding(s) that grant the ci-bot Service Account edit access in all namespaces with `ci=edit` labels
+- Role Binding(s) that grant the ci-bot Service Account admin access in all namespaces with `app=web` or `app=queue` labels
 
 There are more examples of RBAC Definitions in the examples directory of this repo.

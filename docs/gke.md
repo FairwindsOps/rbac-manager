@@ -1,6 +1,15 @@
 # Authentication With Google Kubernetes Engine
 Google Kubernetes Engine (GKE) takes a unique approach to auth. Google IAM users are automatically mapped to Kubernetes RBAC users. Unfortunately there is no mapping for IAM groups to RBAC groups with GKE at this point.
 
+## Initial RBAC Setup on GKE
+The first time you configure RBAC on a GKE cluster, you may need to first grant yourself RBAC access. That can be accomplished with a command like this:
+
+```
+kubectl create clusterrolebinding initial-cluster-admin \
+    --clusterrole=cluster-admin \
+    --user=$(gcloud config get-value account)
+```
+
 ## A Simple RBAC Definition for GKE
 Google IAM users are mapped to Kubernetes RBAC users with their email as the username. This is also the case for Google IAM Service accounts. That makes RBAC Bindings very straightforward:
 

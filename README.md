@@ -110,7 +110,7 @@ rbacBindings:
             team: dev
 ```
 
-In the example above, Role Bindings would automatically get created for each Namespace with a `team=dev` label.
+In the example above, Role Bindings would automatically get created for each Namespace with a `team=dev` label. This supports the same functionality as other Kubernetes label selectors, read the [official docs](https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/) for more information.
 
 ## Further Reading
 
