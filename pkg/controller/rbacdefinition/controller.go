@@ -46,7 +46,11 @@ func newReconciler(mgr manager.Manager) reconcile.Reconciler {
 		panic(err)
 	}
 
-	return &ReconcileRBACDefinition{Client: mgr.GetClient(), clientset: clientset, scheme: mgr.GetScheme()}
+	return &ReconcileRBACDefinition{
+		Client:    mgr.GetClient(),
+		clientset: clientset,
+		scheme:    mgr.GetScheme(),
+	}
 }
 
 // add adds a new Controller to mgr with r as the reconcile.Reconciler
@@ -58,7 +62,10 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 	}
 
 	// Watch for changes to RBACDefinition
-	err = c.Watch(&source.Kind{Type: &rbacmanagerv1beta1.RBACDefinition{}}, &handler.EnqueueRequestForObject{})
+	err = c.Watch(&source.Kind{
+		Type: &rbacmanagerv1beta1.RBACDefinition{},
+	}, &handler.EnqueueRequestForObject{})
+
 	if err != nil {
 		return err
 	}

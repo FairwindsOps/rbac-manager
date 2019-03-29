@@ -74,11 +74,11 @@ When it comes to potential CI automation of changes to RBAC configuration, track
 With RBAC Manager, each RBAC Definition "owns" any resources it creates, and will always compare the desired state in the current RBAC Definition with the list of resources currently owned by it. If a Role Binding is no longer included in a RBAC Definition, RBAC Manager will automatically remove it.
 
 ## Getting Started
-RBAC Manager is simple to install with either the Helm chart or Kubernetes deployment YAML included in this repo:
+RBAC Manager is simple to install with either the [Helm chart](https://github.com/reactiveops/charts/tree/master/stable/rbac-manager) or Kubernetes deployment YAML included in this repo:
 
 ```
 helm repo add reactiveops-stable https://charts.reactiveops.com/stable
-helm install --name rbac-manager --namespace rbac-manager reactiveops-stable/rbac-manager
+helm install reactiveops-stable/rbac-manager --name rbac-manager --namespace rbac-manager
 ```
 
 ```
