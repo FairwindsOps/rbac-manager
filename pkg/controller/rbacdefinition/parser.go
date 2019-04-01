@@ -6,10 +6,9 @@ import (
 
 	rbacmanagerv1beta1 "github.com/reactiveops/rbac-manager/pkg/apis/rbacmanager/v1beta1"
 	logrus "github.com/sirupsen/logrus"
-	"k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/client-go/kubernetes"
 )
 
@@ -130,12 +129,19 @@ func (p *Parser) parseRoleBinding(
 
 	objectMeta.Name = fmt.Sprintf("%v-%v", prefix, requestedRoleName)
 
-	if rb.NamespaceSelector.MatchLabels != nil {
+	if rb.NamespaceSelector.MatchLabels != nil || len(rb.NamespaceSelector.MatchExpressions) > 0 {
 		logrus.Debugf("Processing Namespace Selector %v", rb.NamespaceSelector)
 
-		listOptions := metav1.ListOptions{LabelSelector: labels.Set(rb.NamespaceSelector.MatchLabels).String()}
+		selector, err := metav1.LabelSelectorAsSelector(&rb.NamespaceSelector)
+		if err != nil {
+			logrus.Debug("Error parsing label selector")
+			return err
+		}
+
+		listOptions := metav1.ListOptions{LabelSelector: selector.String()}
 		namespaces, err := p.Clientset.CoreV1().Namespaces().List(listOptions)
 		if err != nil {
+			logrus.Debug("Error listing namespaces")
 			return err
 		}
 

@@ -104,7 +104,7 @@ func reconcileNamespace(config *rest.Config, namespace *v1.Namespace) error {
 	rdr := rbacdefinition.Reconciler{}
 
 	// Full Kubernetes ClientSet is required because RBAC types don't
-	//   implement methods required for Kubebuilder methods to work
+	//   implement methods required for controller-runtime methods to work
 	rdr.Clientset, err = kubernetes.NewForConfig(config)
 
 	if err != nil {

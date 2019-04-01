@@ -18,17 +18,19 @@ package envtest
 
 import (
 	"fmt"
-	"net"
 	"os"
 	"path/filepath"
-	"strings"
 	"time"
 
 	apiextensionsv1beta1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	"k8s.io/client-go/rest"
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
 	"sigs.k8s.io/testing_frameworks/integration"
+
+	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 )
+
+var log = logf.KBLog.WithName("test-env")
 
 // Default binary path for test framework
 const (
@@ -55,14 +57,13 @@ func defaultAssetPath(binary string) string {
 
 }
 
-// APIServerDefaultArgs are flags necessary to bring up apiserver.
-// TODO: create test framework interface to append flag to default flags.
-var defaultKubeAPIServerFlags = []string{
+// DefaultKubeAPIServerFlags are default flags necessary to bring up apiserver.
+var DefaultKubeAPIServerFlags = []string{
 	"--etcd-servers={{ if .EtcdURL }}{{ .EtcdURL.String }}{{ end }}",
 	"--cert-dir={{ .CertDir }}",
 	"--insecure-port={{ if .URL }}{{ .URL.Port }}{{ end }}",
 	"--insecure-bind-address={{ if .URL }}{{ .URL.Hostname }}{{ end }}",
-	"--secure-port=0",
+	"--secure-port={{ if .SecurePort }}{{ .SecurePort }}{{ end }}",
 	"--admission-control=AlwaysAdmit",
 }
 
@@ -86,15 +87,18 @@ type Environment struct {
 	// This is useful in cases that need aggregated API servers and the like.
 	UseExistingCluster bool
 
-	// ControlPlaneStartTimeout is the the maximum duration each controlplane component
+	// ControlPlaneStartTimeout is the maximum duration each controlplane component
 	// may take to start. It defaults to the KUBEBUILDER_CONTROLPLANE_START_TIMEOUT
 	// environment variable or 20 seconds if unspecified
 	ControlPlaneStartTimeout time.Duration
 
-	// ControlPlaneStopTimeout is the the maximum duration each controlplane component
+	// ControlPlaneStopTimeout is the maximum duration each controlplane component
 	// may take to stop. It defaults to the KUBEBUILDER_CONTROLPLANE_STOP_TIMEOUT
 	// environment variable or 20 seconds if unspecified
 	ControlPlaneStopTimeout time.Duration
+
+	// KubeAPIServerFlags is the set of flags passed while starting the api server.
+	KubeAPIServerFlags []string
 }
 
 // Stop stops a running server
@@ -105,12 +109,23 @@ func (te *Environment) Stop() error {
 	return te.ControlPlane.Stop()
 }
 
+// getAPIServerFlags returns flags to be used with the Kubernetes API server.
+func (te Environment) getAPIServerFlags() []string {
+	// Set default API server flags if not set.
+	if len(te.KubeAPIServerFlags) == 0 {
+		return DefaultKubeAPIServerFlags
+	}
+	return te.KubeAPIServerFlags
+}
+
 // Start starts a local Kubernetes server and updates te.ApiserverPort with the port it is listening on
 func (te *Environment) Start() (*rest.Config, error) {
 	if te.UseExistingCluster {
+		log.V(1).Info("using existing cluster")
 		if te.Config == nil {
 			// we want to allow people to pass in their own config, so
 			// only load a config if it hasn't already been set.
+			log.V(1).Info("automatically acquiring client configuration")
 
 			var err error
 			te.Config, err = config.GetConfig()
@@ -120,7 +135,7 @@ func (te *Environment) Start() (*rest.Config, error) {
 		}
 	} else {
 		te.ControlPlane = integration.ControlPlane{}
-		te.ControlPlane.APIServer = &integration.APIServer{Args: defaultKubeAPIServerFlags}
+		te.ControlPlane.APIServer = &integration.APIServer{Args: te.getAPIServerFlags()}
 		te.ControlPlane.Etcd = &integration.Etcd{}
 
 		if os.Getenv(envKubeAPIServerBin) == "" {
@@ -144,6 +159,7 @@ func (te *Environment) Start() (*rest.Config, error) {
 		te.ControlPlane.APIServer.StartTimeout = te.ControlPlaneStartTimeout
 		te.ControlPlane.APIServer.StopTimeout = te.ControlPlaneStopTimeout
 
+		log.V(1).Info("starting control plane", "api server flags", te.ControlPlane.APIServer.Args)
 		if err := te.startControlPlane(); err != nil {
 			return nil, err
 		}
@@ -154,6 +170,7 @@ func (te *Environment) Start() (*rest.Config, error) {
 		}
 	}
 
+	log.V(1).Info("installing CRDs")
 	_, err := InstallCRDs(te.Config, CRDInstallOptions{
 		Paths: te.CRDDirectoryPaths,
 		CRDs:  te.CRDs,
@@ -163,26 +180,17 @@ func (te *Environment) Start() (*rest.Config, error) {
 
 func (te *Environment) startControlPlane() error {
 	numTries, maxRetries := 0, 5
+	var err error
 	for ; numTries < maxRetries; numTries++ {
 		// Start the control plane - retry if it fails
-		err := te.ControlPlane.Start()
+		err = te.ControlPlane.Start()
 		if err == nil {
 			break
 		}
-		// code snippet copied from following answer on stackoverflow
-		// https://stackoverflow.com/questions/51151973/catching-bind-address-already-in-use-in-golang
-		if opErr, ok := err.(*net.OpError); ok {
-			if opErr.Op == "listen" && strings.Contains(opErr.Error(), "address already in use") {
-				if stopErr := te.ControlPlane.Stop(); stopErr != nil {
-					return fmt.Errorf("failed to stop controlplane in response to bind error 'address already in use'")
-				}
-			}
-		} else {
-			return err
-		}
+		log.Error(err, "unable to start the controlplane", "tries", numTries)
 	}
 	if numTries == maxRetries {
-		return fmt.Errorf("failed to start the controlplane. retried %d times", numTries)
+		return fmt.Errorf("failed to start the controlplane. retried %d times: %v", numTries, err)
 	}
 	return nil
 }

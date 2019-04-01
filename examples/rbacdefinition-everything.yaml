@@ -34,4 +34,10 @@ rbacBindings:
       - clusterRole: view
     roleBindings:
       - clusterRole: admin
-        namespace: default
+        namespaceSelector:
+          matchExpressions:
+            - key: app
+              operator: In
+              values:
+                - web
+                - queue
