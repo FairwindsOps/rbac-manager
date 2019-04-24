@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package watchers
+package watcher
 
 import (
 	kube "github.com/reactiveops/rbac-manager/pkg/kube"

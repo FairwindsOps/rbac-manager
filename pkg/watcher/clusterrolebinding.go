@@ -14,11 +14,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package watchers
+package watcher
 
 import (
-	rbacdef "github.com/reactiveops/rbac-manager/pkg/controller/rbacdefinition"
 	kube "github.com/reactiveops/rbac-manager/pkg/kube"
+	"github.com/reactiveops/rbac-manager/pkg/reconciler"
 	"github.com/sirupsen/logrus"
 
 	rbacv1 "k8s.io/api/rbac/v1"
@@ -43,7 +43,7 @@ func watchClusterRoleBindings(clientset *kubernetes.Clientset) error {
 		}
 
 		if event.Type == watch.Modified || event.Type == watch.Deleted {
-			rbacdef.ReconcileOwners(crb.OwnerReferences, "ClusterRoleBinding")
+			reconciler.ReconcileOwners(crb.OwnerReferences, "ClusterRoleBinding")
 		}
 	}
 	return nil

@@ -22,7 +22,7 @@ import (
 
 	"github.com/reactiveops/rbac-manager/pkg/apis"
 	"github.com/reactiveops/rbac-manager/pkg/controller"
-	"github.com/reactiveops/rbac-manager/pkg/watchers"
+	"github.com/reactiveops/rbac-manager/pkg/watcher"
 	"github.com/reactiveops/rbac-manager/version"
 
 	logrus "github.com/sirupsen/logrus"
@@ -83,7 +83,7 @@ func main() {
 
 	// Watch Related Resources
 	logrus.Debug("Watch related resources")
-	if err := watchers.WatchRelatedResources(); err != nil {
+	if err := watcher.WatchRelatedResources(); err != nil {
 		logrus.Error(err, "unable to watch related resources")
 		os.Exit(1)
 	}

@@ -19,6 +19,8 @@ package rbacdefinition
 import (
 	"context"
 
+	"github.com/reactiveops/rbac-manager/pkg/reconciler"
+
 	rbacmanagerv1beta1 "github.com/reactiveops/rbac-manager/pkg/apis/rbacmanager/v1beta1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -83,7 +85,7 @@ type ReconcileRBACDefinition struct {
 // Reconcile makes changes in response to RBACDefinition changes
 func (r *ReconcileRBACDefinition) Reconcile(request reconcile.Request) (reconcile.Result, error) {
 	var err error
-	rdr := Reconciler{Clientset: r.clientset}
+	rdr := reconciler.Reconciler{Clientset: r.clientset}
 
 	// Fetch the RBACDefinition instance
 	rbacDef := &rbacmanagerv1beta1.RBACDefinition{}

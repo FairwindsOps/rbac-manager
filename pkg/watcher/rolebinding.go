@@ -14,12 +14,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package watchers
+package watcher
 
 import (
 	"log"
 
 	kube "github.com/reactiveops/rbac-manager/pkg/kube"
+	"github.com/reactiveops/rbac-manager/pkg/reconciler"
 	"github.com/sirupsen/logrus"
 
 	rbacv1 "k8s.io/api/rbac/v1"
@@ -46,7 +47,7 @@ func watchRoleBindings(clientset *kubernetes.Clientset) error {
 		log.Printf("RB %v", rb)
 
 		if event.Type == watch.Modified || event.Type == watch.Deleted {
-			log.Printf("RB event %v", event.Type)
+			reconciler.ReconcileOwners(rb.OwnerReferences, "RoleBinding")
 		}
 	}
 	return nil

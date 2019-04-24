@@ -14,11 +14,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package watchers
+package watcher
 
 import (
-	rbacdef "github.com/reactiveops/rbac-manager/pkg/controller/rbacdefinition"
 	kube "github.com/reactiveops/rbac-manager/pkg/kube"
+	"github.com/reactiveops/rbac-manager/pkg/reconciler"
 	"github.com/sirupsen/logrus"
 
 	corev1 "k8s.io/api/core/v1"
@@ -37,13 +37,13 @@ func watchServiceAccounts(clientset *kubernetes.Clientset) error {
 	ch := watcher.ResultChan()
 
 	for event := range ch {
-		crb, ok := event.Object.(*corev1.ServiceAccount)
+		sa, ok := event.Object.(*corev1.ServiceAccount)
 		if !ok {
 			logrus.Error(err, "Could not parse Service Account")
 		}
 
 		if event.Type == watch.Modified || event.Type == watch.Deleted {
-			rbacdef.ReconcileOwners(crb.OwnerReferences, "ServiceAccount")
+			reconciler.ReconcileOwners(sa.OwnerReferences, "ServiceAccount")
 		}
 	}
 	return nil

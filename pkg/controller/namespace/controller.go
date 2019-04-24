@@ -20,8 +20,8 @@ import (
 	"context"
 
 	rbacmanagerv1beta1 "github.com/reactiveops/rbac-manager/pkg/apis/rbacmanager/v1beta1"
-	"github.com/reactiveops/rbac-manager/pkg/controller/rbacdefinition"
 	"github.com/reactiveops/rbac-manager/pkg/kube"
+	"github.com/reactiveops/rbac-manager/pkg/reconciler"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -100,7 +100,7 @@ func (r *ReconcileNamespace) Reconcile(request reconcile.Request) (reconcile.Res
 func reconcileNamespace(config *rest.Config, namespace *v1.Namespace) error {
 	var err error
 	var rbacDefList rbacmanagerv1beta1.RBACDefinitionList
-	rdr := rbacdefinition.Reconciler{}
+	rdr := reconciler.Reconciler{}
 
 	// Full Kubernetes ClientSet is required because RBAC types don't
 	//   implement methods required for controller-runtime methods to work
