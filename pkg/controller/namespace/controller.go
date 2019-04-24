@@ -21,12 +21,11 @@ import (
 
 	rbacmanagerv1beta1 "github.com/reactiveops/rbac-manager/pkg/apis/rbacmanager/v1beta1"
 	"github.com/reactiveops/rbac-manager/pkg/controller/rbacdefinition"
-	"k8s.io/api/core/v1"
+	"github.com/reactiveops/rbac-manager/pkg/kube"
+	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/runtime/serializer"
 	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/kubernetes/scheme"
 	rest "k8s.io/client-go/rest"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
@@ -111,7 +110,7 @@ func reconcileNamespace(config *rest.Config, namespace *v1.Namespace) error {
 		return err
 	}
 
-	rbacDefList, err = getRbacDefinitions(config)
+	rbacDefList, err = kube.GetRbacDefinitions()
 
 	for _, rbacDef := range rbacDefList.Items {
 		err = rdr.ReconcileNamespaceChange(&rbacDef, namespace)
@@ -121,25 +120,4 @@ func reconcileNamespace(config *rest.Config, namespace *v1.Namespace) error {
 	}
 
 	return nil
-}
-
-func getRbacDefinitions(config *rest.Config) (rbacmanagerv1beta1.RBACDefinitionList, error) {
-	list := rbacmanagerv1beta1.RBACDefinitionList{}
-
-	rbacmanagerv1beta1.AddToScheme(scheme.Scheme)
-	clientConfig := *config
-	clientConfig.ContentConfig.GroupVersion = &rbacmanagerv1beta1.SchemeGroupVersion
-	clientConfig.APIPath = "/apis"
-	clientConfig.NegotiatedSerializer = serializer.DirectCodecFactory{CodecFactory: scheme.Codecs}
-	clientConfig.UserAgent = rest.DefaultKubernetesUserAgent()
-
-	client, err := rest.UnversionedRESTClientFor(&clientConfig)
-
-	if err != nil {
-		return list, err
-	}
-
-	err = client.Get().Resource("rbacdefinitions").Do().Into(&list)
-
-	return list, err
 }

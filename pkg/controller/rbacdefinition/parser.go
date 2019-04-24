@@ -191,6 +191,15 @@ func (p *Parser) hasNamespaceSelectors(rbacDef *rbacmanagerv1beta1.RBACDefinitio
 	return false
 }
 
+func (p *Parser) parseClusterRoleBindings(rbacDef *rbacmanagerv1beta1.RBACDefinition) {
+	for _, rbacBinding := range rbacDef.RBACBindings {
+		for _, clusterRoleBinding := range rbacBinding.ClusterRoleBindings {
+			namePrefix := rdNamePrefix(rbacDef, &rbacBinding)
+			p.parseClusterRoleBinding(clusterRoleBinding, rbacBinding.Subjects, namePrefix)
+		}
+	}
+}
+
 func (p *Parser) parseRoleBindings(rbacDef *rbacmanagerv1beta1.RBACDefinition) {
 	for _, rbacBinding := range rbacDef.RBACBindings {
 		for _, roleBinding := range rbacBinding.RoleBindings {

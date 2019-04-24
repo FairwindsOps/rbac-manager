@@ -19,10 +19,10 @@ package main
 import (
 	"flag"
 	"os"
-	"strings"
 
 	"github.com/reactiveops/rbac-manager/pkg/apis"
 	"github.com/reactiveops/rbac-manager/pkg/controller"
+	"github.com/reactiveops/rbac-manager/pkg/watchers"
 	"github.com/reactiveops/rbac-manager/version"
 
 	logrus "github.com/sirupsen/logrus"
@@ -37,15 +37,12 @@ var logLevel = flag.String("log-level", logrus.InfoLevel.String(), "Logrus log l
 func main() {
 	flag.Parse()
 
-	logLevel := logrus.InfoLevel
-
-	if parsed, err := logrus.ParseLevel(logLevel.String()); err == nil {
-		logLevel = parsed
+	parsedLevel, err := logrus.ParseLevel(*logLevel)
+	if err != nil {
+		// This should theoretically never happen
+		logrus.Errorf("log-level flag has invalid value %s", *logLevel)
 	} else {
-		// This should theoretically never happen assuming the enum flag
-		// is constructed correctly because the enum flag will not allow
-		//  an invalid value to be set.
-		logrus.Errorf("log-level flag has invalid value %s", strings.ToUpper(logLevel.String()))
+		logrus.SetLevel(parsedLevel)
 	}
 
 	logrus.Info("----------------------------------")
@@ -81,6 +78,13 @@ func main() {
 	logrus.Debug("Setting up controller")
 	if err := controller.AddToManager(mgr); err != nil {
 		logrus.Error(err, "unable to register controllers to the manager")
+		os.Exit(1)
+	}
+
+	// Watch Related Resources
+	logrus.Debug("Watch related resources")
+	if err := watchers.WatchRelatedResources(); err != nil {
+		logrus.Error(err, "unable to watch related resources")
 		os.Exit(1)
 	}
 

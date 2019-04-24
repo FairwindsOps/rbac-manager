@@ -17,9 +17,11 @@ package rbacdefinition
 import (
 	"reflect"
 
+	"github.com/reactiveops/rbac-manager/pkg/kube"
+
 	rbacmanagerv1beta1 "github.com/reactiveops/rbac-manager/pkg/apis/rbacmanager/v1beta1"
 	logrus "github.com/sirupsen/logrus"
-	"k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -51,6 +53,42 @@ func (r *Reconciler) ReconcileNamespaceChange(rbacDef *rbacmanagerv1beta1.RBACDe
 		}
 	}
 
+	return nil
+}
+
+// ReconcileOwners reconciles any RBACDefinitions found in owner references
+func ReconcileOwners(ownerRefs []metav1.OwnerReference, kind string) error {
+	for _, ownerRef := range ownerRefs {
+		if ownerRef.Kind == "RBACDefinition" {
+			rbacDef, err := kube.GetRbacDefinition(ownerRef.Name)
+			if err != nil {
+				return err
+			}
+
+			r := Reconciler{}
+			r.Clientset = kube.GetClientsetOrDie()
+			r.ownerRefs = rbacDefOwnerRefs(&rbacDef)
+
+			p := Parser{
+				Clientset: r.Clientset,
+				ownerRefs: r.ownerRefs,
+			}
+
+			if kind == "RoleBinding" {
+				p.parseRoleBindings(&rbacDef)
+				err := r.reconcileRoleBindings(&p.parsedRoleBindings)
+				if err != nil {
+					return err
+				}
+			} else if kind == "ClusterRoleBinding" {
+				p.parseClusterRoleBindings(&rbacDef)
+				err := r.reconcileClusterRoleBindings(&p.parsedClusterRoleBindings)
+				if err != nil {
+					return err
+				}
+			}
+		}
+	}
 	return nil
 }
 
