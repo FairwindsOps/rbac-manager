@@ -20,6 +20,8 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	rbacmanagerv1beta1 "github.com/reactiveops/rbac-manager/pkg/apis/rbacmanager/v1beta1"
+	"github.com/reactiveops/rbac-manager/pkg/kube"
+
 	corev1 "k8s.io/api/core/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -506,7 +508,7 @@ func testEmptyExample(t *testing.T, client *fake.Clientset, name string) {
 }
 
 func expectClusterRoleBindings(t *testing.T, client *fake.Clientset, expected []rbacv1.ClusterRoleBinding) {
-	actual, err := client.RbacV1().ClusterRoleBindings().List(ListOptions)
+	actual, err := client.RbacV1().ClusterRoleBindings().List(kube.ListOptions)
 
 	if err != nil {
 		t.Fatal(err)
@@ -532,7 +534,7 @@ func expectClusterRoleBindings(t *testing.T, client *fake.Clientset, expected []
 }
 
 func expectRoleBindings(t *testing.T, client *fake.Clientset, expected []rbacv1.RoleBinding) {
-	actual, err := client.RbacV1().RoleBindings("").List(ListOptions)
+	actual, err := client.RbacV1().RoleBindings("").List(kube.ListOptions)
 
 	if err != nil {
 		t.Fatal(err)

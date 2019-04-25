@@ -21,32 +21,37 @@ import (
 	"github.com/reactiveops/rbac-manager/pkg/reconciler"
 	"github.com/sirupsen/logrus"
 
-	rbacv1 "k8s.io/api/rbac/v1"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/runtime"
-	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/kubernetes"
 )
 
-func watchRoleBindings(clientset *kubernetes.Clientset) {
-	watcher, err := clientset.RbacV1().RoleBindings("").Watch(kube.ListOptions)
+func watchNamespaces(clientset *kubernetes.Clientset) {
+	watcher, err := clientset.CoreV1().Namespaces().Watch(kube.ListOptions)
 
 	if err != nil {
-		logrus.Error(err, "unable to watch Role Bindings")
+		logrus.Error(err, "unable to watch Namespaces")
 		runtime.HandleError(err)
 	}
 
 	ch := watcher.ResultChan()
 
 	for event := range ch {
-		rb, ok := event.Object.(*rbacv1.RoleBinding)
+		ns, ok := event.Object.(*corev1.Namespace)
 		if !ok {
-			logrus.Error("Could not parse Role Binding")
+			logrus.Error("Could not parse Namespace")
 		}
 
-		if event.Type == watch.Modified || event.Type == watch.Deleted {
-			logrus.Debugf("Reconciling RBACDefinition for %s RoleBinding after %s event", rb.Name, event.Type)
+		logrus.Debugf("Reconciling RBACDefinitions after %s event on  %s Namespace", ns.Name, event.Type)
+		rbacDefList, err := kube.GetRbacDefinitions()
+
+		for _, rbacDef := range rbacDefList.Items {
 			r := reconciler.Reconciler{Clientset: kube.GetClientsetOrDie()}
-			r.ReconcileOwners(rb.OwnerReferences, "RoleBinding")
+			err = r.ReconcileNamespaceChange(&rbacDef, ns)
+			if err != nil {
+				logrus.Error(err, "unable to reconcile namespace change")
+				runtime.HandleError(err)
+			}
 		}
 	}
 }

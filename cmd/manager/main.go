@@ -76,20 +76,17 @@ func main() {
 
 	// Setup all Controllers
 	logrus.Debug("Setting up controller")
-	if err := controller.AddToManager(mgr); err != nil {
-		logrus.Error(err, "unable to register controllers to the manager")
+	if err := controller.Add(mgr); err != nil {
+		logrus.Error(err, "unable to register controller to the manager")
 		os.Exit(1)
 	}
 
 	// Watch Related Resources
-	logrus.Debug("Watch related resources")
-	if err := watcher.WatchRelatedResources(); err != nil {
-		logrus.Error(err, "unable to watch related resources")
-		os.Exit(1)
-	}
+	logrus.Info("Watching resources related to RBAC Definitions")
+	watcher.WatchRelatedResources()
 
 	// Start the Cmd
-	logrus.Debug("Starting the command")
+	logrus.Info("Watching RBAC Definitions")
 	if err := mgr.Start(signals.SetupSignalHandler()); err != nil {
 		logrus.Error(err, "unable to run the manager")
 		os.Exit(1)

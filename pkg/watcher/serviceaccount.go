@@ -22,16 +22,17 @@ import (
 	"github.com/sirupsen/logrus"
 
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/kubernetes"
 )
 
-func watchServiceAccounts(clientset *kubernetes.Clientset) error {
+func watchServiceAccounts(clientset *kubernetes.Clientset) {
 	watcher, err := clientset.CoreV1().ServiceAccounts("").Watch(kube.ListOptions)
 
 	if err != nil {
 		logrus.Error(err, "unable to watch Service Accounts")
-		return err
+		runtime.HandleError(err)
 	}
 
 	ch := watcher.ResultChan()
@@ -39,12 +40,13 @@ func watchServiceAccounts(clientset *kubernetes.Clientset) error {
 	for event := range ch {
 		sa, ok := event.Object.(*corev1.ServiceAccount)
 		if !ok {
-			logrus.Error(err, "Could not parse Service Account")
+			logrus.Error("Could not parse Service Account")
 		}
 
 		if event.Type == watch.Modified || event.Type == watch.Deleted {
-			reconciler.ReconcileOwners(sa.OwnerReferences, "ServiceAccount")
+			logrus.Debugf("Reconciling RBACDefinition for %s ServiceAccount after %s event", sa.Name, event.Type)
+			r := reconciler.Reconciler{Clientset: kube.GetClientsetOrDie()}
+			r.ReconcileOwners(sa.OwnerReferences, "ServiceAccount")
 		}
 	}
-	return nil
 }
