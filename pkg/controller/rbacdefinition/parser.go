@@ -177,8 +177,14 @@ func (p *Parser) parseRoleBinding(
 func (p *Parser) hasNamespaceSelectors(rbacDef *rbacmanagerv1beta1.RBACDefinition) bool {
 	for _, rbacBinding := range rbacDef.RBACBindings {
 		for _, roleBinding := range rbacBinding.RoleBindings {
-			if roleBinding.Namespace == "" && roleBinding.NamespaceSelector.MatchLabels != nil {
-				return true
+			if roleBinding.Namespace == "" {
+				// Split these up instead of using || so we can test both paths.
+				if roleBinding.NamespaceSelector.MatchLabels != nil {
+					return true
+				}
+				if roleBinding.NamespaceSelector.MatchExpressions != nil {
+					return true
+				}
 			}
 		}
 	}
