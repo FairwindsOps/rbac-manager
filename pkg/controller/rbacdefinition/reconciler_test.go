@@ -15,8 +15,9 @@
 package rbacdefinition
 
 import (
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 
 	rbacmanagerv1beta1 "github.com/reactiveops/rbac-manager/pkg/apis/rbacmanager/v1beta1"
 	corev1 "k8s.io/api/core/v1"
@@ -183,12 +184,12 @@ func TestReconcileRbacDefInvalid(t *testing.T) {
 	newReconcileTest(t, client, rbacDef, []rbacv1.RoleBinding{}, []rbacv1.ClusterRoleBinding{}, []corev1.ServiceAccount{})
 }
 
-func TestReconcileNamespaceChanges(t *testing.T) {
+func TestReconcileNamespaceChangesLabels(t *testing.T) {
 	var err error
 
 	client := fake.NewSimpleClientset()
-	rbacDef := rbacmanagerv1beta1.RBACDefinition{}
-	rbacDef.Name = "namespace-selector-example"
+	rbacDefMatchLabels := rbacmanagerv1beta1.RBACDefinition{}
+	rbacDefMatchLabels.Name = "namespace-selector-match-labels"
 
 	_, err = client.CoreV1().Namespaces().Create(&corev1.Namespace{
 		ObjectMeta: metav1.ObjectMeta{
@@ -210,9 +211,10 @@ func TestReconcileNamespaceChanges(t *testing.T) {
 		t.Fatalf("Error creating namespace %#v", err)
 	}
 
-	testEmptyExample(t, client, rbacDef.Name)
+	testEmptyExample(t, client, rbacDefMatchLabels.Name)
 
-	rbacDef.RBACBindings = []rbacmanagerv1beta1.RBACBinding{{
+	// Match Labels rbacdef
+	rbacDefMatchLabels.RBACBindings = []rbacmanagerv1beta1.RBACBinding{{
 		Name: "web-app",
 		Subjects: []rbacv1.Subject{{
 			Kind: rbacv1.UserKind,
@@ -243,9 +245,10 @@ func TestReconcileNamespaceChanges(t *testing.T) {
 		}},
 	}}
 
-	newReconcileNamespaceChangesTest(t, client, rbacDef, []rbacv1.RoleBinding{{
+	// Test the matchlabels scenario
+	newReconcileNamespaceChangesTest(t, client, rbacDefMatchLabels, []rbacv1.RoleBinding{{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      "namespace-selector-example-web-app-edit",
+			Name:      "namespace-selector-match-labels-web-app-edit",
 			Namespace: "web",
 		},
 		RoleRef: rbacv1.RoleRef{
@@ -261,7 +264,7 @@ func TestReconcileNamespaceChanges(t *testing.T) {
 		}},
 	}, {
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      "namespace-selector-example-dev-team-view",
+			Name:      "namespace-selector-match-labels-dev-team-view",
 			Namespace: "web",
 		},
 		RoleRef: rbacv1.RoleRef{
@@ -280,7 +283,7 @@ func TestReconcileNamespaceChanges(t *testing.T) {
 		}},
 	}, {
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      "namespace-selector-example-dev-team-view",
+			Name:      "namespace-selector-match-labels-dev-team-view",
 			Namespace: "api",
 		},
 		RoleRef: rbacv1.RoleRef{
@@ -298,8 +301,182 @@ func TestReconcileNamespaceChanges(t *testing.T) {
 			Name: "Kay",
 		}},
 	}})
+}
 
-	testEmptyExample(t, client, rbacDef.Name)
+func TestReconcileNamespaceChangesExpressions(t *testing.T) {
+	var err error
+
+	client := fake.NewSimpleClientset()
+	rbacDefMatchExpressions := rbacmanagerv1beta1.RBACDefinition{}
+	rbacDefMatchExpressions.Name = "namespace-selector-match-expressions"
+
+	_, err = client.CoreV1().Namespaces().Create(&corev1.Namespace{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:   "web",
+			Labels: map[string]string{"team": "dev", "app": "web"},
+		},
+	})
+	if err != nil {
+		t.Fatalf("Error creating namespace %#v", err)
+	}
+
+	_, err = client.CoreV1().Namespaces().Create(&corev1.Namespace{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:   "api",
+			Labels: map[string]string{"team": "dev", "app": "api"},
+		},
+	})
+	if err != nil {
+		t.Fatalf("Error creating namespace %#v", err)
+	}
+	testEmptyExample(t, client, rbacDefMatchExpressions.Name)
+
+	// Match Expressions rbacdef
+	rbacDefMatchExpressions.RBACBindings = []rbacmanagerv1beta1.RBACBinding{{
+		Name: "web-app",
+		Subjects: []rbacv1.Subject{{
+			Kind: rbacv1.UserKind,
+			Name: "Joe",
+		}, {
+			Kind: rbacv1.UserKind,
+			Name: "Sue",
+		}},
+		RoleBindings: []rbacmanagerv1beta1.RoleBinding{{
+			ClusterRole: "edit",
+			NamespaceSelector: metav1.LabelSelector{
+				MatchExpressions: []metav1.LabelSelectorRequirement{{
+					Key:      "app",
+					Operator: metav1.LabelSelectorOpIn,
+					Values:   []string{"web"},
+				}},
+			},
+		}},
+	}, {
+		Name: "dev-team",
+		Subjects: []rbacv1.Subject{{
+			Kind: rbacv1.UserKind,
+			Name: "Joe",
+		}, {
+			Kind: rbacv1.UserKind,
+			Name: "Sue",
+		}, {
+			Kind: rbacv1.UserKind,
+			Name: "Kay",
+		}},
+		RoleBindings: []rbacmanagerv1beta1.RoleBinding{{
+			ClusterRole: "view",
+			NamespaceSelector: metav1.LabelSelector{
+				MatchExpressions: []metav1.LabelSelectorRequirement{{
+					Key:      "team",
+					Operator: metav1.LabelSelectorOpIn,
+					Values:   []string{"dev"},
+				}},
+			}},
+		}}}
+
+	// Test the matchexpressions scenario
+	newReconcileNamespaceChangesTest(t, client, rbacDefMatchExpressions, []rbacv1.RoleBinding{{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "namespace-selector-match-expressions-web-app-edit",
+			Namespace: "web",
+		},
+		RoleRef: rbacv1.RoleRef{
+			Kind: "ClusterRole",
+			Name: "edit",
+		},
+		Subjects: []rbacv1.Subject{{
+			Kind: rbacv1.UserKind,
+			Name: "Joe",
+		}, {
+			Kind: rbacv1.UserKind,
+			Name: "Sue",
+		}},
+	}, {
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "namespace-selector-match-expressions-dev-team-view",
+			Namespace: "web",
+		},
+		RoleRef: rbacv1.RoleRef{
+			Kind: "ClusterRole",
+			Name: "view",
+		},
+		Subjects: []rbacv1.Subject{{
+			Kind: rbacv1.UserKind,
+			Name: "Joe",
+		}, {
+			Kind: rbacv1.UserKind,
+			Name: "Sue",
+		}, {
+			Kind: rbacv1.UserKind,
+			Name: "Kay",
+		}},
+	}, {
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "namespace-selector-match-expressions-dev-team-view",
+			Namespace: "api",
+		},
+		RoleRef: rbacv1.RoleRef{
+			Kind: "ClusterRole",
+			Name: "view",
+		},
+		Subjects: []rbacv1.Subject{{
+			Kind: rbacv1.UserKind,
+			Name: "Joe",
+		}, {
+			Kind: rbacv1.UserKind,
+			Name: "Sue",
+		}, {
+			Kind: rbacv1.UserKind,
+			Name: "Kay",
+		}},
+	}})
+}
+
+// The namespace reconciler should not reconcile CRBs since they are not namespaced.
+func TestReconcileNamespaceChangesCRB(t *testing.T) {
+	var err error
+
+	client := fake.NewSimpleClientset()
+	rbacDef := rbacmanagerv1beta1.RBACDefinition{}
+	rbacDef.Name = "namespace-selector-empty"
+
+	_, err = client.CoreV1().Namespaces().Create(&corev1.Namespace{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:   "web",
+			Labels: map[string]string{"team": "dev", "app": "web"},
+		},
+	})
+	if err != nil {
+		t.Fatalf("Error creating namespace %#v", err)
+	}
+
+	_, err = client.CoreV1().Namespaces().Create(&corev1.Namespace{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:   "api",
+			Labels: map[string]string{"team": "dev", "app": "api"},
+		},
+	})
+	if err != nil {
+		t.Fatalf("Error creating namespace %#v", err)
+	}
+
+	// Match Expressions rbacdef
+	rbacDef.RBACBindings = []rbacmanagerv1beta1.RBACBinding{{
+		Name: "web-app",
+		Subjects: []rbacv1.Subject{{
+			Kind: rbacv1.UserKind,
+			Name: "Joe",
+		}, {
+			Kind: rbacv1.UserKind,
+			Name: "Sue",
+		}},
+		ClusterRoleBindings: []rbacmanagerv1beta1.ClusterRoleBinding{{
+			ClusterRole: "edit"},
+		}},
+	}
+
+	// Test the matchexpressions scenario
+	newReconcileNamespaceChangesTest(t, client, rbacDef, []rbacv1.RoleBinding{})
 }
 
 func newReconcileTest(t *testing.T, client *fake.Clientset, rbacDef rbacmanagerv1beta1.RBACDefinition, expectedRb []rbacv1.RoleBinding, expectedCrb []rbacv1.ClusterRoleBinding, expectedSa []corev1.ServiceAccount) {
@@ -317,6 +494,7 @@ func newReconcileNamespaceChangesTest(t *testing.T, client *fake.Clientset, rbac
 		ObjectMeta: metav1.ObjectMeta{Name: "test"},
 	})
 	expectRoleBindings(t, client, expectedRb)
+	expectClusterRoleBindings(t, client, []rbacv1.ClusterRoleBinding{})
 }
 
 func testEmptyExample(t *testing.T, client *fake.Clientset, name string) {
