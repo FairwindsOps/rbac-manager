@@ -24,7 +24,6 @@ import (
 func WatchRelatedResources() {
 	clientset := kube.GetClientsetOrDie()
 	go watchClusterRoleBindings(clientset)
-	go watchNamespaces(clientset)
 	go watchRoleBindings(clientset)
 	go watchServiceAccounts(clientset)
 }
