@@ -10,6 +10,8 @@ This project has three main goals:
 2. Reduce the amount of configuration required for great auth.
 3. Enable automation of RBAC configuration updates with CI/CD.
 
+**Want to learn more?** ReactiveOps holds [office hours on Zoom](https://zoom.us/j/951540265) the first Friday of every month, at 12pm Eastern. You can also reach out via email at `opensource@reactiveops.com`
+
 ## An Example
 To fully understand how RBAC Manager works, it's helpful to walk through a simple example. In this example we'll have a single user, Joe, that needs `edit` access to the `web` namespace and `view` access to `api` namespace.
 
