@@ -25,3 +25,5 @@ bin
 # custom additions
 tmp
 .vscode
+
+coverage.txt
