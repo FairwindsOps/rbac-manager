@@ -21,7 +21,8 @@ jobs:
       - run: go get -u golang.org/x/lint/golint
       - run: go list ./... | grep -v vendor | xargs golint -set_exit_status
       - run: go list ./... | grep -v vendor | xargs go vet
-      - run: go test ./pkg/controller/... -coverprofile cover.out
+      - run: go test ./... -coverprofile=coverage.txt -covermode=atomic
+      - run: bash <(curl -s https://codecov.io/bash)
 
   build:
     docker:
