@@ -34,7 +34,7 @@ func Add(mgr manager.Manager) error {
 	var err error
 
 	rbacDef := &rbacmanagerv1beta1.RBACDefinition{}
-	err = add(mgr, newRbacDefReconciler(mgr), "rbacdefinition", rbacDef)
+	err = addController(mgr, newRbacDefReconciler(mgr), "rbacdefinition", rbacDef)
 
 	if err != nil {
 		logrus.Errorf("Error adding RBAC Definition reconciler")
@@ -42,7 +42,7 @@ func Add(mgr manager.Manager) error {
 	}
 
 	namespace := &corev1.Namespace{}
-	err = add(mgr, newNamespaceReconciler(mgr), "namespace", namespace)
+	err = addController(mgr, newNamespaceReconciler(mgr), "namespace", namespace)
 
 	if err != nil {
 		logrus.Errorf("Error adding Namespace reconciler")
@@ -53,7 +53,7 @@ func Add(mgr manager.Manager) error {
 }
 
 // add adds a new Controller to mgr with r as the reconcile.Reconciler
-func add(mgr manager.Manager, r reconcile.Reconciler, name string, cType runtime.Object) error {
+func addController(mgr manager.Manager, r reconcile.Reconciler, name string, cType runtime.Object) error {
 	// Create a new controller
 	c, err := controller.New(name, mgr, controller.Options{Reconciler: r})
 	if err != nil {

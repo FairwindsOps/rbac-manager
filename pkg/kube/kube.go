@@ -39,11 +39,17 @@ var ListOptions = metav1.ListOptions{LabelSelector: LabelKey + "=" + LabelValue}
 
 // GetClientsetOrDie returns a new Kubernetes Clientset or dies
 func GetClientsetOrDie() *kubernetes.Clientset {
-	kubeConf := config.GetConfigOrDie()
-	clientset, err := kubernetes.NewForConfig(kubeConf)
+	kubeConf, err := config.GetConfig()
 
 	if err != nil {
 		logrus.Error(err, "unable to get Kubernetes client config")
+		os.Exit(1)
+	}
+
+	clientset, err := kubernetes.NewForConfig(kubeConf)
+
+	if err != nil {
+		logrus.Error(err, "unable to get Kubernetes clientset")
 		os.Exit(1)
 	}
 

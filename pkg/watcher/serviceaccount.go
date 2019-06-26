@@ -41,9 +41,7 @@ func watchServiceAccounts(clientset *kubernetes.Clientset) {
 		sa, ok := event.Object.(*corev1.ServiceAccount)
 		if !ok {
 			logrus.Error("Could not parse Service Account")
-		}
-
-		if event.Type == watch.Modified || event.Type == watch.Deleted {
+		} else if event.Type == watch.Modified || event.Type == watch.Deleted {
 			logrus.Debugf("Reconciling RBACDefinition for %s ServiceAccount after %s event", sa.Name, event.Type)
 			r := reconciler.Reconciler{Clientset: kube.GetClientsetOrDie()}
 			r.ReconcileOwners(sa.OwnerReferences, "ServiceAccount")
