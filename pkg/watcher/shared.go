@@ -1,5 +1,5 @@
 /*
-Copyright 2018 ReactiveOps.
+Copyright 2019 ReactiveOps.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,21 +14,16 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package controller
+package watcher
 
 import (
-	"github.com/reactiveops/rbac-manager/pkg/controller/namespace"
-	"github.com/reactiveops/rbac-manager/pkg/controller/rbacdefinition"
-	"sigs.k8s.io/controller-runtime/pkg/manager"
+	kube "github.com/reactiveops/rbac-manager/pkg/kube"
 )
 
-// AddToManager adds all Controllers to the Manager
-func AddToManager(m manager.Manager) error {
-	addToManagerFuncs := []func(manager.Manager) error{namespace.Add, rbacdefinition.Add}
-	for _, f := range addToManagerFuncs {
-		if err := f(m); err != nil {
-			return err
-		}
-	}
-	return nil
+// WatchRelatedResources watches all resources owned by RBAC Definitions
+func WatchRelatedResources() {
+	clientset := kube.GetClientsetOrDie()
+	go watchClusterRoleBindings(clientset)
+	go watchRoleBindings(clientset)
+	go watchServiceAccounts(clientset)
 }

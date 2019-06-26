@@ -158,10 +158,29 @@ spec:
       serviceAccountName: rbac-manager
       containers:
       - name: rbac-manager
-        image: "quay.io/reactiveops/rbac-manager:0.6.1"
+        image: "quay.io/reactiveops/rbac-manager:0.7.0"
         imagePullPolicy: Always
+        # these liveness probes are not very helpful yet
+        livenessProbe:
+          exec:
+            command:
+              - sh
+              - -c
+              - ps -ef | rbac-manager
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        readinessProbe:
+          exec:
+            command:
+              - sh
+              - -c
+              - ps -ef | grep rbac-manager
         securityContext:
           runAsUser: 1200
+          allowPrivilegeEscalation: false
+          privileged: false
+          readOnlyRootFilesystem: true
+          runAsNonRoot: true
           capabilities:
             drop:
               - ALL

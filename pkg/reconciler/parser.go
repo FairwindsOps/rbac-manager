@@ -1,10 +1,25 @@
-package rbacdefinition
+// Copyright 2018 ReactiveOps
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+package reconciler
 
 import (
 	"errors"
 	"fmt"
 
 	rbacmanagerv1beta1 "github.com/reactiveops/rbac-manager/pkg/apis/rbacmanager/v1beta1"
+	"github.com/reactiveops/rbac-manager/pkg/kube"
 	logrus "github.com/sirupsen/logrus"
 	v1 "k8s.io/api/core/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
@@ -52,7 +67,7 @@ func (p *Parser) parseRBACBinding(rbacBinding rbacmanagerv1beta1.RBACBinding, na
 					Name:            requestedSubject.Name,
 					Namespace:       requestedSubject.Namespace,
 					OwnerReferences: p.ownerRefs,
-					Labels:          Labels,
+					Labels:          kube.Labels,
 				},
 			})
 		}
@@ -86,7 +101,7 @@ func (p *Parser) parseClusterRoleBinding(
 		ObjectMeta: metav1.ObjectMeta{
 			Name:            crbName,
 			OwnerReferences: p.ownerRefs,
-			Labels:          Labels,
+			Labels:          kube.Labels,
 		},
 		RoleRef: rbacv1.RoleRef{
 			Kind: "ClusterRole",
@@ -103,7 +118,7 @@ func (p *Parser) parseRoleBinding(
 
 	objectMeta := metav1.ObjectMeta{
 		OwnerReferences: p.ownerRefs,
-		Labels:          Labels,
+		Labels:          kube.Labels,
 	}
 
 	var requestedRoleName string
@@ -189,6 +204,15 @@ func (p *Parser) hasNamespaceSelectors(rbacDef *rbacmanagerv1beta1.RBACDefinitio
 		}
 	}
 	return false
+}
+
+func (p *Parser) parseClusterRoleBindings(rbacDef *rbacmanagerv1beta1.RBACDefinition) {
+	for _, rbacBinding := range rbacDef.RBACBindings {
+		for _, clusterRoleBinding := range rbacBinding.ClusterRoleBindings {
+			namePrefix := rdNamePrefix(rbacDef, &rbacBinding)
+			p.parseClusterRoleBinding(clusterRoleBinding, rbacBinding.Subjects, namePrefix)
+		}
+	}
 }
 
 func (p *Parser) parseRoleBindings(rbacDef *rbacmanagerv1beta1.RBACDefinition) {

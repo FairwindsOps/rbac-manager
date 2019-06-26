@@ -12,14 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package rbacdefinition
+package reconciler
 
 import (
 	"reflect"
 
+	"github.com/reactiveops/rbac-manager/pkg/kube"
+
 	rbacmanagerv1beta1 "github.com/reactiveops/rbac-manager/pkg/apis/rbacmanager/v1beta1"
 	logrus "github.com/sirupsen/logrus"
-	"k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -51,6 +53,40 @@ func (r *Reconciler) ReconcileNamespaceChange(rbacDef *rbacmanagerv1beta1.RBACDe
 		}
 	}
 
+	return nil
+}
+
+// ReconcileOwners reconciles any RBACDefinitions found in owner references
+func (r *Reconciler) ReconcileOwners(ownerRefs []metav1.OwnerReference, kind string) error {
+	for _, ownerRef := range ownerRefs {
+		if ownerRef.Kind == "RBACDefinition" {
+			rbacDef, err := kube.GetRbacDefinition(ownerRef.Name)
+			if err != nil {
+				return err
+			}
+
+			r.ownerRefs = rbacDefOwnerRefs(&rbacDef)
+
+			p := Parser{
+				Clientset: r.Clientset,
+				ownerRefs: r.ownerRefs,
+			}
+
+			if kind == "RoleBinding" {
+				p.parseRoleBindings(&rbacDef)
+				return r.reconcileRoleBindings(&p.parsedRoleBindings)
+			} else if kind == "ClusterRoleBinding" {
+				p.parseClusterRoleBindings(&rbacDef)
+				return r.reconcileClusterRoleBindings(&p.parsedClusterRoleBindings)
+			} else if kind == "ServiceAccount" {
+				err := p.Parse(rbacDef)
+				if err != nil {
+					return err
+				}
+				return r.reconcileServiceAccounts(&p.parsedServiceAccounts)
+			}
+		}
+	}
 	return nil
 }
 
@@ -92,7 +128,7 @@ func (r *Reconciler) Reconcile(rbacDef *rbacmanagerv1beta1.RBACDefinition) error
 }
 
 func (r *Reconciler) reconcileServiceAccounts(requested *[]v1.ServiceAccount) error {
-	existing, err := r.Clientset.CoreV1().ServiceAccounts("").List(ListOptions)
+	existing, err := r.Clientset.CoreV1().ServiceAccounts("").List(kube.ListOptions)
 	if err != nil {
 		return err
 	}
@@ -151,7 +187,7 @@ func (r *Reconciler) reconcileServiceAccounts(requested *[]v1.ServiceAccount) er
 }
 
 func (r *Reconciler) reconcileClusterRoleBindings(requested *[]rbacv1.ClusterRoleBinding) error {
-	existing, err := r.Clientset.RbacV1().ClusterRoleBindings().List(ListOptions)
+	existing, err := r.Clientset.RbacV1().ClusterRoleBindings().List(kube.ListOptions)
 	if err != nil {
 		return err
 	}
@@ -210,7 +246,7 @@ func (r *Reconciler) reconcileClusterRoleBindings(requested *[]rbacv1.ClusterRol
 }
 
 func (r *Reconciler) reconcileRoleBindings(requested *[]rbacv1.RoleBinding) error {
-	existing, err := r.Clientset.RbacV1().RoleBindings("").List(ListOptions)
+	existing, err := r.Clientset.RbacV1().RoleBindings("").List(kube.ListOptions)
 	if err != nil {
 		return err
 	}

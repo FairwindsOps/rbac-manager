@@ -1,5 +1,5 @@
 /*
-Copyright 2018 ReactiveOps.
+Copyright 2019 ReactiveOps.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,10 +14,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package rbacdefinition
+package kube
 
 import (
+	"os"
+
+	"github.com/sirupsen/logrus"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/kubernetes"
+	"sigs.k8s.io/controller-runtime/pkg/client/config"
 )
 
 // LabelKey is the key of the key/value pair given to all resources managed by RBAC Manager
@@ -31,3 +36,22 @@ var Labels = map[string]string{LabelKey: LabelValue}
 
 // ListOptions is the default set of options to find resources managed by RBAC Manager
 var ListOptions = metav1.ListOptions{LabelSelector: LabelKey + "=" + LabelValue}
+
+// GetClientsetOrDie returns a new Kubernetes Clientset or dies
+func GetClientsetOrDie() *kubernetes.Clientset {
+	kubeConf, err := config.GetConfig()
+
+	if err != nil {
+		logrus.Error(err, "unable to get Kubernetes client config")
+		os.Exit(1)
+	}
+
+	clientset, err := kubernetes.NewForConfig(kubeConf)
+
+	if err != nil {
+		logrus.Error(err, "unable to get Kubernetes clientset")
+		os.Exit(1)
+	}
+
+	return clientset
+}
