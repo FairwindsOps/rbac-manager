@@ -166,7 +166,7 @@ spec:
             command:
               - sh
               - -c
-              - ps -ef | rbac-manager
+              - ps -ef | grep rbac-manager
           initialDelaySeconds: 5
           periodSeconds: 5
         readinessProbe:
