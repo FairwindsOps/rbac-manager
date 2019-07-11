@@ -159,7 +159,7 @@ spec:
       containers:
       - name: rbac-manager
         image: "quay.io/reactiveops/rbac-manager:0.7.0"
-        imagePullPolicy: Always
+        imagePullPolicy: IfNotPresent
         # these liveness probes are not very helpful yet
         livenessProbe:
           exec:
