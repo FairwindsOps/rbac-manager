@@ -1,6 +1,6 @@
 # RBAC Manager
 
-[![Go Report Card](https://goreportcard.com/badge/github.com/reactiveops/rbac-manager)](https://goreportcard.com/report/github.com/reactiveops/rbac-manager) [![CircleCI](https://circleci.com/gh/reactiveops/rbac-manager.svg?style=svg)](https://circleci.com/gh/reactiveops/rbac-manager)  [![codecov](https://codecov.io/gh/reactiveops/rbac-manager/branch/master/graph/badge.svg)](https://codecov.io/gh/reactiveops/rbac-manager)
+[![Go Report Card](https://goreportcard.com/badge/github.com/reactiveops/rbac-manager)](https://goreportcard.com/report/github.com/reactiveops/rbac-manager) [![CircleCI](https://circleci.com/gh/FairwindsOps/rbac-manager.svg?style=svg)](https://circleci.com/gh/FairwindsOps/rbac-manager) [![codecov](https://codecov.io/gh/fairwindsops/rbac-manager/branch/master/graph/badge.svg)](https://codecov.io/gh/fairwindsops/rbac-manager)
 
 RBAC Manager was designed to simplify authorization in Kubernetes. This is an operator that supports declarative configuration for RBAC with new custom resources. Instead of managing role bindings or service accounts directly, you can specify a desired state and RBAC Manager will make the necessary changes to achieve that state.
 
@@ -10,7 +10,7 @@ This project has three main goals:
 2. Reduce the amount of configuration required for great auth.
 3. Enable automation of RBAC configuration updates with CI/CD.
 
-**Want to learn more?** ReactiveOps holds [office hours on Zoom](https://zoom.us/j/242508205) the first Friday of every month, at 12pm Eastern. You can also reach out via email at `opensource@reactiveops.com`
+**Want to learn more?** ReactiveOps holds [office hours on Zoom](https://zoom.us/j/242508205) the first Friday of every month, at 12pm Eastern. You can also reach out via email at `opensource@fairwinds.com`
 
 ## An Example
 To fully understand how RBAC Manager works, it's helpful to walk through a simple example. In this example we'll have a single user, Joe, that needs `edit` access to the `web` namespace and `view` access to `api` namespace.
