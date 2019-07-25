@@ -88,7 +88,7 @@ mapAccounts:
   - "012345678901"
 ```
 
-With this approach, all IAM users are mapped to Kubernetes users with the full ARN as the username. By default, these users will be part of the `system:authenticated` group. That group is generally granted minimal permissions. With [rbac-lookup](http://github.com/reactiveops/rbac-lookup), you can view exactly what has been granted to that group with the following command:
+With this approach, all IAM users are mapped to Kubernetes users with the full ARN as the username. By default, these users will be part of the `system:authenticated` group. That group is generally granted minimal permissions. With [rbac-lookup](http://github.com/FairwindsOps/rbac-lookup), you can view exactly what has been granted to that group with the following command:
 
 ```
 rbac-lookup system:authenticated

@@ -1,4 +1,4 @@
-// Copyright 2018 ReactiveOps
+// Copyright 2018 FairwindsOps Inc
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -19,8 +19,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	rbacmanagerv1beta1 "github.com/reactiveops/rbac-manager/pkg/apis/rbacmanager/v1beta1"
-	"github.com/reactiveops/rbac-manager/pkg/kube"
+	rbacmanagerv1beta1 "github.com/fairwindsops/rbac-manager/pkg/apis/rbacmanager/v1beta1"
+	"github.com/fairwindsops/rbac-manager/pkg/kube"
 
 	corev1 "k8s.io/api/core/v1"
 	rbacv1 "k8s.io/api/rbac/v1"

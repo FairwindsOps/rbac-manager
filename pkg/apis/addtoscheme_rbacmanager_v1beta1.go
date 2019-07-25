@@ -1,5 +1,5 @@
 /*
-Copyright 2018 ReactiveOps.
+Copyright 2018 FairwindsOps Inc.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@ limitations under the License.
 package apis
 
 import (
-	"github.com/reactiveops/rbac-manager/pkg/apis/rbacmanager/v1beta1"
+	"github.com/fairwindsops/rbac-manager/pkg/apis/rbacmanager/v1beta1"
 )
 
 func init() {

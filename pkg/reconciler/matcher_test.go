@@ -1,4 +1,4 @@
-// Copyright 2018 ReactiveOps
+// Copyright 2018 FairwindsOps Inc
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@ package reconciler
 import (
 	"testing"
 
-	rbacmanagerv1beta1 "github.com/reactiveops/rbac-manager/pkg/apis/rbacmanager/v1beta1"
+	rbacmanagerv1beta1 "github.com/fairwindsops/rbac-manager/pkg/apis/rbacmanager/v1beta1"
 	rbacv1 "k8s.io/api/rbac/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -40,7 +40,7 @@ func TestCrbMatches(t *testing.T) {
 	subject2 := rbacv1.Subject{Kind: "User", Name: "sue"}
 	subject3 := rbacv1.Subject{Kind: "ServiceAccount", Name: "ci"}
 
-	labels1 := map[string]string{"rbac-manager": "reactiveops"}
+	labels1 := map[string]string{"rbac-manager": "fairwinds"}
 	labels2 := map[string]string{"something": "else"}
 
 	crb1 := rbacv1.ClusterRoleBinding{
@@ -112,7 +112,7 @@ func TestRbMatches(t *testing.T) {
 	subject2 := rbacv1.Subject{Kind: "User", Name: "sue"}
 	subject3 := rbacv1.Subject{Kind: "ServiceAccount", Name: "ci"}
 
-	labels1 := map[string]string{"rbac-manager": "reactiveops"}
+	labels1 := map[string]string{"rbac-manager": "fairwinds"}
 	labels2 := map[string]string{"something": "else"}
 
 	rb1 := rbacv1.RoleBinding{

@@ -1,5 +1,5 @@
 /*
-Copyright 2019 ReactiveOps.
+Copyright 2019 FairwindsOps Inc.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@ limitations under the License.
 package watcher
 
 import (
-	kube "github.com/reactiveops/rbac-manager/pkg/kube"
+	kube "github.com/fairwindsops/rbac-manager/pkg/kube"
 )
 
 // WatchRelatedResources watches all resources owned by RBAC Definitions

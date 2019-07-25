@@ -14,7 +14,7 @@ jobs:
     docker:
       - image: circleci/golang:1.12
 
-    working_directory: /go/src/github.com/reactiveops/rbac-manager
+    working_directory: /go/src/github.com/fairwindsops/rbac-manager
 
     steps:
       - checkout

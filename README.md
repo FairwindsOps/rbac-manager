@@ -1,6 +1,6 @@
 # RBAC Manager
 
-[![Go Report Card](https://goreportcard.com/badge/github.com/reactiveops/rbac-manager)](https://goreportcard.com/report/github.com/reactiveops/rbac-manager) [![CircleCI](https://circleci.com/gh/FairwindsOps/rbac-manager.svg?style=svg)](https://circleci.com/gh/FairwindsOps/rbac-manager) [![codecov](https://codecov.io/gh/fairwindsops/rbac-manager/branch/master/graph/badge.svg)](https://codecov.io/gh/fairwindsops/rbac-manager)
+[![Go Report Card](https://goreportcard.com/badge/github.com/FairwindsOps/rbac-manager)](https://goreportcard.com/report/github.com/FairwindsOps/rbac-manager) [![CircleCI](https://circleci.com/gh/FairwindsOps/rbac-manager.svg?style=svg)](https://circleci.com/gh/FairwindsOps/rbac-manager) [![codecov](https://codecov.io/gh/fairwindsops/rbac-manager/branch/master/graph/badge.svg)](https://codecov.io/gh/fairwindsops/rbac-manager)
 
 RBAC Manager was designed to simplify authorization in Kubernetes. This is an operator that supports declarative configuration for RBAC with new custom resources. Instead of managing role bindings or service accounts directly, you can specify a desired state and RBAC Manager will make the necessary changes to achieve that state.
 
@@ -10,7 +10,7 @@ This project has three main goals:
 2. Reduce the amount of configuration required for great auth.
 3. Enable automation of RBAC configuration updates with CI/CD.
 
-**Want to learn more?** ReactiveOps holds [office hours on Zoom](https://zoom.us/j/242508205) the first Friday of every month, at 12pm Eastern. You can also reach out via email at `opensource@fairwinds.com`
+**Want to learn more?** Fairwinds holds [office hours on Zoom](https://zoom.us/j/242508205) the first Friday of every month, at 12pm Eastern. You can also reach out via email at `opensource@fairwinds.com`
 
 ## An Example
 To fully understand how RBAC Manager works, it's helpful to walk through a simple example. In this example we'll have a single user, Joe, that needs `edit` access to the `web` namespace and `view` access to `api` namespace.
@@ -79,11 +79,11 @@ When it comes to potential CI automation of changes to RBAC configuration, track
 With RBAC Manager, each RBAC Definition "owns" any resources it creates, and will always compare the desired state in the current RBAC Definition with the list of resources currently owned by it. If a Role Binding is no longer included in a RBAC Definition, RBAC Manager will automatically remove it.
 
 ## Getting Started
-RBAC Manager is simple to install with either the [Helm chart](https://github.com/reactiveops/charts/tree/master/stable/rbac-manager) or Kubernetes deployment YAML included in this repo:
+RBAC Manager is simple to install with either the [Helm chart](https://github.com/FairwindsOps/charts/tree/master/stable/rbac-manager) or Kubernetes deployment YAML included in this repo:
 
 ```
-helm repo add reactiveops-stable https://charts.reactiveops.com/stable
-helm install reactiveops-stable/rbac-manager --name rbac-manager --namespace rbac-manager
+helm repo add fairwinds-stable https://charts.fairwinds.com/stable
+helm install fairwinds-stable/rbac-manager --name rbac-manager --namespace rbac-manager
 ```
 
 ```
@@ -128,7 +128,7 @@ RBAC Definitions can manage Cluster Role Bindings, Role Bindings, and Service Ac
 To properly configure authorization with RBAC in Kubernetes, you first need to have good authentication. We've provided some helpful documentation for working with authentication on [AWS](docs/aws.md), [Google Cloud](docs/gke.md), and [Azure](docs/aks.md).
 
 ### Better Visibility With RBAC Lookup
-We have a related open source tool that allows you to easily find roles and cluster roles attached to any user, service account, or group name in your Kubernetes cluster. If that sounds interesting, take a look at [rbac-lookup](https://github.com/reactiveops/rbac-lookup) on GitHub.
+We have a related open source tool that allows you to easily find roles and cluster roles attached to any user, service account, or group name in your Kubernetes cluster. If that sounds interesting, take a look at [rbac-lookup](https://github.com/FairwindsOps/rbac-lookup) on GitHub.
 
 ## License
 Apache License 2.0
