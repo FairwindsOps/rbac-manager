@@ -1,5 +1,5 @@
 /*
-Copyright 2019 ReactiveOps.
+Copyright 2019 FairwindsOps Inc.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -29,7 +29,7 @@ import (
 const LabelKey = "rbac-manager"
 
 // LabelValue is the value of the key/value pair given to all resources managed by RBAC Manager
-const LabelValue = "reactiveops"
+const LabelValue = "fairwinds"
 
 // Labels is the key/value pair given to all resources managed by RBAC Manager
 var Labels = map[string]string{LabelKey: LabelValue}

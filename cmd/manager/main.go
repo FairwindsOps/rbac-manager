@@ -1,5 +1,5 @@
 /*
-Copyright 2018 ReactiveOps.
+Copyright 2018 FairwindsOps Inc.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -20,10 +20,10 @@ import (
 	"flag"
 	"os"
 
-	"github.com/reactiveops/rbac-manager/pkg/apis"
-	"github.com/reactiveops/rbac-manager/pkg/controller"
-	"github.com/reactiveops/rbac-manager/pkg/watcher"
-	"github.com/reactiveops/rbac-manager/version"
+	"github.com/fairwindsops/rbac-manager/pkg/apis"
+	"github.com/fairwindsops/rbac-manager/pkg/controller"
+	"github.com/fairwindsops/rbac-manager/pkg/watcher"
+	"github.com/fairwindsops/rbac-manager/version"
 
 	logrus "github.com/sirupsen/logrus"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"

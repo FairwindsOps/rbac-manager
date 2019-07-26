@@ -1,4 +1,4 @@
-// Copyright 2018 ReactiveOps
+// Copyright 2018 FairwindsOps Inc
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,9 +17,9 @@ package reconciler
 import (
 	"reflect"
 
-	"github.com/reactiveops/rbac-manager/pkg/kube"
+	"github.com/fairwindsops/rbac-manager/pkg/kube"
 
-	rbacmanagerv1beta1 "github.com/reactiveops/rbac-manager/pkg/apis/rbacmanager/v1beta1"
+	rbacmanagerv1beta1 "github.com/fairwindsops/rbac-manager/pkg/apis/rbacmanager/v1beta1"
 	logrus "github.com/sirupsen/logrus"
 	v1 "k8s.io/api/core/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
