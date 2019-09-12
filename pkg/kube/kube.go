@@ -29,7 +29,7 @@ import (
 const LabelKey = "rbac-manager"
 
 // LabelValue is the value of the key/value pair given to all resources managed by RBAC Manager
-const LabelValue = "fairwinds"
+const LabelValue = "reactiveops"
 
 // Labels is the key/value pair given to all resources managed by RBAC Manager
 var Labels = map[string]string{LabelKey: LabelValue}
