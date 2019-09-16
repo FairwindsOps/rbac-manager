@@ -16,6 +16,7 @@ package reconciler
 
 import (
 	"reflect"
+	"sync"
 
 	"github.com/fairwindsops/rbac-manager/pkg/kube"
 
@@ -34,9 +35,14 @@ type Reconciler struct {
 	ownerRefs []metav1.OwnerReference
 }
 
+var mux = sync.Mutex{}
+
 // ReconcileNamespaceChange reconciles relevant portions of RBAC Definitions
 //   after changes to namespaces within the cluster
 func (r *Reconciler) ReconcileNamespaceChange(rbacDef *rbacmanagerv1beta1.RBACDefinition, namespace *v1.Namespace) error {
+	mux.Lock()
+	defer mux.Unlock()
+
 	r.ownerRefs = rbacDefOwnerRefs(rbacDef)
 
 	p := Parser{
@@ -58,6 +64,9 @@ func (r *Reconciler) ReconcileNamespaceChange(rbacDef *rbacmanagerv1beta1.RBACDe
 
 // ReconcileOwners reconciles any RBACDefinitions found in owner references
 func (r *Reconciler) ReconcileOwners(ownerRefs []metav1.OwnerReference, kind string) error {
+	mux.Lock()
+	defer mux.Unlock()
+
 	for _, ownerRef := range ownerRefs {
 		if ownerRef.Kind == "RBACDefinition" {
 			rbacDef, err := kube.GetRbacDefinition(ownerRef.Name)
@@ -93,6 +102,9 @@ func (r *Reconciler) ReconcileOwners(ownerRefs []metav1.OwnerReference, kind str
 // Reconcile creates, updates, or deletes Kubernetes resources to match
 //   the desired state defined in an RBAC Definition
 func (r *Reconciler) Reconcile(rbacDef *rbacmanagerv1beta1.RBACDefinition) error {
+	mux.Lock()
+	defer mux.Unlock()
+
 	logrus.Infof("Reconciling RBACDefinition %v", rbacDef.Name)
 
 	r.ownerRefs = rbacDefOwnerRefs(rbacDef)
