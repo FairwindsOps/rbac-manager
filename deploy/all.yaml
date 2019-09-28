@@ -136,7 +136,7 @@ spec:
       type: object
   version: v1beta1
 ---
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: rbac-manager
@@ -158,7 +158,7 @@ spec:
       serviceAccountName: rbac-manager
       containers:
       - name: rbac-manager
-        image: "quay.io/reactiveops/rbac-manager:0.8.1"
+        image: "quay.io/reactiveops/rbac-manager:0.8.3"
         imagePullPolicy: Always
         # these liveness probes are not very helpful yet
         securityContext:
