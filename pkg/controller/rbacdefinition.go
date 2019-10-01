@@ -18,6 +18,7 @@ package controller
 
 import (
 	"context"
+	"github.com/fairwindsops/rbac-manager/pkg/metrics"
 
 	"github.com/fairwindsops/rbac-manager/pkg/reconciler"
 
@@ -62,6 +63,7 @@ func (r *ReconcileRBACDefinition) Reconcile(request reconcile.Request) (reconcil
 	rbacDef := &rbacmanagerv1beta1.RBACDefinition{}
 	err = r.Get(context.TODO(), request.NamespacedName, rbacDef)
 	if err != nil {
+		metrics.ErrorCounter.Inc()
 		if errors.IsNotFound(err) {
 			// Object not found, return.  Created objects are automatically garbage collected.
 			// For additional cleanup logic use finalizers.
@@ -71,7 +73,10 @@ func (r *ReconcileRBACDefinition) Reconcile(request reconcile.Request) (reconcil
 		return reconcile.Result{}, err
 	}
 
-	rdr.Reconcile(rbacDef)
+	err = rdr.Reconcile(rbacDef)
+	if err != nil {
+		metrics.ErrorCounter.Inc()
+	}
 
 	return reconcile.Result{}, nil
 }
