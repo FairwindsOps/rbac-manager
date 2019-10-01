@@ -23,6 +23,7 @@ import (
 const namespace = "rbacmanager"
 
 var (
+	// ErrorCounter is a global counter for errors
 	ErrorCounter = prometheus.NewCounter(
 		prometheus.CounterOpts{
 			Namespace: namespace,
@@ -30,6 +31,7 @@ var (
 			Help:      "Number of errors while reconciling",
 		})
 
+	// ChangeCounter counts kubernetes events (e.g. create, delete) on objects (e.g. ClusterRoleBinding)
 	ChangeCounter = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
 			Namespace: namespace,
@@ -40,6 +42,7 @@ var (
 	)
 )
 
+// RegisterMetrics must be called exactly once and registers the prometheus counters as metrics
 func RegisterMetrics() {
 	prometheus.MustRegister(ErrorCounter)
 	prometheus.MustRegister(ChangeCounter)
