@@ -182,6 +182,8 @@ func (r *Reconciler) reconcileServiceAccounts(requested *[]v1.ServiceAccount) er
 				if err != nil {
 					logrus.Infof("Error deleting Service Account: %v", err)
 					metrics.ErrorCounter.Inc()
+				} else {
+					metrics.ChangeCounter.WithLabelValues("serviceaccounts", "delete").Inc()
 				}
 			} else {
 				logrus.Debugf("Matches requested Service Account %v", existingSA.Name)
