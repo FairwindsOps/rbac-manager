@@ -46,5 +46,4 @@ var (
 func RegisterMetrics() {
 	prometheus.MustRegister(ErrorCounter)
 	prometheus.MustRegister(ChangeCounter)
-	prometheus.MustRegister(prometheus.NewGoCollector())
 }
