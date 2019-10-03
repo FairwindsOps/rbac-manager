@@ -91,12 +91,14 @@ func main() {
 	watcher.WatchRelatedResources()
 
 	// Start metrics endpoint
-	metrics.RegisterMetrics()
-	http.Handle("/metrics", promhttp.Handler())
-	if err := http.ListenAndServe(*addr, nil); err != nil {
-		logrus.Error(err, "unable to serve the metrics endpoint")
-		os.Exit(1)
-	}
+	go func() {
+		metrics.RegisterMetrics()
+		http.Handle("/metrics", promhttp.Handler())
+		if err := http.ListenAndServe(*addr, nil); err != nil {
+			logrus.Error(err, "unable to serve the metrics endpoint")
+			os.Exit(1)
+		}
+	}()
 
 	// Start the Cmd
 	logrus.Info("Watching RBAC Definitions")
