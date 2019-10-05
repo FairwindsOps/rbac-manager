@@ -181,7 +181,7 @@ func NewSummary(opts SummaryOpts) Summary {
 
 func newSummary(desc *Desc, opts SummaryOpts, labelValues ...string) Summary {
 	if len(desc.variableLabels) != len(labelValues) {
-		panic(makeInconsistentCardinalityError(desc.fqName, desc.variableLabels, labelValues))
+		panic(errInconsistentCardinality)
 	}
 
 	for _, n := range desc.variableLabels {
