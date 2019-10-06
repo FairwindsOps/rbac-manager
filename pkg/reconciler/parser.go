@@ -27,6 +27,10 @@ import (
 	"k8s.io/client-go/kubernetes"
 )
 
+const (
+	serviceAccount = "ServiceAccount"
+)
+
 // Parser parses RBAC Definitions and determines the Kubernetes resources that it specifies
 type Parser struct {
 	Clientset                 kubernetes.Interface
@@ -61,7 +65,7 @@ func (p *Parser) parseRBACBinding(rbacBinding rbacmanagerv1beta1.RBACBinding, na
 	}
 
 	for _, requestedSubject := range rbacBinding.Subjects {
-		if requestedSubject.Kind == "ServiceAccount" {
+		if requestedSubject.Kind == serviceAccount {
 			p.parsedServiceAccounts = append(p.parsedServiceAccounts, v1.ServiceAccount{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:            requestedSubject.Name,

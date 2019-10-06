@@ -50,8 +50,8 @@ type RoleBinding struct {
 type RBACDefinition struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata"`
-	RBACBindings      []RBACBinding        `json:"rbacBindings"`
 	Status            RBACDefinitionStatus `json:"status,omitempty"`
+	RBACBindings      []RBACBinding        `json:"rbacBindings"`
 }
 
 // RBACDefinitionStatus defines the observed state of RBACDefinition

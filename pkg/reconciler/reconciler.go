@@ -91,7 +91,7 @@ func (r *Reconciler) ReconcileOwners(ownerRefs []metav1.OwnerReference, kind str
 		case "ClusterRoleBinding":
 			p.parseClusterRoleBindings(&rbacDef)
 			return r.reconcileClusterRoleBindings(&p.parsedClusterRoleBindings)
-		case "ServiceAccount":
+		case serviceAccount:
 			err := p.Parse(rbacDef)
 			if err != nil {
 				return err
