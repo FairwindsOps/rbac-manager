@@ -21,7 +21,7 @@ jobs:
     docker:
       - image: circleci/golang:1.12
 
-    working_directory: /go/src/github.com/fairwindsops/rbac-manager
+    working_directory: /go/src/github.com/FairwindsOps/rbac-manager
 
     steps:
       - checkout
@@ -48,7 +48,6 @@ jobs:
       - setup_remote_docker
       - run: echo 'export DOCKER_BASE_TAG=$CIRCLE_TAG' >> $BASH_ENV
       - *docker_build_and_push
-
 
 workflows:
   version: 2
