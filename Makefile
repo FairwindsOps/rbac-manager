@@ -18,26 +18,27 @@ tools/golangci-lint:
 		https://github.com/golangci/golangci-lint/releases/download/v$(GOLANGCI_LINT_VERSION)/golangci-lint-$(GOLANGCI_LINT_VERSION)-$(shell echo $(SYSTEM) | tr '_' '-').tar.gz \
 		| tar xzOf - golangci-lint-$(GOLANGCI_LINT_VERSION)-$(shell echo $(SYSTEM) | tr '_' '-')/golangci-lint > tools/golangci-lint && chmod +x tools/golangci-lint
 
-all: lint test
+all: test
 
+.PHONY: lint
 lint: tools/golangci-lint
 	./tools/golangci-lint run ./...
 
-test:
-	printf "Linter:\n"
-	$(GOCMD) list ./... | xargs -L1 golint | tee golint-report.out
+.PHONY: test
+test: lint
 	printf "\n\nTests:\n\n"
 	$(GOCMD) test -v -coverprofile coverage.txt -covermode=atomic ./...
 	$(GOCMD) vet ./... 2> govet-report.out
 	$(GOCMD) tool cover -html=coverage.txt -o cover-report.html
 	printf "\nCoverage report available at cover-report.html\n\n"
 
+.PHONY: tidy
 tidy:
 	$(GOCMD) mod tidy
 
+.PHONY: clean
 clean:
 	$(GOCLEAN)
 	$(GOCMD) fmt ./...
 	rm -f $(BINARY_NAME)
-	packr2 clean
-# Cross compilation
+	rm -rf tools
