@@ -67,6 +67,7 @@ type RBACDefinitionList struct {
 	Items           []RBACDefinition `json:"items"`
 }
 
+// nolint: gochecknoinits
 func init() {
 	SchemeBuilder.Register(&RBACDefinition{}, &RBACDefinitionList{})
 }

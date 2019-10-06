@@ -113,9 +113,9 @@ func (p *Parser) parseClusterRoleBinding(
 	return nil
 }
 
+// nolint: funlen
 func (p *Parser) parseRoleBinding(
 	rb rbacmanagerv1beta1.RoleBinding, subjects []rbacv1.Subject, prefix string) error {
-
 	objectMeta := metav1.ObjectMeta{
 		OwnerReferences: p.ownerRefs,
 		Labels:          kube.Labels,
@@ -124,27 +124,29 @@ func (p *Parser) parseRoleBinding(
 	var requestedRoleName string
 	var roleRef rbacv1.RoleRef
 
-	if rb.ClusterRole != "" {
+	switch {
+	case rb.ClusterRole != "":
 		logrus.Debugf("Processing Requested ClusterRole %v <> %v <> %v", rb.ClusterRole, rb.Namespace, rb)
 		requestedRoleName = rb.ClusterRole
 		roleRef = rbacv1.RoleRef{
 			Kind: "ClusterRole",
 			Name: rb.ClusterRole,
 		}
-	} else if rb.Role != "" {
+	case rb.Role != "":
 		logrus.Debugf("Processing Requested Role %v <> %v <> %v", rb.Role, rb.Namespace, rb)
 		requestedRoleName = fmt.Sprintf("%v-%v", rb.Role, rb.Namespace)
 		roleRef = rbacv1.RoleRef{
 			Kind: "Role",
 			Name: rb.Role,
 		}
-	} else {
-		return errors.New("Invalid role binding, role or clusterRole required")
+	default:
+		return errors.New("Invalid role binding, role or clusterRole required.")
 	}
 
 	objectMeta.Name = fmt.Sprintf("%v-%v", prefix, requestedRoleName)
 
-	if rb.NamespaceSelector.MatchLabels != nil || len(rb.NamespaceSelector.MatchExpressions) > 0 {
+	switch {
+	case rb.NamespaceSelector.MatchLabels != nil || len(rb.NamespaceSelector.MatchExpressions) > 0:
 		logrus.Debugf("Processing Namespace Selector %v", rb.NamespaceSelector)
 
 		selector, err := metav1.LabelSelectorAsSelector(&rb.NamespaceSelector)
@@ -172,8 +174,7 @@ func (p *Parser) parseRoleBinding(
 				Subjects:   subjects,
 			})
 		}
-
-	} else if rb.Namespace != "" {
+	case rb.Namespace != "":
 		objectMeta.Namespace = rb.Namespace
 
 		p.parsedRoleBindings = append(p.parsedRoleBindings, rbacv1.RoleBinding{
@@ -181,11 +182,9 @@ func (p *Parser) parseRoleBinding(
 			RoleRef:    roleRef,
 			Subjects:   subjects,
 		})
-
-	} else {
-		return errors.New("Invalid role binding, namespace or namespace selector required")
+	default:
+		return errors.New("Invalid role binding, namespace or namespace selector required.")
 	}
-
 	return nil
 }
 
@@ -210,7 +209,7 @@ func (p *Parser) parseClusterRoleBindings(rbacDef *rbacmanagerv1beta1.RBACDefini
 	for _, rbacBinding := range rbacDef.RBACBindings {
 		for _, clusterRoleBinding := range rbacBinding.ClusterRoleBindings {
 			namePrefix := rdNamePrefix(rbacDef, &rbacBinding)
-			p.parseClusterRoleBinding(clusterRoleBinding, rbacBinding.Subjects, namePrefix)
+			_ = p.parseClusterRoleBinding(clusterRoleBinding, rbacBinding.Subjects, namePrefix)
 		}
 	}
 }
@@ -219,7 +218,7 @@ func (p *Parser) parseRoleBindings(rbacDef *rbacmanagerv1beta1.RBACDefinition) {
 	for _, rbacBinding := range rbacDef.RBACBindings {
 		for _, roleBinding := range rbacBinding.RoleBindings {
 			namePrefix := rdNamePrefix(rbacDef, &rbacBinding)
-			p.parseRoleBinding(roleBinding, rbacBinding.Subjects, namePrefix)
+			_ = p.parseRoleBinding(roleBinding, rbacBinding.Subjects, namePrefix)
 		}
 	}
 }

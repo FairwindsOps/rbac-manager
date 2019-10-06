@@ -44,7 +44,7 @@ func watchRoleBindings(clientset *kubernetes.Clientset) {
 		} else if event.Type == watch.Modified || event.Type == watch.Deleted {
 			logrus.Debugf("Reconciling RBACDefinition for %s RoleBinding after %s event", rb.Name, event.Type)
 			r := reconciler.Reconciler{Clientset: kube.GetClientsetOrDie()}
-			r.ReconcileOwners(rb.OwnerReferences, "RoleBinding")
+			_ = r.ReconcileOwners(rb.OwnerReferences, "RoleBinding")
 		}
 	}
 }

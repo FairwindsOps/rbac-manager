@@ -25,6 +25,7 @@ linters-settings:
       - wrapperFunc
       - paramTypeCombine
       - hugeParam
+      - rangeValCopy
 
 linters:
   enable-all: true

@@ -44,7 +44,7 @@ func watchClusterRoleBindings(clientset *kubernetes.Clientset) {
 		} else if event.Type == watch.Modified || event.Type == watch.Deleted {
 			logrus.Debugf("Reconciling RBACDefinition for %s ClusterRoleBinding after %s event", crb.Name, event.Type)
 			r := reconciler.Reconciler{Clientset: kube.GetClientsetOrDie()}
-			r.ReconcileOwners(crb.OwnerReferences, "ClusterRoleBinding")
+			_ = r.ReconcileOwners(crb.OwnerReferences, "ClusterRoleBinding")
 		}
 	}
 }

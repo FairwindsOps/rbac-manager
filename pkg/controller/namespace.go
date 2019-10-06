@@ -83,7 +83,7 @@ func reconcileNamespace(config *rest.Config, namespace *v1.Namespace) error {
 		return err
 	}
 
-	rbacDefList, err = kube.GetRbacDefinitions()
+	rbacDefList, _ = kube.GetRbacDefinitions()
 
 	for _, rbacDef := range rbacDefList.Items {
 		err = rdr.ReconcileNamespaceChange(&rbacDef, namespace)

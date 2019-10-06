@@ -68,32 +68,35 @@ func (r *Reconciler) ReconcileOwners(ownerRefs []metav1.OwnerReference, kind str
 	defer mux.Unlock()
 
 	for _, ownerRef := range ownerRefs {
-		if ownerRef.Kind == "RBACDefinition" {
-			rbacDef, err := kube.GetRbacDefinition(ownerRef.Name)
+		if ownerRef.Kind != "RBACDefinition" {
+			continue
+		}
+
+		rbacDef, err := kube.GetRbacDefinition(ownerRef.Name)
+		if err != nil {
+			return err
+		}
+
+		r.ownerRefs = rbacDefOwnerRefs(&rbacDef)
+
+		p := Parser{
+			Clientset: r.Clientset,
+			ownerRefs: r.ownerRefs,
+		}
+
+		switch kind {
+		case "RoleBinding":
+			p.parseRoleBindings(&rbacDef)
+			return r.reconcileRoleBindings(&p.parsedRoleBindings)
+		case "ClusterRoleBinding":
+			p.parseClusterRoleBindings(&rbacDef)
+			return r.reconcileClusterRoleBindings(&p.parsedClusterRoleBindings)
+		case "ServiceAccount":
+			err := p.Parse(rbacDef)
 			if err != nil {
 				return err
 			}
-
-			r.ownerRefs = rbacDefOwnerRefs(&rbacDef)
-
-			p := Parser{
-				Clientset: r.Clientset,
-				ownerRefs: r.ownerRefs,
-			}
-
-			if kind == "RoleBinding" {
-				p.parseRoleBindings(&rbacDef)
-				return r.reconcileRoleBindings(&p.parsedRoleBindings)
-			} else if kind == "ClusterRoleBinding" {
-				p.parseClusterRoleBindings(&rbacDef)
-				return r.reconcileClusterRoleBindings(&p.parsedClusterRoleBindings)
-			} else if kind == "ServiceAccount" {
-				err := p.Parse(rbacDef)
-				if err != nil {
-					return err
-				}
-				return r.reconcileServiceAccounts(&p.parsedServiceAccounts)
-			}
+			return r.reconcileServiceAccounts(&p.parsedServiceAccounts)
 		}
 	}
 	return nil

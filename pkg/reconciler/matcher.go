@@ -51,11 +51,7 @@ func rbMatches(existingRB *rbacv1.RoleBinding, requestedRB *rbacv1.RoleBinding) 
 }
 
 func saMatches(existingSA *v1.ServiceAccount, requestedSA *v1.ServiceAccount) bool {
-	if !metaMatches(&existingSA.ObjectMeta, &requestedSA.ObjectMeta) {
-		return false
-	}
-
-	return true
+	return !metaMatches(&existingSA.ObjectMeta, &requestedSA.ObjectMeta)
 }
 
 func metaMatches(existingMeta *metav1.ObjectMeta, requestedMeta *metav1.ObjectMeta) bool {

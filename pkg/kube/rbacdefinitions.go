@@ -53,7 +53,7 @@ func GetRbacDefinitions() (rbacmanagerv1beta1.RBACDefinitionList, error) {
 }
 
 func getRbacDefClient() (*rest.RESTClient, error) {
-	rbacmanagerv1beta1.AddToScheme(scheme.Scheme)
+	_ = rbacmanagerv1beta1.AddToScheme(scheme.Scheme)
 	clientConfig := config.GetConfigOrDie()
 	clientConfig.ContentConfig.GroupVersion = &rbacmanagerv1beta1.SchemeGroupVersion
 	clientConfig.APIPath = "/apis"
