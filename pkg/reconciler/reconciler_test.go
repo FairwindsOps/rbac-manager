@@ -19,8 +19,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	rbacmanagerv1beta1 "github.com/fairwindsops/rbac-manager/pkg/apis/rbacmanager/v1beta1"
-	"github.com/fairwindsops/rbac-manager/pkg/kube"
+	rbacmanagerv1beta1 "github.com/FairwindsOps/rbac-manager/pkg/apis/rbacmanager/v1beta1"
+	"github.com/FairwindsOps/rbac-manager/pkg/kube"
 
 	corev1 "k8s.io/api/core/v1"
 	rbacv1 "k8s.io/api/rbac/v1"

@@ -17,7 +17,7 @@ limitations under the License.
 package apis
 
 import (
-	"github.com/fairwindsops/rbac-manager/pkg/apis/rbacmanager/v1beta1"
+	"github.com/FairwindsOps/rbac-manager/pkg/apis/rbacmanager/v1beta1"
 )
 
 func init() {

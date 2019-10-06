@@ -20,10 +20,10 @@ import (
 	"flag"
 	"os"
 
-	"github.com/fairwindsops/rbac-manager/pkg/apis"
-	"github.com/fairwindsops/rbac-manager/pkg/controller"
-	"github.com/fairwindsops/rbac-manager/pkg/watcher"
-	"github.com/fairwindsops/rbac-manager/version"
+	"github.com/FairwindsOps/rbac-manager/pkg/apis"
+	"github.com/FairwindsOps/rbac-manager/pkg/controller"
+	"github.com/FairwindsOps/rbac-manager/pkg/watcher"
+	"github.com/FairwindsOps/rbac-manager/version"
 
 	logrus "github.com/sirupsen/logrus"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"

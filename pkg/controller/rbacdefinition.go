@@ -19,9 +19,9 @@ package controller
 import (
 	"context"
 
-	"github.com/fairwindsops/rbac-manager/pkg/reconciler"
+	"github.com/FairwindsOps/rbac-manager/pkg/reconciler"
 
-	rbacmanagerv1beta1 "github.com/fairwindsops/rbac-manager/pkg/apis/rbacmanager/v1beta1"
+	rbacmanagerv1beta1 "github.com/FairwindsOps/rbac-manager/pkg/apis/rbacmanager/v1beta1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes"

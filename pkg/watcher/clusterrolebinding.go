@@ -17,8 +17,8 @@ limitations under the License.
 package watcher
 
 import (
-	kube "github.com/fairwindsops/rbac-manager/pkg/kube"
-	"github.com/fairwindsops/rbac-manager/pkg/reconciler"
+	kube "github.com/FairwindsOps/rbac-manager/pkg/kube"
+	"github.com/FairwindsOps/rbac-manager/pkg/reconciler"
 	"github.com/sirupsen/logrus"
 
 	rbacv1 "k8s.io/api/rbac/v1"

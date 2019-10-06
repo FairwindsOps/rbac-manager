@@ -17,7 +17,7 @@ limitations under the License.
 package kube
 
 import (
-	rbacmanagerv1beta1 "github.com/fairwindsops/rbac-manager/pkg/apis/rbacmanager/v1beta1"
+	rbacmanagerv1beta1 "github.com/FairwindsOps/rbac-manager/pkg/apis/rbacmanager/v1beta1"
 	"k8s.io/apimachinery/pkg/runtime/serializer"
 	"k8s.io/client-go/kubernetes/scheme"
 	rest "k8s.io/client-go/rest"

@@ -15,10 +15,10 @@ package controller
 
 import (
 	"context"
-	"github.com/fairwindsops/rbac-manager/pkg/kube"
+	"github.com/FairwindsOps/rbac-manager/pkg/kube"
 
-	rbacmanagerv1beta1 "github.com/fairwindsops/rbac-manager/pkg/apis/rbacmanager/v1beta1"
-	"github.com/fairwindsops/rbac-manager/pkg/reconciler"
+	rbacmanagerv1beta1 "github.com/FairwindsOps/rbac-manager/pkg/apis/rbacmanager/v1beta1"
+	"github.com/FairwindsOps/rbac-manager/pkg/reconciler"
 
 	"k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
