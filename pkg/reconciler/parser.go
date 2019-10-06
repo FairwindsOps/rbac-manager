@@ -140,7 +140,7 @@ func (p *Parser) parseRoleBinding(
 			Name: rb.Role,
 		}
 	default:
-		return errors.New("Invalid role binding, role or clusterRole required.")
+		return errors.New("invalid role binding, role or clusterRole required")
 	}
 
 	objectMeta.Name = fmt.Sprintf("%v-%v", prefix, requestedRoleName)
@@ -183,7 +183,7 @@ func (p *Parser) parseRoleBinding(
 			Subjects:   subjects,
 		})
 	default:
-		return errors.New("Invalid role binding, namespace or namespace selector required.")
+		return errors.New("invalid role binding, namespace or namespace selector required")
 	}
 	return nil
 }

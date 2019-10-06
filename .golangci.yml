@@ -2,7 +2,7 @@ linters-settings:
   govet:
     check-shadowing: true
   golint:
-    min-confidence: 0
+    min-confidence: 0.7
   gocyclo:
     min-complexity: 15
   maligned:
@@ -38,6 +38,7 @@ linters:
     - dupl
     - goconst
     - unparam
+    - stylecheck
 
 run:
   tests: false

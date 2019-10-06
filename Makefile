@@ -18,14 +18,14 @@ tools/golangci-lint:
 		https://github.com/golangci/golangci-lint/releases/download/v$(GOLANGCI_LINT_VERSION)/golangci-lint-$(GOLANGCI_LINT_VERSION)-$(shell echo $(SYSTEM) | tr '_' '-').tar.gz \
 		| tar xzOf - golangci-lint-$(GOLANGCI_LINT_VERSION)-$(shell echo $(SYSTEM) | tr '_' '-')/golangci-lint > tools/golangci-lint && chmod +x tools/golangci-lint
 
-all: test
+all: lint test
 
 .PHONY: lint
 lint: tools/golangci-lint
 	./tools/golangci-lint run ./...
 
 .PHONY: test
-test: lint
+test:
 	printf "\n\nTests:\n\n"
 	$(GOCMD) test -v -coverprofile coverage.txt -covermode=atomic ./...
 	$(GOCMD) vet ./... 2> govet-report.out
