@@ -19,17 +19,23 @@ references:
 jobs:
   test:
     docker:
-      - image: circleci/golang:1.12
+      - image: circleci/golang:1.13
 
     working_directory: /go/src/github.com/FairwindsOps/rbac-manager
 
     steps:
       - checkout
-      - run: go get -u golang.org/x/lint/golint
-      - run: go list ./... | grep -v vendor | xargs golint -set_exit_status
-      - run: go list ./... | grep -v vendor | xargs go vet
       - run: go test ./... -coverprofile=coverage.txt -covermode=atomic
       - run: bash <(curl -s https://codecov.io/bash)
+  lint:
+    docker:
+      - image: circleci/golang:1.13
+
+    working_directory: /go/src/github.com/FairwindsOps/rbac-manager
+
+    steps:
+      - checkout
+      - run: make lint
 
   build:
     docker:
@@ -54,6 +60,7 @@ workflows:
   build:
     jobs:
       - test
+      - lint
       - build:
           context: org-global
   release:
