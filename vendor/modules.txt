@@ -6,14 +6,6 @@ github.com/beorn7/perks/quantile
 github.com/davecgh/go-spew/spew
 # github.com/evanphx/json-patch v4.5.0+incompatible
 github.com/evanphx/json-patch
-# github.com/fairwindsops/rbac-manager v0.0.0-20191004165929-018c355313a3
-github.com/fairwindsops/rbac-manager/pkg/apis
-github.com/fairwindsops/rbac-manager/pkg/apis/rbacmanager/v1beta1
-github.com/fairwindsops/rbac-manager/pkg/controller
-github.com/fairwindsops/rbac-manager/pkg/kube
-github.com/fairwindsops/rbac-manager/pkg/reconciler
-github.com/fairwindsops/rbac-manager/pkg/watcher
-github.com/fairwindsops/rbac-manager/version
 # github.com/go-logr/logr v0.1.0
 github.com/go-logr/logr
 # github.com/gogo/protobuf v1.3.0

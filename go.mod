@@ -3,7 +3,6 @@ module github.com/FairwindsOps/rbac-manager
 go 1.13
 
 require (
-	github.com/fairwindsops/rbac-manager v0.0.0-20191004165929-018c355313a3
 	github.com/gogo/protobuf v1.3.0 // indirect
 	github.com/json-iterator/go v1.1.7 // indirect
 	github.com/modern-go/reflect2 v1.0.1 // indirect
