@@ -31,7 +31,7 @@ func watchRoleBindings(clientset *kubernetes.Clientset) {
 	watcher, err := clientset.RbacV1().RoleBindings("").Watch(kube.ListOptions)
 
 	if err != nil {
-		klog.Errorf("Unable to watch Role Bindings", err)
+		klog.Errorf("Unable to watch Role Bindings: %v", err)
 		runtime.HandleError(err)
 	}
 
