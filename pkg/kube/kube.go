@@ -19,9 +19,9 @@ package kube
 import (
 	"os"
 
-	"github.com/sirupsen/logrus"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
+	"k8s.io/klog"
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
 )
 
@@ -42,14 +42,14 @@ func GetClientsetOrDie() *kubernetes.Clientset {
 	kubeConf, err := config.GetConfig()
 
 	if err != nil {
-		logrus.Error(err, "unable to get Kubernetes client config")
+		klog.Errorf("Unable to get Kubernetes client config: %v", err)
 		os.Exit(1)
 	}
 
 	clientset, err := kubernetes.NewForConfig(kubeConf)
 
 	if err != nil {
-		logrus.Error(err, "unable to get Kubernetes clientset")
+		klog.Errorf("Unable to get Kubernetes clientset: %v", err)
 		os.Exit(1)
 	}
 

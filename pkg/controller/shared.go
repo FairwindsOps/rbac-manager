@@ -18,9 +18,9 @@ package controller
 
 import (
 	rbacmanagerv1beta1 "github.com/fairwindsops/rbac-manager/pkg/apis/rbacmanager/v1beta1"
-	"github.com/sirupsen/logrus"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/klog"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
@@ -37,7 +37,7 @@ func Add(mgr manager.Manager) error {
 	err = addController(mgr, newRbacDefReconciler(mgr), "rbacdefinition", rbacDef)
 
 	if err != nil {
-		logrus.Errorf("Error adding RBAC Definition reconciler")
+		klog.Error("Error adding RBAC Definition reconciler")
 		return err
 	}
 
@@ -45,7 +45,7 @@ func Add(mgr manager.Manager) error {
 	err = addController(mgr, newNamespaceReconciler(mgr), "namespace", namespace)
 
 	if err != nil {
-		logrus.Errorf("Error adding Namespace reconciler")
+		klog.Error("Error adding Namespace reconciler")
 		return err
 	}
 

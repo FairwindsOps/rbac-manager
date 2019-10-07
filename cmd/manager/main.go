@@ -23,72 +23,69 @@ import (
 	"github.com/fairwindsops/rbac-manager/pkg/apis"
 	"github.com/fairwindsops/rbac-manager/pkg/controller"
 	"github.com/fairwindsops/rbac-manager/pkg/watcher"
-	"github.com/fairwindsops/rbac-manager/version"
 
-	logrus "github.com/sirupsen/logrus"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
+	klog "k8s.io/klog"
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/runtime/signals"
 )
 
-var logLevel = flag.String("log-level", logrus.InfoLevel.String(), "Logrus log level")
+var (
+	// version is set during build
+	version = "development"
+	// commit is set during build
+	commit = "n/a"
+)
 
 func main() {
+	klog.InitFlags(nil)
 	flag.Parse()
 
-	parsedLevel, err := logrus.ParseLevel(*logLevel)
-	if err != nil {
-		// This should theoretically never happen
-		logrus.Errorf("log-level flag has invalid value %s", *logLevel)
-	} else {
-		logrus.SetLevel(parsedLevel)
-	}
-
-	logrus.Info("----------------------------------")
-	logrus.Infof("rbac-manager %v running", version.Version)
-	logrus.Info("----------------------------------")
+	klog.Info("---------------------------------------------------------------")
+	klog.Infof("rbac-manager - %s (Git: %s) is starting...", version, commit)
+	klog.Info("---------------------------------------------------------------")
 
 	// Get a config to talk to the apiserver
-	logrus.Debug("Setting up client for manager")
+	klog.V(5).Info("Setting up client for manager")
 	cfg, err := config.GetConfig()
 	if err != nil {
-		logrus.Error(err, "unable to set up client config")
+		klog.Error(err, "unable to set up client config")
 		os.Exit(1)
 	}
 
 	// Create a new Cmd to provide shared dependencies and start components
-	logrus.Debug("Setting up manager")
+	klog.V(5).Info("Setting up manager")
 	mgr, err := manager.New(cfg, manager.Options{})
 	if err != nil {
-		logrus.Error(err, "unable to set up overall controller manager")
+		klog.Error(err, "unable to set up overall controller manager")
 		os.Exit(1)
 	}
 
-	logrus.Info("Registering components")
+	klog.Info("Registering components")
 
 	// Setup Scheme for all resources
-	logrus.Debug("Setting up scheme")
+	klog.V(5).Info("Setting up scheme")
 	if err := apis.AddToScheme(mgr.GetScheme()); err != nil {
-		logrus.Error(err, "unable add APIs to scheme")
+		klog.Error(err, "unable add APIs to scheme")
 		os.Exit(1)
 	}
 
 	// Setup all Controllers
-	logrus.Debug("Setting up controller")
+	klog.V(5).Info("Setting up controller")
 	if err := controller.Add(mgr); err != nil {
-		logrus.Error(err, "unable to register controller to the manager")
+		klog.Error(err, "unable to register controller to the manager")
 		os.Exit(1)
 	}
 
 	// Watch Related Resources
-	logrus.Info("Watching resources related to RBAC Definitions")
+	klog.Info("Watching resources related to RBAC Definitions")
 	watcher.WatchRelatedResources()
 
 	// Start the Cmd
-	logrus.Info("Watching RBAC Definitions")
+	klog.Info("Watching RBAC Definitions")
 	if err := mgr.Start(signals.SetupSignalHandler()); err != nil {
-		logrus.Error(err, "unable to run the manager")
+		klog.Error(err, "unable to run the manager")
 		os.Exit(1)
 	}
 }
