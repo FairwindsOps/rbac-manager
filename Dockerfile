@@ -1,5 +1,5 @@
 FROM golang:1.12 AS build-env
-WORKDIR /go/src/github.com/fairwindsops/rbac-manager/
+WORKDIR /go/src/github.com/FairwindsOps/rbac-manager/
 
 COPY . .
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-w -s" -a -o rbac-manager ./cmd/manager/main.go
@@ -15,7 +15,7 @@ COPY --from=alpine /etc/passwd /etc/passwd
 
 
 USER nobody
-COPY --from=build-env /go/src/github.com/fairwindsops/rbac-manager/rbac-manager /
+COPY --from=build-env /go/src/github.com/FairwindsOps/rbac-manager/rbac-manager /
 
 ENTRYPOINT ["/rbac-manager"]
 CMD ["--log-level=info"]
