@@ -1,6 +1,6 @@
 <div align="center">
-  <img src="/docs/logo.svg" height="300" alt="RBAC Manager" />
-  <br>
+  <img src="/docs/logo.svg" height="200" alt="RBAC Manager" style="padding-bottom: 20px" />
+  <br><br>
 
   [![Go Report Card](https://goreportcard.com/badge/github.com/FairwindsOps/rbac-manager)](https://goreportcard.com/report/github.com/FairwindsOps/rbac-manager) [![CircleCI](https://circleci.com/gh/FairwindsOps/rbac-manager.svg?style=svg)](https://circleci.com/gh/FairwindsOps/rbac-manager) [![codecov](https://codecov.io/gh/fairwindsops/rbac-manager/branch/master/graph/badge.svg)](https://codecov.io/gh/fairwindsops/rbac-manager)
 </div>
