@@ -1,6 +1,17 @@
-version: 2
+version: 2.1
+
+orbs:
+  rok8s-scripts: fairwinds/rok8s-scripts@9.2.0
 
 references:
+  install_goreleaser: &install_goreleaser
+    run:
+      name: Install GoReleaser
+      command: |
+        curl -fsSLo goreleaser.deb https://github.com/goreleaser/goreleaser/releases/download/v0.119.0/goreleaser_amd64.deb
+        echo "e4552d00d8448c4da5f2044e0ad8ba49bcd636502b4799751e16341d5e235d24 goreleaser.deb" | sha256sum -c
+        sudo dpkg -i goreleaser.deb
+
   docker_build_and_push: &docker_build_and_push
     run:
       name: Docker login, build, and push
@@ -19,16 +30,13 @@ references:
 jobs:
   test:
     docker:
-      - image: circleci/golang:1.12
-
-    working_directory: /go/src/github.com/fairwindsops/rbac-manager
-
+      - image: circleci/golang:1.12-stretch
     steps:
       - checkout
       - run: go get -u golang.org/x/lint/golint
-      - run: go list ./... | grep -v vendor | xargs golint -set_exit_status
-      - run: go list ./... | grep -v vendor | xargs go vet
-      - run: go test ./... -coverprofile=coverage.txt -covermode=atomic
+      - run: curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh -s -- -b $(go env GOPATH)/bin v1.17.1
+      - run: golangci-lint run
+      - run: make test
       - run: bash <(curl -s https://codecov.io/bash)
 
   build:
