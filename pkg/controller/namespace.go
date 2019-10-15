@@ -16,6 +16,7 @@ package controller
 import (
 	"context"
 	"github.com/fairwindsops/rbac-manager/pkg/kube"
+	"github.com/fairwindsops/rbac-manager/pkg/metrics"
 
 	rbacmanagerv1beta1 "github.com/fairwindsops/rbac-manager/pkg/apis/rbacmanager/v1beta1"
 	"github.com/fairwindsops/rbac-manager/pkg/reconciler"
@@ -71,6 +72,7 @@ func (r *ReconcileNamespace) Reconcile(request reconcile.Request) (reconcile.Res
 }
 
 func reconcileNamespace(config *rest.Config, namespace *v1.Namespace) error {
+	metrics.ReconcileCounter.WithLabelValues("namespace").Inc()
 	var err error
 	var rbacDefList rbacmanagerv1beta1.RBACDefinitionList
 	rdr := reconciler.Reconciler{}

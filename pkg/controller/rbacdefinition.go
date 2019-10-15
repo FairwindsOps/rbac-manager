@@ -56,6 +56,7 @@ type ReconcileRBACDefinition struct {
 
 // Reconcile makes changes in response to RBACDefinition changes
 func (r *ReconcileRBACDefinition) Reconcile(request reconcile.Request) (reconcile.Result, error) {
+	metrics.ReconcileCounter.WithLabelValues("rbacdefinition").Inc()
 	var err error
 	rdr := reconciler.Reconciler{Clientset: r.clientset}
 

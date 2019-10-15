@@ -40,10 +40,20 @@ var (
 		},
 		[]string{"object", "action"},
 	)
+
+	ReconcileCounter = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Namespace: namespace,
+			Name:      "reconcile_total",
+			Help:      "Number of times a reconciling is triggered",
+		},
+		[]string{"controller"},
+	)
 )
 
 // RegisterMetrics must be called exactly once and registers the prometheus counters as metrics
 func RegisterMetrics() {
 	prometheus.MustRegister(ErrorCounter)
 	prometheus.MustRegister(ChangeCounter)
+	prometheus.MustRegister(ReconcileCounter)
 }
