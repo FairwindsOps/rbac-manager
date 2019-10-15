@@ -41,6 +41,7 @@ var (
 		[]string{"object", "action"},
 	)
 
+	// ReconcileCounter counts controllers invocations
 	ReconcileCounter = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
 			Namespace: namespace,
