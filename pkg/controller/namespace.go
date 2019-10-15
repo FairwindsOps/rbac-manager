@@ -55,11 +55,13 @@ func (r *ReconcileNamespace) Reconcile(request reconcile.Request) (reconcile.Res
 		if errors.IsNotFound(err) {
 			err = reconcileNamespace(r.config, namespace)
 			if err != nil {
+				metrics.ErrorCounter.Inc()
 				return reconcile.Result{}, err
 			}
 			return reconcile.Result{}, nil
 		}
 		// Error reading the object - requeue the request.
+		metrics.ErrorCounter.Inc()
 		return reconcile.Result{}, err
 	}
 
