@@ -160,7 +160,25 @@ spec:
       - name: rbac-manager
         image: "quay.io/reactiveops/rbac-manager:0.8.3"
         imagePullPolicy: Always
-        # these liveness probes are not very helpful yet
+        # these liveness probes use the metrics endpoint
+        readinessProbe:
+          httpGet:
+            scheme: HTTP
+            path: /metrics
+            port: 8080
+          initialDelaySeconds: 5
+          timeoutSeconds: 3
+          periodSeconds: 3
+          failureThreshold: 3
+        livenessProbe:
+          httpGet:
+            scheme: HTTP
+            path: /metrics
+            port: 8080
+          initialDelaySeconds: 5
+          timeoutSeconds: 3
+          periodSeconds: 10
+          failureThreshold: 3
         securityContext:
           runAsUser: 1200
           allowPrivilegeEscalation: false
@@ -177,3 +195,8 @@ spec:
           requests:
             cpu: 100m
             memory: 128Mi
+        ports:
+          # metrics port
+          - name: http-metrics
+            containerPort: 8080
+            protocol: TCP

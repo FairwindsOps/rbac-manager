@@ -27,3 +27,4 @@ tmp
 .vscode
 
 coverage.txt
+cover-report.html

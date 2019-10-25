@@ -18,6 +18,8 @@ package main
 
 import (
 	"flag"
+	"github.com/fairwindsops/rbac-manager/pkg/metrics"
+	"net/http"
 	"os"
 
 	"github.com/fairwindsops/rbac-manager/pkg/apis"
@@ -25,7 +27,9 @@ import (
 	"github.com/fairwindsops/rbac-manager/pkg/watcher"
 	"github.com/fairwindsops/rbac-manager/version"
 
-	logrus "github.com/sirupsen/logrus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
+
+	"github.com/sirupsen/logrus"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
@@ -33,6 +37,7 @@ import (
 )
 
 var logLevel = flag.String("log-level", logrus.InfoLevel.String(), "Logrus log level")
+var addr = flag.String("metrics-address", ":8080", "The address to serve prometheus metrics.")
 
 func main() {
 	flag.Parse()
@@ -84,6 +89,16 @@ func main() {
 	// Watch Related Resources
 	logrus.Info("Watching resources related to RBAC Definitions")
 	watcher.WatchRelatedResources()
+
+	// Start metrics endpoint
+	go func() {
+		metrics.RegisterMetrics()
+		http.Handle("/metrics", promhttp.Handler())
+		if err := http.ListenAndServe(*addr, nil); err != nil {
+			logrus.Error(err, "unable to serve the metrics endpoint")
+			os.Exit(1)
+		}
+	}()
 
 	// Start the Cmd
 	logrus.Info("Watching RBAC Definitions")
