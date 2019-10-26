@@ -1,4 +1,3 @@
----
 apiVersion: v1
 kind: Namespace
 metadata:
@@ -21,35 +20,35 @@ metadata:
   labels:
     app: rbac-manager
 rules:
-  - apiGroups:
-      - rbacmanager.reactiveops.io
-    resources:
-      - rbacdefinitions
-    verbs:
-      - get
-      - list
-      - watch
-  - apiGroups:
-      - rbac.authorization.k8s.io
-      - authorization.k8s.io
-    resources:
-      - '*'
-    verbs:
-      - '*'
-  - apiGroups:
-      - "" # core
-    resources:
-      - serviceaccounts
-    verbs:
-      - '*'
-  - apiGroups:
-      - "" # core
-    resources:
-      - namespaces
-    verbs:
-      - get
-      - list
-      - watch
+- apiGroups:
+  - rbacmanager.reactiveops.io
+  resources:
+  - rbacdefinitions
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - rbac.authorization.k8s.io
+  - authorization.k8s.io
+  resources:
+  - '*'
+  verbs:
+  - '*'
+- apiGroups:
+  - ""
+  resources:
+  - serviceaccounts
+  verbs:
+  - '*'
+- apiGroups:
+  - ""
+  resources:
+  - namespaces
+  verbs:
+  - get
+  - list
+  - watch
 ---
 apiVersion: rbac.authorization.k8s.io/v1beta1
 kind: ClusterRoleBinding
@@ -62,9 +61,9 @@ roleRef:
   kind: ClusterRole
   name: rbac-manager
 subjects:
-  - kind: ServiceAccount
-    name: rbac-manager
-    namespace: "rbac-manager"
+- kind: ServiceAccount
+  name: rbac-manager
+  namespace: rbac-manager
 ---
 apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
@@ -158,9 +157,8 @@ spec:
       serviceAccountName: rbac-manager
       containers:
       - name: rbac-manager
-        image: "quay.io/reactiveops/rbac-manager:0.8.3"
+        image: "quay.io/reactiveops/rbac-manager:0.8.4"
         imagePullPolicy: Always
-        # these liveness probes use the metrics endpoint
         readinessProbe:
           httpGet:
             scheme: HTTP
@@ -187,7 +185,7 @@ spec:
           runAsNonRoot: true
           capabilities:
             drop:
-              - ALL
+            - ALL
         resources:
           limits:
             cpu: 100m
@@ -196,7 +194,6 @@ spec:
             cpu: 100m
             memory: 128Mi
         ports:
-          # metrics port
-          - name: http-metrics
-            containerPort: 8080
-            protocol: TCP
+        - name: http-metrics
+          containerPort: 8080
+          protocol: TCP
