@@ -5,7 +5,7 @@ references:
     run:
       name: Docker login, build, and push
       command: |
-        docker build -f Dockerfile -t quay.io/reactiveops/rbac-manager:$DOCKER_BASE_TAG .
+        docker build --build-arg "VERSION=$DOCKER_BASE_TAG" -f Dockerfile -t quay.io/reactiveops/rbac-manager:$DOCKER_BASE_TAG .
 
         if [[ -z $CIRCLE_PR_NUMBER ]]; then
           bash <(curl -s https://codecov.io/bash)
