@@ -43,4 +43,5 @@ rbacBindings:
       - clusterRole: test-rbac-manager
 EOF
 
+sleep 10
 kubectl auth can-i create deployments --as=system:serviceaccount:rbac-manager:test-rbac-manager
