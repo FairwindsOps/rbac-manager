@@ -26,8 +26,7 @@ echo "********************************************************************"
 echo "** Test rbacDefinition **"
 echo "********************************************************************"
 printf "\n\n"
-kubectl create serviceaccount -n rbac-manager test-rbac-manager
-kubectl create clusterrole test-rbac-manager --verb="*" --resource=deployment
+kubectl create clusterrole test-rbac-manager --verb="create" --resource=deployment
 
 cat <<EOF | kubectl create -f -
 apiVersion: rbacmanager.reactiveops.io/v1beta1

@@ -1,7 +1,7 @@
 version: 2.1
 
 orbs:
-  rok8s-scripts: fairwinds/rok8s-scripts@9.2.0
+  rok8s-scripts: fairwinds/rok8s-scripts@9.4.0
 
 references:
   docker_build_and_push: &docker_build_and_push
