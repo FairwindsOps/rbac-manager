@@ -1,4 +1,7 @@
-version: 2
+version: 2.1
+
+orbs:
+  rok8s-scripts: fairwinds/rok8s-scripts@9.4.0
 
 references:
   docker_build_and_push: &docker_build_and_push
@@ -57,6 +60,17 @@ workflows:
       - test
       - build:
           context: org-global
+      - rok8s-scripts/kubernetes_e2e_tests:
+          pre_script: e2e/pre.sh
+          script: e2e/test.sh
+          requires:
+            - test
+            - build
+          filters:
+            branches:
+              only: /.*/
+            tags:
+              ignore: /v.*/
   release:
     jobs:
       - release:
