@@ -15,11 +15,11 @@
 package reconciler
 
 import (
-	"github.com/fairwindsops/rbac-manager/pkg/metrics"
 	"reflect"
 	"sync"
 
 	"github.com/fairwindsops/rbac-manager/pkg/kube"
+	"github.com/fairwindsops/rbac-manager/pkg/metrics"
 
 	rbacmanagerv1beta1 "github.com/fairwindsops/rbac-manager/pkg/apis/rbacmanager/v1beta1"
 	logrus "github.com/sirupsen/logrus"

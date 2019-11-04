@@ -62,6 +62,10 @@ func (p *Parser) parseRBACBinding(rbacBinding rbacmanagerv1beta1.RBACBinding, na
 
 	for _, requestedSubject := range rbacBinding.Subjects {
 		if requestedSubject.Kind == "ServiceAccount" {
+			pullsecrets := []v1.LocalObjectReference{}
+			for _, secret := range requestedSubject.ImagePullSecrets {
+				pullsecrets = append(pullsecrets, v1.LocalObjectReference{Name: secret})
+			}
 			p.parsedServiceAccounts = append(p.parsedServiceAccounts, v1.ServiceAccount{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:            requestedSubject.Name,
@@ -69,6 +73,7 @@ func (p *Parser) parseRBACBinding(rbacBinding rbacmanagerv1beta1.RBACBinding, na
 					OwnerReferences: p.ownerRefs,
 					Labels:          kube.Labels,
 				},
+				ImagePullSecrets: pullsecrets,
 			})
 		}
 	}
@@ -94,8 +99,9 @@ func (p *Parser) parseRBACBinding(rbacBinding rbacmanagerv1beta1.RBACBinding, na
 }
 
 func (p *Parser) parseClusterRoleBinding(
-	crb rbacmanagerv1beta1.ClusterRoleBinding, subjects []rbacv1.Subject, prefix string) error {
+	crb rbacmanagerv1beta1.ClusterRoleBinding, subjects []rbacmanagerv1beta1.Subject, prefix string) error {
 	crbName := fmt.Sprintf("%v-%v", prefix, crb.ClusterRole)
+	subs := managerSubjectsToRbacSubjects(subjects)
 
 	p.parsedClusterRoleBindings = append(p.parsedClusterRoleBindings, rbacv1.ClusterRoleBinding{
 		ObjectMeta: metav1.ObjectMeta{
@@ -107,14 +113,14 @@ func (p *Parser) parseClusterRoleBinding(
 			Kind: "ClusterRole",
 			Name: crb.ClusterRole,
 		},
-		Subjects: subjects,
+		Subjects: subs,
 	})
 
 	return nil
 }
 
 func (p *Parser) parseRoleBinding(
-	rb rbacmanagerv1beta1.RoleBinding, subjects []rbacv1.Subject, prefix string) error {
+	rb rbacmanagerv1beta1.RoleBinding, subjects []rbacmanagerv1beta1.Subject, prefix string) error {
 
 	objectMeta := metav1.ObjectMeta{
 		OwnerReferences: p.ownerRefs,
@@ -165,21 +171,23 @@ func (p *Parser) parseRoleBinding(
 
 			om := objectMeta
 			om.Namespace = namespace.Name
+			subs := managerSubjectsToRbacSubjects(subjects)
 
 			p.parsedRoleBindings = append(p.parsedRoleBindings, rbacv1.RoleBinding{
 				ObjectMeta: om,
 				RoleRef:    roleRef,
-				Subjects:   subjects,
+				Subjects:   subs,
 			})
 		}
 
 	} else if rb.Namespace != "" {
 		objectMeta.Namespace = rb.Namespace
+		subs := managerSubjectsToRbacSubjects(subjects)
 
 		p.parsedRoleBindings = append(p.parsedRoleBindings, rbacv1.RoleBinding{
 			ObjectMeta: objectMeta,
 			RoleRef:    roleRef,
-			Subjects:   subjects,
+			Subjects:   subs,
 		})
 
 	} else {
@@ -226,4 +234,17 @@ func (p *Parser) parseRoleBindings(rbacDef *rbacmanagerv1beta1.RBACDefinition) {
 
 func rdNamePrefix(rbacDef *rbacmanagerv1beta1.RBACDefinition, rbacBinding *rbacmanagerv1beta1.RBACBinding) string {
 	return fmt.Sprintf("%v-%v", rbacDef.Name, rbacBinding.Name)
+}
+
+func managerSubjectsToRbacSubjects(subjects []rbacmanagerv1beta1.Subject) []rbacv1.Subject {
+	var subs []rbacv1.Subject
+	for _, sub := range subjects {
+		subs = append(subs, rbacv1.Subject{
+			Kind:      sub.Kind,
+			APIGroup:  sub.APIGroup,
+			Name:      sub.Name,
+			Namespace: sub.Namespace,
+		})
+	}
+	return subs
 }
