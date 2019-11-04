@@ -1,0 +1,15 @@
+apiVersion: rbacmanager.reactiveops.io/v1beta1
+kind: RBACDefinition
+metadata:
+  name: robot-rbac
+rbacBindings:
+  - name: robot-ci
+    subjects:
+      - kind: ServiceAccount
+        namespace: app
+        name: robot
+        imagePullSecrets:
+          - robot-secret
+    roleBindings:
+      - clusterRole: edit
+        namespace: app

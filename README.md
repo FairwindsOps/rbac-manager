@@ -118,6 +118,16 @@ rbacBindings:
 
 In the example above, Role Bindings would automatically get created for each Namespace with a `team=dev` label. This supports the same functionality as other Kubernetes label selectors, read the [official docs](https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/) for more information.
 
+## ServiceAccounts
+
+If an `RBACDefinition` defines a `ServiceAccount` as a subject, rbac-manager will attempt to create the `ServiceAccount` for you. **WARNING**: When an `RBACDefinition` owns a `ServiceAccount` in this fashion, it will be deleted when the `RBACDefinition` is deleted.
+
+### ImagePullSecrets and ServiceAccounts
+
+Service accounts support adding `ImagePullSecrets` to their definition. What happens is that when a `Pod` (via `Deployment` or otherwise) is launched specifying a `ServiceAccount` that specifies `ImagePullSecrets`, the pull secrets will be injected into the Pod spec automatically. An example of this using rbac-manager [can be found in the examples directory](examples/rbacdefinition-sa-imagepull.yaml).
+
+Please note: rbac-manager will not manage secrets, and assumes they are already present in the same namespace that the `ServiceAccount` is in. Also, `ImagePullSecrets` only apply when the `Subject` is a `ServiceAccount`.
+
 ## Contributing
 - [Code of Conduct](CODE_OF_CONDUCT.md)
 - [Roadmap](ROADMAP.md)
