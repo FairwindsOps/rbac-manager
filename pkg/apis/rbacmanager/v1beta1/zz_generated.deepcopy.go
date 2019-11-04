@@ -5,7 +5,6 @@
 package v1beta1
 
 import (
-	v1 "k8s.io/api/rbac/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 )
 
@@ -30,7 +29,7 @@ func (in *RBACBinding) DeepCopyInto(out *RBACBinding) {
 	*out = *in
 	if in.Subjects != nil {
 		in, out := &in.Subjects, &out.Subjects
-		*out = make([]v1.Subject, len(*in))
+		*out = make([]Subject, len(*in))
 		copy(*out, *in)
 	}
 	if in.ClusterRoleBindings != nil {

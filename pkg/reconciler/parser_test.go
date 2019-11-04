@@ -42,10 +42,12 @@ func TestParseStandard(t *testing.T) {
 
 	rbacDef.RBACBindings = []rbacmanagerv1beta1.RBACBinding{{
 		Name: "ci-bot",
-		Subjects: []rbacv1.Subject{{
-			Kind:      rbacv1.ServiceAccountKind,
-			Name:      "ci-bot",
-			Namespace: "bots",
+		Subjects: []rbacmanagerv1beta1.Subject{{
+			Subject: rbacv1.Subject{
+				Kind:      rbacv1.ServiceAccountKind,
+				Name:      "ci-bot",
+				Namespace: "bots",
+			},
 		}},
 		RoleBindings: []rbacmanagerv1beta1.RoleBinding{{
 			Namespace: "bots",
@@ -53,12 +55,16 @@ func TestParseStandard(t *testing.T) {
 		}},
 	}, {
 		Name: "devs",
-		Subjects: []rbacv1.Subject{{
-			Kind: rbacv1.UserKind,
-			Name: "joe",
+		Subjects: []rbacmanagerv1beta1.Subject{{
+			Subject: rbacv1.Subject{
+				Kind: rbacv1.UserKind,
+				Name: "joe",
+			},
 		}, {
-			Kind: rbacv1.UserKind,
-			Name: "sue",
+			Subject: rbacv1.Subject{
+				Kind: rbacv1.UserKind,
+				Name: "sue",
+			},
 		}},
 		RoleBindings: []rbacmanagerv1beta1.RoleBinding{{
 			NamespaceSelector: metav1.LabelSelector{
@@ -132,9 +138,11 @@ func TestParseLabels(t *testing.T) {
 
 	rbacDef.RBACBindings = []rbacmanagerv1beta1.RBACBinding{{
 		Name: "devs",
-		Subjects: []rbacv1.Subject{{
-			Kind: rbacv1.UserKind,
-			Name: "sue",
+		Subjects: []rbacmanagerv1beta1.Subject{{
+			Subject: rbacv1.Subject{
+				Kind: rbacv1.UserKind,
+				Name: "sue",
+			},
 		}},
 		RoleBindings: []rbacmanagerv1beta1.RoleBinding{{
 			NamespaceSelector: metav1.LabelSelector{
@@ -235,13 +243,20 @@ func TestParseMissingNamespace(t *testing.T) {
 
 	rbacDef.RBACBindings = []rbacmanagerv1beta1.RBACBinding{{
 		Name: "devs",
-		Subjects: []rbacv1.Subject{{
-			Kind: rbacv1.UserKind,
-			Name: "joe",
-		}, {
-			Kind: rbacv1.UserKind,
-			Name: "sue",
-		}},
+		Subjects: []rbacmanagerv1beta1.Subject{
+			{
+				Subject: rbacv1.Subject{
+					Kind: rbacv1.UserKind,
+					Name: "joe",
+				},
+			},
+			{
+				Subject: rbacv1.Subject{
+					Kind: rbacv1.UserKind,
+					Name: "sue",
+				},
+			},
+		},
 		RoleBindings: []rbacmanagerv1beta1.RoleBinding{{
 			NamespaceSelector: metav1.LabelSelector{MatchLabels: map[string]string{"team": "other-devs"}},
 			ClusterRole:       "edit",
@@ -262,7 +277,7 @@ func TestParseMissingSubjects(t *testing.T) {
 
 	rbacDef.RBACBindings = []rbacmanagerv1beta1.RBACBinding{{
 		Name:     "devs",
-		Subjects: []rbacv1.Subject{},
+		Subjects: []rbacmanagerv1beta1.Subject{},
 		RoleBindings: []rbacmanagerv1beta1.RoleBinding{{
 			NamespaceSelector: metav1.LabelSelector{
 				MatchLabels: map[string]string{"team": "devs"},
@@ -272,6 +287,23 @@ func TestParseMissingSubjects(t *testing.T) {
 	}}
 
 	newParseTest(t, client, rbacDef, []rbacv1.RoleBinding{}, []rbacv1.ClusterRoleBinding{}, []corev1.ServiceAccount{})
+}
+
+func TestManagerToRbacSubjects(t *testing.T) {
+	expected := []rbacv1.Subject{
+		{
+			Kind:      rbacv1.ServiceAccountKind,
+			Name:      "robot",
+			Namespace: "default",
+		},
+	}
+	subjects := []rbacmanagerv1beta1.Subject{
+		{
+			Subject: expected[0],
+		},
+	}
+	actual := managerSubjectsToRbacSubjects(subjects)
+	assert.ElementsMatch(t, expected, actual, "expected subjects to match")
 }
 
 func newParseTest(t *testing.T, client *fake.Clientset, rbacDef rbacmanagerv1beta1.RBACDefinition, expectedRb []rbacv1.RoleBinding, expectedCrb []rbacv1.ClusterRoleBinding, expectedSa []corev1.ServiceAccount) {

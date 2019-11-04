@@ -43,9 +43,11 @@ func TestReconcileRbacDefChanges(t *testing.T) {
 
 	rbacDef.RBACBindings = []rbacmanagerv1beta1.RBACBinding{{
 		Name: "admins",
-		Subjects: []rbacv1.Subject{{
-			Kind: rbacv1.UserKind,
-			Name: "jan",
+		Subjects: []rbacmanagerv1beta1.Subject{{
+			Subject: rbacv1.Subject{
+				Kind: rbacv1.UserKind,
+				Name: "jan",
+			},
 		}},
 		ClusterRoleBindings: []rbacmanagerv1beta1.ClusterRoleBinding{{
 			ClusterRole: "admin",
@@ -69,12 +71,15 @@ func TestReconcileRbacDefChanges(t *testing.T) {
 
 	rbacDef.RBACBindings = []rbacmanagerv1beta1.RBACBinding{{
 		Name: "admins",
-		Subjects: []rbacv1.Subject{{
-			Kind: rbacv1.UserKind,
-			Name: "jan",
-		}, {
-			Kind: rbacv1.UserKind,
-			Name: "joe",
+		Subjects: []rbacmanagerv1beta1.Subject{{
+			Subject: rbacv1.Subject{
+				Kind: rbacv1.UserKind,
+				Name: "jan",
+			}}, {
+			Subject: rbacv1.Subject{
+				Kind: rbacv1.UserKind,
+				Name: "joe",
+			},
 		}},
 		ClusterRoleBindings: []rbacmanagerv1beta1.ClusterRoleBinding{{
 			ClusterRole: "cluster-admin",
@@ -110,10 +115,12 @@ func TestReconcileRbacDefServiceAccounts(t *testing.T) {
 
 	rbacDef.RBACBindings = []rbacmanagerv1beta1.RBACBinding{{
 		Name: "ci-bot",
-		Subjects: []rbacv1.Subject{{
-			Kind:      rbacv1.ServiceAccountKind,
-			Name:      "ci-bot",
-			Namespace: "bots",
+		Subjects: []rbacmanagerv1beta1.Subject{{
+			Subject: rbacv1.Subject{
+				Kind:      rbacv1.ServiceAccountKind,
+				Name:      "ci-bot",
+				Namespace: "bots",
+			},
 		}},
 		ClusterRoleBindings: []rbacmanagerv1beta1.ClusterRoleBinding{},
 		RoleBindings: []rbacmanagerv1beta1.RoleBinding{{
@@ -172,9 +179,11 @@ func TestReconcileRbacDefInvalid(t *testing.T) {
 	// missing namespace in RoleBinding
 	rbacDef.RBACBindings = []rbacmanagerv1beta1.RBACBinding{{
 		Name: "ci-bot",
-		Subjects: []rbacv1.Subject{{
-			Kind: rbacv1.UserKind,
-			Name: "joe",
+		Subjects: []rbacmanagerv1beta1.Subject{{
+			Subject: rbacv1.Subject{
+				Kind: rbacv1.UserKind,
+				Name: "joe",
+			},
 		}},
 		ClusterRoleBindings: []rbacmanagerv1beta1.ClusterRoleBinding{},
 		RoleBindings: []rbacmanagerv1beta1.RoleBinding{{
@@ -218,12 +227,16 @@ func TestReconcileNamespaceChangesLabels(t *testing.T) {
 	// Match Labels rbacdef
 	rbacDefMatchLabels.RBACBindings = []rbacmanagerv1beta1.RBACBinding{{
 		Name: "web-app",
-		Subjects: []rbacv1.Subject{{
-			Kind: rbacv1.UserKind,
-			Name: "Joe",
+		Subjects: []rbacmanagerv1beta1.Subject{{
+			Subject: rbacv1.Subject{
+				Kind: rbacv1.UserKind,
+				Name: "Joe",
+			},
 		}, {
-			Kind: rbacv1.UserKind,
-			Name: "Sue",
+			Subject: rbacv1.Subject{
+				Kind: rbacv1.UserKind,
+				Name: "Sue",
+			},
 		}},
 		RoleBindings: []rbacmanagerv1beta1.RoleBinding{{
 			ClusterRole:       "edit",
@@ -231,15 +244,21 @@ func TestReconcileNamespaceChangesLabels(t *testing.T) {
 		}},
 	}, {
 		Name: "dev-team",
-		Subjects: []rbacv1.Subject{{
-			Kind: rbacv1.UserKind,
-			Name: "Joe",
+		Subjects: []rbacmanagerv1beta1.Subject{{
+			Subject: rbacv1.Subject{
+				Kind: rbacv1.UserKind,
+				Name: "Joe",
+			},
 		}, {
-			Kind: rbacv1.UserKind,
-			Name: "Sue",
+			Subject: rbacv1.Subject{
+				Kind: rbacv1.UserKind,
+				Name: "Sue",
+			},
 		}, {
-			Kind: rbacv1.UserKind,
-			Name: "Kay",
+			Subject: rbacv1.Subject{
+				Kind: rbacv1.UserKind,
+				Name: "Kay",
+			},
 		}},
 		RoleBindings: []rbacmanagerv1beta1.RoleBinding{{
 			ClusterRole:       "view",
@@ -336,12 +355,16 @@ func TestReconcileNamespaceChangesExpressions(t *testing.T) {
 	// Match Expressions rbacdef
 	rbacDefMatchExpressions.RBACBindings = []rbacmanagerv1beta1.RBACBinding{{
 		Name: "web-app",
-		Subjects: []rbacv1.Subject{{
-			Kind: rbacv1.UserKind,
-			Name: "Joe",
+		Subjects: []rbacmanagerv1beta1.Subject{{
+			Subject: rbacv1.Subject{
+				Kind: rbacv1.UserKind,
+				Name: "Joe",
+			},
 		}, {
-			Kind: rbacv1.UserKind,
-			Name: "Sue",
+			Subject: rbacv1.Subject{
+				Kind: rbacv1.UserKind,
+				Name: "Sue",
+			},
 		}},
 		RoleBindings: []rbacmanagerv1beta1.RoleBinding{{
 			ClusterRole: "edit",
@@ -355,15 +378,21 @@ func TestReconcileNamespaceChangesExpressions(t *testing.T) {
 		}},
 	}, {
 		Name: "dev-team",
-		Subjects: []rbacv1.Subject{{
-			Kind: rbacv1.UserKind,
-			Name: "Joe",
+		Subjects: []rbacmanagerv1beta1.Subject{{
+			Subject: rbacv1.Subject{
+				Kind: rbacv1.UserKind,
+				Name: "Joe",
+			},
 		}, {
-			Kind: rbacv1.UserKind,
-			Name: "Sue",
+			Subject: rbacv1.Subject{
+				Kind: rbacv1.UserKind,
+				Name: "Sue",
+			},
 		}, {
-			Kind: rbacv1.UserKind,
-			Name: "Kay",
+			Subject: rbacv1.Subject{
+				Kind: rbacv1.UserKind,
+				Name: "Kay",
+			},
 		}},
 		RoleBindings: []rbacmanagerv1beta1.RoleBinding{{
 			ClusterRole: "view",
@@ -465,12 +494,16 @@ func TestReconcileNamespaceChangesCRB(t *testing.T) {
 	// Match Expressions rbacdef
 	rbacDef.RBACBindings = []rbacmanagerv1beta1.RBACBinding{{
 		Name: "web-app",
-		Subjects: []rbacv1.Subject{{
-			Kind: rbacv1.UserKind,
-			Name: "Joe",
+		Subjects: []rbacmanagerv1beta1.Subject{{
+			Subject: rbacv1.Subject{
+				Kind: rbacv1.UserKind,
+				Name: "Joe",
+			},
 		}, {
-			Kind: rbacv1.UserKind,
-			Name: "Sue",
+			Subject: rbacv1.Subject{
+				Kind: rbacv1.UserKind,
+				Name: "Sue",
+			},
 		}},
 		ClusterRoleBindings: []rbacmanagerv1beta1.ClusterRoleBinding{{
 			ClusterRole: "edit"},

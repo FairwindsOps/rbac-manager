@@ -21,10 +21,16 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+// Subject is an expansion on the rbacv1.Subject to allow definition of ImagePullSecrets for a Service Account
+type Subject struct {
+	rbacv1.Subject
+	ImagePullSecrets []string `json:"imagePullSecrets"`
+}
+
 // RBACBinding is a specification for a RBACBinding resource
 type RBACBinding struct {
 	Name                string               `json:"name"`
-	Subjects            []rbacv1.Subject     `json:"subjects"`
+	Subjects            []Subject            `json:"subjects"`
 	ClusterRoleBindings []ClusterRoleBinding `json:"clusterRoleBindings"`
 	RoleBindings        []RoleBinding        `json:"roleBindings"`
 }
