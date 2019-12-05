@@ -1,4 +1,4 @@
-FROM golang:1.12 AS build-env
+FROM golang:1.13 AS build-env
 WORKDIR /go/src/github.com/fairwindsops/rbac-manager/
 
 ARG VERSION=dev
