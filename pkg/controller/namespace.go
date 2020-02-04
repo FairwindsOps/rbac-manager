@@ -15,20 +15,20 @@ package controller
 
 import (
 	"context"
-	"github.com/fairwindsops/rbac-manager/pkg/kube"
-	"github.com/fairwindsops/rbac-manager/pkg/metrics"
-
-	rbacmanagerv1beta1 "github.com/fairwindsops/rbac-manager/pkg/apis/rbacmanager/v1beta1"
-	"github.com/fairwindsops/rbac-manager/pkg/reconciler"
 
 	"k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes"
-	rest "k8s.io/client-go/rest"
+	"k8s.io/client-go/rest"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
+
+	rbacmanagerv1beta1 "github.com/fairwindsops/rbac-manager/pkg/apis/rbacmanager/v1beta1"
+	"github.com/fairwindsops/rbac-manager/pkg/kube"
+	"github.com/fairwindsops/rbac-manager/pkg/metrics"
+	"github.com/fairwindsops/rbac-manager/pkg/reconciler"
 )
 
 // newNamespaceReconciler returns a new reconcile.Reconciler
@@ -88,6 +88,9 @@ func reconcileNamespace(config *rest.Config, namespace *v1.Namespace) error {
 	}
 
 	rbacDefList, err = kube.GetRbacDefinitions()
+	if err != nil {
+		return err
+	}
 
 	for _, rbacDef := range rbacDefList.Items {
 		err = rdr.ReconcileNamespaceChange(&rbacDef, namespace)

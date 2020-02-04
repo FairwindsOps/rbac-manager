@@ -17,11 +17,12 @@ limitations under the License.
 package kube
 
 import (
-	rbacmanagerv1beta1 "github.com/fairwindsops/rbac-manager/pkg/apis/rbacmanager/v1beta1"
 	"k8s.io/apimachinery/pkg/runtime/serializer"
 	"k8s.io/client-go/kubernetes/scheme"
-	rest "k8s.io/client-go/rest"
+	"k8s.io/client-go/rest"
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
+
+	rbacmanagerv1beta1 "github.com/fairwindsops/rbac-manager/pkg/apis/rbacmanager/v1beta1"
 )
 
 // GetRbacDefinition returns an RbacDefinition for a specified name or an error
@@ -53,7 +54,7 @@ func GetRbacDefinitions() (rbacmanagerv1beta1.RBACDefinitionList, error) {
 }
 
 func getRbacDefClient() (*rest.RESTClient, error) {
-	rbacmanagerv1beta1.AddToScheme(scheme.Scheme)
+	_ = rbacmanagerv1beta1.AddToScheme(scheme.Scheme)
 	clientConfig := config.GetConfigOrDie()
 	clientConfig.ContentConfig.GroupVersion = &rbacmanagerv1beta1.SchemeGroupVersion
 	clientConfig.APIPath = "/apis"

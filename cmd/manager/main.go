@@ -18,25 +18,22 @@ package main
 
 import (
 	"flag"
-
-	"k8s.io/klog"
-
-	"github.com/fairwindsops/rbac-manager/pkg/metrics"
 	"net/http"
 	"os"
 
-	"github.com/fairwindsops/rbac-manager/pkg/apis"
-	"github.com/fairwindsops/rbac-manager/pkg/controller"
-	"github.com/fairwindsops/rbac-manager/pkg/watcher"
-	"github.com/fairwindsops/rbac-manager/version"
-
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-
 	"github.com/sirupsen/logrus"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
+	"k8s.io/klog"
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/runtime/signals"
+
+	"github.com/fairwindsops/rbac-manager/pkg/apis"
+	"github.com/fairwindsops/rbac-manager/pkg/controller"
+	"github.com/fairwindsops/rbac-manager/pkg/metrics"
+	"github.com/fairwindsops/rbac-manager/pkg/watcher"
+	"github.com/fairwindsops/rbac-manager/version"
 )
 
 var logLevel = flag.String("log-level", logrus.InfoLevel.String(), "Logrus log level")

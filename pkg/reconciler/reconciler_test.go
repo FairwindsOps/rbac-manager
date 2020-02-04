@@ -18,14 +18,13 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-
-	rbacmanagerv1beta1 "github.com/fairwindsops/rbac-manager/pkg/apis/rbacmanager/v1beta1"
-	"github.com/fairwindsops/rbac-manager/pkg/kube"
-
 	corev1 "k8s.io/api/core/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/fake"
+
+	rbacmanagerv1beta1 "github.com/fairwindsops/rbac-manager/pkg/apis/rbacmanager/v1beta1"
+	"github.com/fairwindsops/rbac-manager/pkg/kube"
 )
 
 func TestReconcileRbacDefEmpty(t *testing.T) {
@@ -516,7 +515,7 @@ func TestReconcileNamespaceChangesCRB(t *testing.T) {
 
 func newReconcileTest(t *testing.T, client *fake.Clientset, rbacDef rbacmanagerv1beta1.RBACDefinition, expectedRb []rbacv1.RoleBinding, expectedCrb []rbacv1.ClusterRoleBinding, expectedSa []corev1.ServiceAccount) {
 	r := Reconciler{Clientset: client}
-	r.Reconcile(&rbacDef)
+	_ = r.Reconcile(&rbacDef)
 	expectRoleBindings(t, client, expectedRb)
 	expectClusterRoleBindings(t, client, expectedCrb)
 	expectServiceAccounts(t, client, expectedSa)
@@ -525,7 +524,7 @@ func newReconcileTest(t *testing.T, client *fake.Clientset, rbacDef rbacmanagerv
 func newReconcileNamespaceChangesTest(t *testing.T, client *fake.Clientset, rbacDef rbacmanagerv1beta1.RBACDefinition, expectedRb []rbacv1.RoleBinding) {
 	r := Reconciler{Clientset: client}
 	// Namespace doesn't matter here, just used for logging
-	r.ReconcileNamespaceChange(&rbacDef, &corev1.Namespace{
+	_ = r.ReconcileNamespaceChange(&rbacDef, &corev1.Namespace{
 		ObjectMeta: metav1.ObjectMeta{Name: "test"},
 	})
 	expectRoleBindings(t, client, expectedRb)

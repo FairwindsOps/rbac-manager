@@ -17,14 +17,15 @@ limitations under the License.
 package watcher
 
 import (
-	kube "github.com/fairwindsops/rbac-manager/pkg/kube"
-	"github.com/fairwindsops/rbac-manager/pkg/reconciler"
 	"github.com/sirupsen/logrus"
 
 	rbacv1 "k8s.io/api/rbac/v1"
 	"k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/kubernetes"
+
+	"github.com/fairwindsops/rbac-manager/pkg/kube"
+	"github.com/fairwindsops/rbac-manager/pkg/reconciler"
 )
 
 func watchClusterRoleBindings(clientset *kubernetes.Clientset) {
@@ -44,7 +45,7 @@ func watchClusterRoleBindings(clientset *kubernetes.Clientset) {
 		} else if event.Type == watch.Modified || event.Type == watch.Deleted {
 			logrus.Debugf("Reconciling RBACDefinition for %s ClusterRoleBinding after %s event", crb.Name, event.Type)
 			r := reconciler.Reconciler{Clientset: kube.GetClientsetOrDie()}
-			r.ReconcileOwners(crb.OwnerReferences, "ClusterRoleBinding")
+			_ = r.ReconcileOwners(crb.OwnerReferences, "ClusterRoleBinding")
 		}
 	}
 }

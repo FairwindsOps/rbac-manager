@@ -18,16 +18,16 @@ import (
 	"reflect"
 	"sync"
 
-	"github.com/fairwindsops/rbac-manager/pkg/kube"
-	"github.com/fairwindsops/rbac-manager/pkg/metrics"
-
-	rbacmanagerv1beta1 "github.com/fairwindsops/rbac-manager/pkg/apis/rbacmanager/v1beta1"
-	logrus "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 	v1 "k8s.io/api/core/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/kubernetes"
+
+	rbacmanagerv1beta1 "github.com/fairwindsops/rbac-manager/pkg/apis/rbacmanager/v1beta1"
+	"github.com/fairwindsops/rbac-manager/pkg/kube"
+	"github.com/fairwindsops/rbac-manager/pkg/metrics"
 )
 
 // Reconciler creates and deletes Kubernetes resources to achieve the desired state of an RBAC Definition
