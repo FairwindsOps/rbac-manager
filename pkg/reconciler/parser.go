@@ -18,13 +18,14 @@ import (
 	"errors"
 	"fmt"
 
-	rbacmanagerv1beta1 "github.com/fairwindsops/rbac-manager/pkg/apis/rbacmanager/v1beta1"
-	"github.com/fairwindsops/rbac-manager/pkg/kube"
-	logrus "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 	v1 "k8s.io/api/core/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
+
+	rbacmanagerv1beta1 "github.com/fairwindsops/rbac-manager/pkg/apis/rbacmanager/v1beta1"
+	"github.com/fairwindsops/rbac-manager/pkg/kube"
 )
 
 // Parser parses RBAC Definitions and determines the Kubernetes resources that it specifies
@@ -218,7 +219,7 @@ func (p *Parser) parseClusterRoleBindings(rbacDef *rbacmanagerv1beta1.RBACDefini
 	for _, rbacBinding := range rbacDef.RBACBindings {
 		for _, clusterRoleBinding := range rbacBinding.ClusterRoleBindings {
 			namePrefix := rdNamePrefix(rbacDef, &rbacBinding)
-			p.parseClusterRoleBinding(clusterRoleBinding, rbacBinding.Subjects, namePrefix)
+			_ = p.parseClusterRoleBinding(clusterRoleBinding, rbacBinding.Subjects, namePrefix)
 		}
 	}
 }
@@ -227,7 +228,7 @@ func (p *Parser) parseRoleBindings(rbacDef *rbacmanagerv1beta1.RBACDefinition) {
 	for _, rbacBinding := range rbacDef.RBACBindings {
 		for _, roleBinding := range rbacBinding.RoleBindings {
 			namePrefix := rdNamePrefix(rbacDef, &rbacBinding)
-			p.parseRoleBinding(roleBinding, rbacBinding.Subjects, namePrefix)
+			_ = p.parseRoleBinding(roleBinding, rbacBinding.Subjects, namePrefix)
 		}
 	}
 }

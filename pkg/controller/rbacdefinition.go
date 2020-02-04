@@ -18,17 +18,17 @@ package controller
 
 import (
 	"context"
-	"github.com/fairwindsops/rbac-manager/pkg/metrics"
 
-	"github.com/fairwindsops/rbac-manager/pkg/reconciler"
-
-	rbacmanagerv1beta1 "github.com/fairwindsops/rbac-manager/pkg/apis/rbacmanager/v1beta1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
+
+	rbacmanagerv1beta1 "github.com/fairwindsops/rbac-manager/pkg/apis/rbacmanager/v1beta1"
+	"github.com/fairwindsops/rbac-manager/pkg/metrics"
+	"github.com/fairwindsops/rbac-manager/pkg/reconciler"
 )
 
 // newRbacDefReconciler returns a new reconcile.Reconciler
