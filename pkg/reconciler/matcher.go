@@ -54,6 +54,9 @@ func rbMatches(existingRB *rbacv1.RoleBinding, requestedRB *rbacv1.RoleBinding) 
 
 func saMatches(existingSA *v1.ServiceAccount, requestedSA *v1.ServiceAccount) bool {
 	if metaMatches(&existingSA.ObjectMeta, &requestedSA.ObjectMeta) {
+		if len(requestedSA.ImagePullSecrets) < 1 && existingSA.ImagePullSecrets == nil {
+			return true
+		}
 		return reflect.DeepEqual(&existingSA.ImagePullSecrets, &requestedSA.ImagePullSecrets)
 	}
 	return false
