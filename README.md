@@ -14,7 +14,7 @@ This project has three main goals:
 2. Reduce the amount of configuration required for great auth.
 3. Enable automation of RBAC configuration updates with CI/CD.
 
-**Want to learn more?** Fairwinds holds [office hours on Zoom](https://zoom.us/j/242508205) the first Friday of every month, at 12pm Eastern. You can also reach out via email at `opensource@fairwinds.com`
+**Want to learn more?** Reach out on [the Slack channel](https://fairwindscommunity.slack.com/messages/rbac-projects), send an email to `opensource@fairwinds.com`, or join us for [office hours on Zoom](https://fairwindscommunity.slack.com/messages/office-hours)
 
 ## An Example
 To fully understand how RBAC Manager works, it's helpful to walk through a simple example. In this example we'll have a single user, Joe, that needs `edit` access to the `web` namespace and `view` access to `api` namespace.
