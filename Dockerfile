@@ -1,5 +1,6 @@
 FROM golang:1.13 AS build-env
 WORKDIR /go/src/github.com/fairwindsops/rbac-manager/
+RUN useradd -u 9999 rbacman
 
 ARG VERSION=dev
 
@@ -16,7 +17,7 @@ COPY --from=alpine /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 COPY --from=alpine /etc/passwd /etc/passwd
 
 
-USER nobody
+USER 9999
 COPY --from=build-env /go/src/github.com/fairwindsops/rbac-manager/rbac-manager /
 
 ENTRYPOINT ["/rbac-manager"]
