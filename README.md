@@ -120,7 +120,7 @@ In the example above, Role Bindings would automatically get created for each Nam
 
 ## ServiceAccounts
 
-If an `RBACDefinition` defines a `ServiceAccount` as a subject, rbac-manager will attempt to create the `ServiceAccount` for you. **WARNING**: When an `RBACDefinition` owns a `ServiceAccount` in this fashion, it will be deleted when the `RBACDefinition` is deleted.
+If an `RBACDefinition` defines a `ServiceAccount` as a subject, rbac-manager will attempt to create the `ServiceAccount` for you. **WARNING**: When an `RBACDefinition` owns a `ServiceAccount` in this fashion, it will be deleted when the `RBACDefinition` is deleted. If the `ServiceAccount` already exists, rbac-manager will log an error when it attempts to create it but that `ServiceAccount` will still be granted the access described in your `RBACDefinition`. In this case, the `ServiceAccount` will not be deleted when the `RBACDefinition` is deleted.
 
 ### ImagePullSecrets and ServiceAccounts
 
