@@ -81,6 +81,8 @@ workflows:
             tags:
               only: /^v.*/
       - rok8s-scripts/github_release:
+          requires:
+            - release
           filters:
             branches:
               ignore: /.*/
