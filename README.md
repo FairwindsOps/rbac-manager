@@ -20,6 +20,8 @@ This project has three main goals:
 To fully understand how RBAC Manager works, it's helpful to walk through a simple example. In this example we'll have a single user, Joe, that needs `edit` access to the `web` namespace and `view` access to `api` namespace.
 
 With RBAC, that requires creating 2 role bindings, the first grants `edit` access to the `web` namespace.
+
+Take careful note of the use of golang capitalization rather than the Kubernetes naming for `roleBinding` and `clusterRole` in some places.
 ```yaml
 kind: RoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
