@@ -34,6 +34,14 @@
   version = "v4.1.0"
 
 [[projects]]
+  digest = "1:e47ef65c4d3a37884ab29fb4b5c31e826c8fba04caf81da45607d3fba022f7d7"
+  name = "github.com/fsnotify/fsnotify"
+  packages = ["."]
+  pruneopts = ""
+  revision = "45d7d09e39ef4ac08d493309fa031790c15bfe8a"
+  version = "v1.4.9"
+
+[[projects]]
   digest = "1:65587005c6fa4293c0b8a2e457e689df7fda48cc5e1f5449ea2c1e7784551558"
   name = "github.com/go-logr/logr"
   packages = ["."]
@@ -389,15 +397,6 @@
   version = "v1.5.0"
 
 [[projects]]
-  digest = "1:c47fa36ae2c154748003f5d39c5ca94e86ec144b37e4975fad91a1c7ff5047fb"
-  name = "gopkg.in/fsnotify.v1"
-  packages = ["."]
-  pruneopts = ""
-  revision = "4bf2d1fec78374803a39307bfb8d340688f4f28e"
-  source = "gopkg.in/fsnotify/fsnotify.v1"
-  version = "v1.4.8"
-
-[[projects]]
   digest = "1:75fb3fcfc73a8c723efde7777b40e8e8ff9babf30d8c56160d01beffea8a95a6"
   name = "gopkg.in/inf.v0"
   packages = ["."]
@@ -636,7 +635,7 @@
   revision = "5e45bb682580c9be5ffa4d27d367f0eeba125c7b"
 
 [[projects]]
-  digest = "1:d99f982ae4869a0946bb636289b86d739ae1c1894b591da90a071e9ab96e325c"
+  digest = "1:be60e78564157c5124c2a4b7d864a0387555a074ae21a8e3c5c19bf17a375e6c"
   name = "sigs.k8s.io/controller-runtime"
   packages = [
     "pkg/cache",
@@ -673,8 +672,8 @@
     "pkg/webhook/internal/metrics",
   ]
   pruneopts = ""
-  revision = "1c83ff6f06bc764c95dd69b0f743740c064c4bf6"
-  version = "v0.6.0"
+  revision = "5118ae568d16e0b29bee8b82c58114b50d82574d"
+  version = "v0.6.1"
 
 [[projects]]
   digest = "1:321081b4a44256715f2b68411d8eda9a17f17ebfe6f0cc61d2cc52d11c08acfa"
