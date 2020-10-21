@@ -126,7 +126,7 @@ If an `RBACDefinition` defines a `ServiceAccount` as a subject, rbac-manager wil
 
 ### ImagePullSecrets and ServiceAccounts
 
-Service accounts support adding `ImagePullSecrets` to their definition. What happens is that when a `Pod` (via `Deployment` or otherwise) is launched specifying a `ServiceAccount` that specifies `ImagePullSecrets`, the pull secrets will be injected into the Pod spec automatically. An example of this using rbac-manager [can be found in the examples directory](examples/rbacdefinition-sa-imagepull.yaml).
+Service accounts support adding `ImagePullSecrets` to their definition. What happens is that when a `Pod` (via `Deployment` or otherwise) is launched specifying a `ServiceAccount` that includes `ImagePullSecrets`, the pull secrets will be injected into the Pod spec automatically. An example of this using rbac-manager [can be found in the examples directory](examples/rbacdefinition-sa-imagepull.yaml).
 
 Please note: rbac-manager will not manage secrets, and assumes they are already present in the same namespace that the `ServiceAccount` is in. Also, `ImagePullSecrets` only apply when the `Subject` is a `ServiceAccount`.
 
