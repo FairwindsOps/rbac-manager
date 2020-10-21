@@ -23,7 +23,6 @@ references:
     script: e2e/test.sh
     command_runner_image: quay.io/reactiveops/ci-images:v11-stretch
     enable_docker_layer_caching: true
-    store-test-results: /tmp/test-results
     kind_version: 0.9.0
     requires:
       - test
