@@ -92,6 +92,8 @@ helm repo add fairwinds-stable https://charts.fairwinds.com/stable
 helm install fairwinds-stable/rbac-manager --name rbac-manager --namespace rbac-manager
 ```
 
+If utilizing the below deploy directory to release or test, be aware that it now requires kubernetes 1.16+ because of apiVersion changes.
+
 ```
 kubectl apply -f deploy/
 ```
