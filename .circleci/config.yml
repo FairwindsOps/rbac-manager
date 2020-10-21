@@ -18,21 +18,21 @@ references:
         else
           echo "Skipping push for forked PR"
         fi
-    e2e_configuration: &e2e_configuration
-      pre_script: e2e/pre.sh
-      script: e2e/run.sh
-      command_runner_image: quay.io/reactiveops/ci-images:v11-stretch
-      enable_docker_layer_caching: true
-      store-test-results: /tmp/test-results
-      kind_version: 0.9.0
-      requires:
-        - test
-        - build
-      filters:
-        branches:
-          only: /.*/
-        tags:
-          ignore: /v.*/
+  e2e_configuration: &e2e_configuration
+    pre_script: e2e/pre.sh
+    script: e2e/run.sh
+    command_runner_image: quay.io/reactiveops/ci-images:v11-stretch
+    enable_docker_layer_caching: true
+    store-test-results: /tmp/test-results
+    kind_version: 0.9.0
+    requires:
+      - test
+      - build
+    filters:
+      branches:
+        only: /.*/
+      tags:
+        ignore: /v.*/
 
 jobs:
   test:
