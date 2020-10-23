@@ -37,12 +37,12 @@ require (
 	github.com/prometheus/procfs v0.0.2
 	github.com/sirupsen/logrus v1.4.0
 	github.com/spf13/pflag v1.0.3
-	github.com/stretchr/testify v1.3.0
-	go.uber.org/atomic v1.4.0
-	go.uber.org/multierr v1.2.0
-	go.uber.org/zap v1.11.0
+	github.com/stretchr/testify v1.4.0
+	go.uber.org/atomic v1.6.0
+	go.uber.org/multierr v1.5.0
+	go.uber.org/zap v1.16.0
 	golang.org/x/crypto v0.0.0-20201002170205-7f63de1d35b0
-	golang.org/x/net v0.0.0-20190404232315-eb5bcb51f2a3
+	golang.org/x/net v0.0.0-20190620200207-3b0461eec859
 	golang.org/x/oauth2 v0.0.0-20190319182350-c85d3e98c914
 	golang.org/x/sys v0.0.0-20191128015809-6d18c012aee9
 	golang.org/x/text v0.3.3
