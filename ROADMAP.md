@@ -1,9 +1,8 @@
 # Roadmap
 
-## Q32019
+## Q42020
 Below is a list of work we plan to get done this quarter. Some more details can be found
-[in the milestone](https://github.com/FairwindsOps/rbac-manager/milestone/1)
+[in the milestone](https://github.com/FairwindsOps/rbac-manager/milestone/3)
 
-* Add contributing instructions
-* Add release process instructions
-* Investigate AKS/EKS compatibility
+* Update CRD to apiextensions.k8s.io/v1
+

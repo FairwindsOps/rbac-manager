@@ -156,7 +156,7 @@ func (p *Parser) parseRoleBinding(
 
 		selector, err := metav1.LabelSelectorAsSelector(&rb.NamespaceSelector)
 		if err != nil {
-			logrus.Debug("Error parsing label selector")
+			logrus.Infof("Error parsing label selector: %s", err.Error())
 			return err
 		}
 

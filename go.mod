@@ -4,6 +4,7 @@ go 1.13
 
 require (
 	cloud.google.com/go v0.37.1
+	github.com/Azure/go-autorest/autorest v0.11.10 // indirect
 	github.com/appscode/jsonpatch v0.0.0-20190108182946-7c0e3b262f30
 	github.com/beorn7/perks v1.0.0
 	github.com/davecgh/go-spew v1.1.1
@@ -17,6 +18,7 @@ require (
 	github.com/google/gofuzz v0.0.0-20170612174753-24818f796faf
 	github.com/google/uuid v1.1.1
 	github.com/googleapis/gnostic v0.2.0
+	github.com/gophercloud/gophercloud v0.13.0 // indirect
 	github.com/gregjones/httpcache v0.0.0-20190212212710-3befbb6ad0cc
 	github.com/hashicorp/golang-lru v0.5.1
 	github.com/imdario/mergo v0.3.7
@@ -39,15 +41,15 @@ require (
 	go.uber.org/atomic v1.4.0
 	go.uber.org/multierr v1.2.0
 	go.uber.org/zap v1.11.0
-	golang.org/x/crypto v0.0.0-20190320223903-b7391e95e576
-	golang.org/x/net v0.0.0-20190324223953-e3b2ff56ed87
+	golang.org/x/crypto v0.0.0-20201002170205-7f63de1d35b0
+	golang.org/x/net v0.0.0-20190404232315-eb5bcb51f2a3
 	golang.org/x/oauth2 v0.0.0-20190319182350-c85d3e98c914
-	golang.org/x/sys v0.0.0-20190322080309-f49334f85ddc
+	golang.org/x/sys v0.0.0-20191128015809-6d18c012aee9
 	golang.org/x/text v0.3.3
 	golang.org/x/time v0.0.0-20190308202827-9d24e82272b4
 	google.golang.org/appengine v1.5.0
 	gopkg.in/inf.v0 v0.9.1
-	gopkg.in/yaml.v2 v2.2.2
+	gopkg.in/yaml.v2 v2.3.0
 	k8s.io/api v0.0.0-20181213150558-05914d821849
 	k8s.io/apimachinery v0.0.0-20181127025237-2b1284ed4c93
 	k8s.io/client-go v0.0.0-20181213151034-8d9ed539ba31

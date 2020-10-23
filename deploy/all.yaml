@@ -14,7 +14,7 @@ metadata:
   labels:
     app: rbac-manager
 ---
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   name: rbac-manager
@@ -51,7 +51,7 @@ rules:
       - list
       - watch
 ---
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   name: rbac-manager
@@ -66,7 +66,7 @@ subjects:
     name: rbac-manager
     namespace: "rbac-manager"
 ---
-apiVersion: apiextensions.k8s.io/v1beta1
+apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   labels:
@@ -77,64 +77,104 @@ spec:
   names:
     kind: RBACDefinition
     plural: rbacdefinitions
+    singular: rbacdefinition
+    shortNames:
+      - rbd
+      - rbacdef
   scope: Cluster
-  validation:
-    openAPIV3Schema:
-      properties:
-        apiVersion:
-          type: string
-        kind:
-          type: string
-        metadata:
+  versions:
+    - name: v1beta1
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          required:
+            - rbacBindings
           type: object
-        rbacBindings:
-          items:
-            properties:
-              clusterRoleBindings:
-                items:
-                  properties:
-                    clusterRole:
-                      type: string
-                  required:
-                  - clusterRole
-                  type: object
-                type: array
-              name:
-                type: string
-              roleBindings:
-                items:
-                  properties:
-                    clusterRole:
-                      type: string
-                    namespace:
-                      type: string
-                    namespaceSelector:
+          properties:
+            rbacBindings:
+              items:
+                properties:
+                  clusterRoleBindings:
+                    items:
+                      properties:
+                        clusterRole:
+                          type: string
+                      required:
+                        - clusterRole
+                      type: object
+                    type: array
+                  name:
+                    type: string
+                  roleBindings:
+                    items:
+                      properties:
+                        clusterRole:
+                          type: string
+                        namespace:
+                          type: string
+                        namespaceSelector:
+                          type: object
+                          properties:
+                            matchLabels:
+                              type: object
+                              additionalProperties:
+                                type: string
+                            matchExpressions:
+                              type: array
+                              items:
+                                type: object
+                                properties:
+                                  key:
+                                    type: string
+                                  operator:
+                                    type:
+                                      string
+                                    enum:
+                                      - Exists
+                                      - DoesNotExist
+                                      - In
+                                      - NotIn
+                                  values:
+                                    type: array
+                                    items:
+                                      type: string
+                                required:
+                                  - key
+                                  - operator
+                        role:
+                          type: string
+                      type: object
+                    type: array
+                  subjects:
+                    items:
                       type: object
                       properties:
-                        matchLabels:
-                          type: object
-                        matchExpressions:
+                        imagePullSecrets:
                           type: array
-                    role:
-                      type: string
-                  type: object
-                type: array
-              subjects:
-                items:
-                  type: object
-                type: array
-            required:
-            - name
-            - subjects
-            type: object
-          type: array
-        status:
-          type: object
-      required:
-      - metadata
-      - rbacBindings
-      type: object
-  version: v1beta1
+                          items:
+                            type: string
+                        kind:
+                          type: string
+                          enum:
+                            - Group
+                            - ServiceAccount
+                            - User
+                        name:
+                          type: string
+                        namespace:
+                          type: string
+                      required:
+                        - name
+                        - kind
+                    type: array
+                required:
+                  - name
+                  - subjects
+                type: object
+              type: array
+            status:
+              type: object
 ---
 apiVersion: apps/v1
 kind: Deployment
