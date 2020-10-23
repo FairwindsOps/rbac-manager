@@ -23,7 +23,7 @@ require (
 	github.com/hashicorp/golang-lru v0.5.1
 	github.com/imdario/mergo v0.3.7
 	github.com/json-iterator/go v1.1.6
-	github.com/konsorten/go-windows-terminal-sequences v1.0.2
+	github.com/konsorten/go-windows-terminal-sequences v1.0.3
 	github.com/matttproud/golang_protobuf_extensions v1.0.1
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd
 	github.com/modern-go/reflect2 v1.0.1
