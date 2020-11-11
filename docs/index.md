@@ -38,7 +38,7 @@ subjects:
   name: joe@example.com
 roleRef:
   kind: ClusterRole
-  name: api
+  name: view
   apiGroup: rbac.authorization.k8s.io
 ```
 
