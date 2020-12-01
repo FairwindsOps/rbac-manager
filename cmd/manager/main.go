@@ -37,7 +37,7 @@ import (
 )
 
 var logLevel = flag.String("log-level", logrus.InfoLevel.String(), "Logrus log level")
-var addr = flag.String("metrics-address", "0.0.0.0:8080", "The address to serve prometheus metrics.")
+var addr = flag.String("metrics-address", ":8042", "The address to serve prometheus metrics.")
 
 func init() {
 	klog.InitFlags(nil)
