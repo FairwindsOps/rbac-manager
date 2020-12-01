@@ -1,0 +1,110 @@
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  labels:
+    app: rbac-manager
+  name: rbacdefinitions.rbacmanager.reactiveops.io
+spec:
+  group: rbacmanager.reactiveops.io
+  names:
+    kind: RBACDefinition
+    plural: rbacdefinitions
+    singular: rbacdefinition
+    shortNames:
+      - rbd
+      - rbacdef
+  scope: Cluster
+  versions:
+    - name: v1beta1
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          required:
+            - rbacBindings
+          type: object
+          properties:
+            rbacBindings:
+              items:
+                properties:
+                  clusterRoleBindings:
+                    items:
+                      properties:
+                        clusterRole:
+                          type: string
+                      required:
+                        - clusterRole
+                      type: object
+                    type: array
+                  name:
+                    type: string
+                  roleBindings:
+                    items:
+                      properties:
+                        clusterRole:
+                          type: string
+                        namespace:
+                          type: string
+                        namespaceSelector:
+                          type: object
+                          properties:
+                            matchLabels:
+                              type: object
+                              additionalProperties:
+                                type: string
+                            matchExpressions:
+                              type: array
+                              items:
+                                type: object
+                                properties:
+                                  key:
+                                    type: string
+                                  operator:
+                                    type:
+                                      string
+                                    enum:
+                                      - Exists
+                                      - DoesNotExist
+                                      - In
+                                      - NotIn
+                                  values:
+                                    type: array
+                                    items:
+                                      type: string
+                                required:
+                                  - key
+                                  - operator
+                        role:
+                          type: string
+                      type: object
+                    type: array
+                  subjects:
+                    items:
+                      type: object
+                      properties:
+                        imagePullSecrets:
+                          type: array
+                          items:
+                            type: string
+                        kind:
+                          type: string
+                          enum:
+                            - Group
+                            - ServiceAccount
+                            - User
+                        name:
+                          type: string
+                        namespace:
+                          type: string
+                      required:
+                        - name
+                        - kind
+                    type: array
+                required:
+                  - name
+                  - subjects
+                type: object
+              type: array
+            status:
+              type: object

@@ -37,7 +37,7 @@ import (
 )
 
 var logLevel = flag.String("log-level", logrus.InfoLevel.String(), "Logrus log level")
-var addr = flag.String("metrics-address", ":8080", "The address to serve prometheus metrics.")
+var addr = flag.String("metrics-address", "0.0.0.0:8080", "The address to serve prometheus metrics.")
 
 func init() {
 	klog.InitFlags(nil)
@@ -99,7 +99,7 @@ func main() {
 		metrics.RegisterMetrics()
 		http.Handle("/metrics", promhttp.Handler())
 		if err := http.ListenAndServe(*addr, nil); err != nil {
-			logrus.Error(err, "unable to serve the metrics endpoint")
+			logrus.Error(err, ": unable to serve the metrics endpoint")
 			os.Exit(1)
 		}
 	}()
