@@ -15,6 +15,7 @@
 package reconciler
 
 import (
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -387,12 +388,14 @@ func expectParsedSA(t *testing.T, p Parser, expected []corev1.ServiceAccount) {
 
 func createNamespace(t *testing.T, client *fake.Clientset, name string, labels map[string]string) {
 	_, err := client.CoreV1().Namespaces().Create(
+		context.TODO(),
 		&corev1.Namespace{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:   name,
 				Labels: labels,
 			},
 		},
+		metav1.CreateOptions{},
 	)
 
 	if err != nil {

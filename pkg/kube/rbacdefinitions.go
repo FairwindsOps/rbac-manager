@@ -50,7 +50,7 @@ func GetRbacDefinitions() (rbacmanagerv1beta1.RBACDefinitionList, error) {
 		return list, err
 	}
 
-	err = client.Get().Resource("rbacdefinitions").Do().Into(&list)
+	err = client.Get().Resource("rbacdefinitions").Do(context.TODO()).Into(&list)
 
 	return list, err
 }
@@ -60,7 +60,7 @@ func getRbacDefClient() (*rest.RESTClient, error) {
 	clientConfig := config.GetConfigOrDie()
 	clientConfig.ContentConfig.GroupVersion = &rbacmanagerv1beta1.SchemeGroupVersion
 	clientConfig.APIPath = "/apis"
-	clientConfig.NegotiatedSerializer = serializer.DirectCodecFactory{CodecFactory: scheme.Codecs}
+	clientConfig.NegotiatedSerializer = serializer.WithoutConversionCodecFactory{CodecFactory: scheme.Codecs}
 	clientConfig.UserAgent = rest.DefaultKubernetesUserAgent()
 
 	return rest.UnversionedRESTClientFor(clientConfig)

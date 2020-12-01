@@ -15,6 +15,7 @@
 package reconciler
 
 import (
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -201,22 +202,30 @@ func TestReconcileNamespaceChangesLabels(t *testing.T) {
 	rbacDefMatchLabels := rbacmanagerv1beta1.RBACDefinition{}
 	rbacDefMatchLabels.Name = "namespace-selector-match-labels"
 
-	_, err = client.CoreV1().Namespaces().Create(&corev1.Namespace{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:   "web",
-			Labels: map[string]string{"team": "dev", "app": "web"},
+	_, err = client.CoreV1().Namespaces().Create(
+		context.TODO(),
+		&corev1.Namespace{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:   "web",
+				Labels: map[string]string{"team": "dev", "app": "web"},
+			},
 		},
-	})
+		metav1.CreateOptions{},
+	)
 	if err != nil {
 		t.Fatalf("Error creating namespace %#v", err)
 	}
 
-	_, err = client.CoreV1().Namespaces().Create(&corev1.Namespace{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:   "api",
-			Labels: map[string]string{"team": "dev", "app": "api"},
+	_, err = client.CoreV1().Namespaces().Create(
+		context.TODO(),
+		&corev1.Namespace{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:   "api",
+				Labels: map[string]string{"team": "dev", "app": "api"},
+			},
 		},
-	})
+		metav1.CreateOptions{},
+	)
 	if err != nil {
 		t.Fatalf("Error creating namespace %#v", err)
 	}
@@ -330,22 +339,30 @@ func TestReconcileNamespaceChangesExpressions(t *testing.T) {
 	rbacDefMatchExpressions := rbacmanagerv1beta1.RBACDefinition{}
 	rbacDefMatchExpressions.Name = "namespace-selector-match-expressions"
 
-	_, err = client.CoreV1().Namespaces().Create(&corev1.Namespace{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:   "web",
-			Labels: map[string]string{"team": "dev", "app": "web"},
+	_, err = client.CoreV1().Namespaces().Create(
+		context.TODO(),
+		&corev1.Namespace{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:   "web",
+				Labels: map[string]string{"team": "dev", "app": "web"},
+			},
 		},
-	})
+		metav1.CreateOptions{},
+	)
 	if err != nil {
 		t.Fatalf("Error creating namespace %#v", err)
 	}
 
-	_, err = client.CoreV1().Namespaces().Create(&corev1.Namespace{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:   "api",
-			Labels: map[string]string{"team": "dev", "app": "api"},
+	_, err = client.CoreV1().Namespaces().Create(
+		context.TODO(),
+		&corev1.Namespace{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:   "api",
+				Labels: map[string]string{"team": "dev", "app": "api"},
+			},
 		},
-	})
+		metav1.CreateOptions{},
+	)
 	if err != nil {
 		t.Fatalf("Error creating namespace %#v", err)
 	}
@@ -470,22 +487,30 @@ func TestReconcileNamespaceChangesCRB(t *testing.T) {
 	rbacDef := rbacmanagerv1beta1.RBACDefinition{}
 	rbacDef.Name = "namespace-selector-empty"
 
-	_, err = client.CoreV1().Namespaces().Create(&corev1.Namespace{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:   "web",
-			Labels: map[string]string{"team": "dev", "app": "web"},
+	_, err = client.CoreV1().Namespaces().Create(
+		context.TODO(),
+		&corev1.Namespace{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:   "web",
+				Labels: map[string]string{"team": "dev", "app": "web"},
+			},
 		},
-	})
+		metav1.CreateOptions{},
+	)
 	if err != nil {
 		t.Fatalf("Error creating namespace %#v", err)
 	}
 
-	_, err = client.CoreV1().Namespaces().Create(&corev1.Namespace{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:   "api",
-			Labels: map[string]string{"team": "dev", "app": "api"},
+	_, err = client.CoreV1().Namespaces().Create(
+		context.TODO(),
+		&corev1.Namespace{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:   "api",
+				Labels: map[string]string{"team": "dev", "app": "api"},
+			},
 		},
-	})
+		metav1.CreateOptions{},
+	)
 	if err != nil {
 		t.Fatalf("Error creating namespace %#v", err)
 	}
@@ -540,7 +565,7 @@ func testEmptyExample(t *testing.T, client *fake.Clientset, name string) {
 }
 
 func expectClusterRoleBindings(t *testing.T, client *fake.Clientset, expected []rbacv1.ClusterRoleBinding) {
-	actual, err := client.RbacV1().ClusterRoleBindings().List(kube.ListOptions)
+	actual, err := client.RbacV1().ClusterRoleBindings().List(context.TODO(), kube.ListOptions)
 
 	if err != nil {
 		t.Fatal(err)
@@ -566,7 +591,7 @@ func expectClusterRoleBindings(t *testing.T, client *fake.Clientset, expected []
 }
 
 func expectRoleBindings(t *testing.T, client *fake.Clientset, expected []rbacv1.RoleBinding) {
-	actual, err := client.RbacV1().RoleBindings("").List(kube.ListOptions)
+	actual, err := client.RbacV1().RoleBindings("").List(context.TODO(), kube.ListOptions)
 
 	if err != nil {
 		t.Fatal(err)
@@ -592,7 +617,7 @@ func expectRoleBindings(t *testing.T, client *fake.Clientset, expected []rbacv1.
 }
 
 func expectServiceAccounts(t *testing.T, client *fake.Clientset, expected []corev1.ServiceAccount) {
-	actual, err := client.CoreV1().ServiceAccounts("").List(metav1.ListOptions{})
+	actual, err := client.CoreV1().ServiceAccounts("").List(context.TODO(), metav1.ListOptions{})
 
 	if err != nil {
 		t.Fatal(err)

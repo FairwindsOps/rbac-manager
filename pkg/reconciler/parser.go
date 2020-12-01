@@ -15,6 +15,7 @@
 package reconciler
 
 import (
+	"context"
 	"errors"
 	"fmt"
 
@@ -161,7 +162,7 @@ func (p *Parser) parseRoleBinding(
 		}
 
 		listOptions := metav1.ListOptions{LabelSelector: selector.String()}
-		namespaces, err := p.Clientset.CoreV1().Namespaces().List(listOptions)
+		namespaces, err := p.Clientset.CoreV1().Namespaces().List(context.TODO(), listOptions)
 		if err != nil {
 			logrus.Debug("Error listing namespaces")
 			return err

@@ -17,6 +17,8 @@ limitations under the License.
 package watcher
 
 import (
+	"context"
+
 	"github.com/sirupsen/logrus"
 
 	rbacv1 "k8s.io/api/rbac/v1"
@@ -29,7 +31,7 @@ import (
 )
 
 func watchClusterRoleBindings(clientset *kubernetes.Clientset) {
-	watcher, err := clientset.RbacV1().ClusterRoleBindings().Watch(kube.ListOptions)
+	watcher, err := clientset.RbacV1().ClusterRoleBindings().Watch(context.TODO(), kube.ListOptions)
 
 	if err != nil {
 		logrus.Error(err, "unable to watch Cluster Role Bindings")

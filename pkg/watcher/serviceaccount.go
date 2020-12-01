@@ -17,6 +17,8 @@ limitations under the License.
 package watcher
 
 import (
+	"context"
+
 	"github.com/sirupsen/logrus"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/runtime"
@@ -28,7 +30,7 @@ import (
 )
 
 func watchServiceAccounts(clientset *kubernetes.Clientset) {
-	watcher, err := clientset.CoreV1().ServiceAccounts("").Watch(kube.ListOptions)
+	watcher, err := clientset.CoreV1().ServiceAccounts("").Watch(context.TODO(), kube.ListOptions)
 
 	if err != nil {
 		logrus.Error(err, "unable to watch Service Accounts")
