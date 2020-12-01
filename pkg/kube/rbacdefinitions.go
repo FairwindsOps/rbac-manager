@@ -17,6 +17,8 @@ limitations under the License.
 package kube
 
 import (
+	"context"
+
 	"k8s.io/apimachinery/pkg/runtime/serializer"
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/rest"
@@ -34,7 +36,7 @@ func GetRbacDefinition(name string) (rbacmanagerv1beta1.RBACDefinition, error) {
 		return rbacDef, err
 	}
 
-	err = client.Get().Resource("rbacdefinitions").Name(name).Do().Into(&rbacDef)
+	err = client.Get().Resource("rbacdefinitions").Name(name).Do(context.TODO()).Into(&rbacDef)
 
 	return rbacDef, err
 }
