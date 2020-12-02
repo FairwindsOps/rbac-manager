@@ -1,0 +1,60 @@
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: rbac-manager
+  namespace: rbac-manager
+  labels:
+    app: rbac-manager
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: rbac-manager
+  labels:
+    app: rbac-manager
+rules:
+  - apiGroups:
+      - rbacmanager.reactiveops.io
+    resources:
+      - rbacdefinitions
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - rbac.authorization.k8s.io
+      - authorization.k8s.io
+    resources:
+      - '*'
+    verbs:
+      - '*'
+  - apiGroups:
+      - "" # core
+    resources:
+      - serviceaccounts
+    verbs:
+      - '*'
+  - apiGroups:
+      - "" # core
+    resources:
+      - namespaces
+    verbs:
+      - get
+      - list
+      - watch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: rbac-manager
+  labels:
+    app: rbac-manager
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: rbac-manager
+subjects:
+  - kind: ServiceAccount
+    name: rbac-manager
+    namespace: "rbac-manager"
