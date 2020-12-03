@@ -12,7 +12,7 @@ else
     echo "CI_SHA1: $CI_SHA1"
 fi
 
-yq w -d5 -i deploy/2_deployment.yaml 'spec.template.spec.containers[0].image' "quay.io/reactiveops/rbac-manager:dev-$CI_SHA1"
+yq w -d5 -i deploy/3_deployment.yaml 'spec.template.spec.containers[0].image' "quay.io/reactiveops/rbac-manager:dev-$CI_SHA1"
 cat deploy/2_deployment.yaml
 
 docker cp deploy e2e-command-runner:/
