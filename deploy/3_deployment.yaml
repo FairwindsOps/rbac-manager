@@ -20,7 +20,7 @@ spec:
       serviceAccountName: rbac-manager
       containers:
       - name: rbac-manager
-        image: "quay.io/reactiveops/rbac-manager:v0.9.4"
+        image: "quay.io/reactiveops/rbac-manager:v0.10.0"
         imagePullPolicy: Always
         # these liveness probes use the metrics endpoint
         readinessProbe:
