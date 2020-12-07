@@ -17,6 +17,8 @@ limitations under the License.
 package watcher
 
 import (
+	"context"
+
 	"github.com/sirupsen/logrus"
 	rbacv1 "k8s.io/api/rbac/v1"
 	"k8s.io/apimachinery/pkg/util/runtime"
@@ -28,7 +30,7 @@ import (
 )
 
 func watchRoleBindings(clientset *kubernetes.Clientset) {
-	watcher, err := clientset.RbacV1().RoleBindings("").Watch(kube.ListOptions)
+	watcher, err := clientset.RbacV1().RoleBindings("").Watch(context.TODO(), kube.ListOptions)
 
 	if err != nil {
 		logrus.Error(err, "unable to watch Role Bindings")

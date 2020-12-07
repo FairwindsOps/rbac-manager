@@ -37,7 +37,7 @@ import (
 )
 
 var logLevel = flag.String("log-level", logrus.InfoLevel.String(), "Logrus log level")
-var addr = flag.String("metrics-address", ":8080", "The address to serve prometheus metrics.")
+var addr = flag.String("metrics-address", ":8042", "The address to serve prometheus metrics.")
 
 func init() {
 	klog.InitFlags(nil)
@@ -62,7 +62,7 @@ func main() {
 	logrus.Debug("Setting up client for manager")
 	cfg, err := config.GetConfig()
 	if err != nil {
-		logrus.Error(err, "unable to set up client config")
+		logrus.Error(err, ": unable to set up client config")
 		os.Exit(1)
 	}
 
@@ -70,7 +70,7 @@ func main() {
 	logrus.Debug("Setting up manager")
 	mgr, err := manager.New(cfg, manager.Options{})
 	if err != nil {
-		logrus.Error(err, "unable to set up overall controller manager")
+		logrus.Error(err, ": unable to set up overall controller manager")
 		os.Exit(1)
 	}
 
@@ -79,14 +79,14 @@ func main() {
 	// Setup Scheme for all resources
 	logrus.Debug("Setting up scheme")
 	if err := apis.AddToScheme(mgr.GetScheme()); err != nil {
-		logrus.Error(err, "unable add APIs to scheme")
+		logrus.Error(err, ": unable add APIs to scheme")
 		os.Exit(1)
 	}
 
 	// Setup all Controllers
 	logrus.Debug("Setting up controller")
 	if err := controller.Add(mgr); err != nil {
-		logrus.Error(err, "unable to register controller to the manager")
+		logrus.Error(err, ": unable to register controller to the manager")
 		os.Exit(1)
 	}
 
@@ -99,7 +99,7 @@ func main() {
 		metrics.RegisterMetrics()
 		http.Handle("/metrics", promhttp.Handler())
 		if err := http.ListenAndServe(*addr, nil); err != nil {
-			logrus.Error(err, "unable to serve the metrics endpoint")
+			logrus.Error(err, ": unable to serve the metrics endpoint")
 			os.Exit(1)
 		}
 	}()
@@ -107,7 +107,7 @@ func main() {
 	// Start the Cmd
 	logrus.Info("Watching RBAC Definitions")
 	if err := mgr.Start(signals.SetupSignalHandler()); err != nil {
-		logrus.Error(err, "unable to run the manager")
+		logrus.Error(err, ": unable to run the manager")
 		os.Exit(1)
 	}
 }

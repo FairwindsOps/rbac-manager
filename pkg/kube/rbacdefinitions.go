@@ -17,6 +17,8 @@ limitations under the License.
 package kube
 
 import (
+	"context"
+
 	"k8s.io/apimachinery/pkg/runtime/serializer"
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/rest"
@@ -34,7 +36,7 @@ func GetRbacDefinition(name string) (rbacmanagerv1beta1.RBACDefinition, error) {
 		return rbacDef, err
 	}
 
-	err = client.Get().Resource("rbacdefinitions").Name(name).Do().Into(&rbacDef)
+	err = client.Get().Resource("rbacdefinitions").Name(name).Do(context.TODO()).Into(&rbacDef)
 
 	return rbacDef, err
 }
@@ -48,7 +50,7 @@ func GetRbacDefinitions() (rbacmanagerv1beta1.RBACDefinitionList, error) {
 		return list, err
 	}
 
-	err = client.Get().Resource("rbacdefinitions").Do().Into(&list)
+	err = client.Get().Resource("rbacdefinitions").Do(context.TODO()).Into(&list)
 
 	return list, err
 }
@@ -58,7 +60,7 @@ func getRbacDefClient() (*rest.RESTClient, error) {
 	clientConfig := config.GetConfigOrDie()
 	clientConfig.ContentConfig.GroupVersion = &rbacmanagerv1beta1.SchemeGroupVersion
 	clientConfig.APIPath = "/apis"
-	clientConfig.NegotiatedSerializer = serializer.DirectCodecFactory{CodecFactory: scheme.Codecs}
+	clientConfig.NegotiatedSerializer = serializer.WithoutConversionCodecFactory{CodecFactory: scheme.Codecs}
 	clientConfig.UserAgent = rest.DefaultKubernetesUserAgent()
 
 	return rest.UnversionedRESTClientFor(clientConfig)

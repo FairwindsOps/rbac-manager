@@ -17,7 +17,7 @@ echo "** Install rbac-manager at $CI_SHA1 **"
 echo "********************************************************************"
 printf "\n\n"
 
-kubectl apply -f deploy/all.yaml
+kubectl apply -f deploy/
 kubectl -n rbac-manager wait deployment/rbac-manager --timeout=120s --for condition=available
 
 
