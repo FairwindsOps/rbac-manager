@@ -3,7 +3,7 @@ module github.com/fairwindsops/rbac-manager
 go 1.13
 
 require (
-	cloud.google.com/go v0.72.0
+	cloud.google.com/go v0.73.0
 	git.apache.org/thrift.git v0.12.0 // indirect
 	github.com/Azure/go-autorest/autorest v0.11.12 // indirect
 	github.com/appscode/jsonpatch v1.0.1
