@@ -3,7 +3,7 @@ module github.com/fairwindsops/rbac-manager
 go 1.13
 
 require (
-	cloud.google.com/go v0.72.0
+	cloud.google.com/go v0.74.0
 	git.apache.org/thrift.git v0.12.0 // indirect
 	github.com/Azure/go-autorest/autorest v0.11.12 // indirect
 	github.com/appscode/jsonpatch v1.0.1
@@ -46,8 +46,8 @@ require (
 	go.uber.org/zap v1.16.0
 	golang.org/x/build v0.0.0-20190314133821-5284462c4bec // indirect
 	golang.org/x/crypto v0.0.0-20201124201722-c8d3bf9c5392
-	golang.org/x/net v0.0.0-20201110031124-69a78807bb2b
-	golang.org/x/oauth2 v0.0.0-20201109201403-9fd604954f58
+	golang.org/x/net v0.0.0-20201209123823-ac852fbbde11
+	golang.org/x/oauth2 v0.0.0-20201208152858-08078c50e5b5
 	golang.org/x/sys v0.0.0-20201201145000-ef89a241ccb3
 	golang.org/x/term v0.0.0-20201126162022-7de9c90e9dd1 // indirect
 	golang.org/x/text v0.3.4
