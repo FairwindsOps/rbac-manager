@@ -6,3 +6,8 @@ manifests:
   yaml:
   - ./deploy/
   - ./examples
+
+exemptions:
+  - image: quay.io/reactiveops/rbac-manager
+    report: trivy
+    reason: rbac-manager's image is built from the scratch base image, and is unscannable
