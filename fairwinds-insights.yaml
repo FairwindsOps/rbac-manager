@@ -2,10 +2,6 @@ options:
   organization: fairwinds-opensource
   baseBranch: master
 
-images:
-  docker:
-  - quay.io/reactiveops/rbac-manager:$CIRCLE_SHA1
-
 manifests:
   yaml:
   - ./deploy/
