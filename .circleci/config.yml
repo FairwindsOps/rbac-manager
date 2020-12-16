@@ -74,9 +74,10 @@ workflows:
       - test
       - build:
           context: org-global
-      - rok8s-scripts/insights:
           requires:
             - test
+      - rok8s-scripts/insights:
+          requires:
             - build
       - rok8s-scripts/kubernetes_e2e_tests:
           name: "End-To-End Kubernetes 1.16.15"
