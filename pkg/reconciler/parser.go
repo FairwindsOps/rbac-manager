@@ -23,6 +23,7 @@ import (
 	v1 "k8s.io/api/core/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/client-go/kubernetes"
 
 	rbacmanagerv1beta1 "github.com/fairwindsops/rbac-manager/pkg/apis/rbacmanager/v1beta1"
@@ -45,10 +46,15 @@ func (p *Parser) Parse(rbacDef rbacmanagerv1beta1.RBACDefinition) error {
 		return nil
 	}
 
+	namespaces, err := p.Clientset.CoreV1().Namespaces().List(context.TODO(), metav1.ListOptions{})
+	if err != nil {
+		logrus.Debug("Error listing namespaces")
+		return err
+	}
+
 	for _, rbacBinding := range rbacDef.RBACBindings {
 		namePrefix := rdNamePrefix(&rbacDef, &rbacBinding)
-
-		err := p.parseRBACBinding(rbacBinding, namePrefix)
+		err := p.parseRBACBinding(rbacBinding, namePrefix, namespaces)
 		if err != nil {
 			return err
 		}
@@ -57,7 +63,7 @@ func (p *Parser) Parse(rbacDef rbacmanagerv1beta1.RBACDefinition) error {
 	return nil
 }
 
-func (p *Parser) parseRBACBinding(rbacBinding rbacmanagerv1beta1.RBACBinding, namePrefix string) error {
+func (p *Parser) parseRBACBinding(rbacBinding rbacmanagerv1beta1.RBACBinding, namePrefix string, namespaces *v1.NamespaceList) error {
 	if len(rbacBinding.Subjects) < 1 {
 		return errors.New("No subjects specified for RBAC Binding: " + namePrefix)
 	}
@@ -91,7 +97,7 @@ func (p *Parser) parseRBACBinding(rbacBinding rbacmanagerv1beta1.RBACBinding, na
 
 	if rbacBinding.RoleBindings != nil {
 		for _, requestedRB := range rbacBinding.RoleBindings {
-			err := p.parseRoleBinding(requestedRB, rbacBinding.Subjects, namePrefix)
+			err := p.parseRoleBinding(requestedRB, rbacBinding.Subjects, namePrefix, namespaces)
 			if err != nil {
 				return err
 			}
@@ -122,7 +128,7 @@ func (p *Parser) parseClusterRoleBinding(
 }
 
 func (p *Parser) parseRoleBinding(
-	rb rbacmanagerv1beta1.RoleBinding, subjects []rbacmanagerv1beta1.Subject, prefix string) error {
+	rb rbacmanagerv1beta1.RoleBinding, subjects []rbacmanagerv1beta1.Subject, prefix string, namespaces *v1.NamespaceList) error {
 
 	objectMeta := metav1.ObjectMeta{
 		OwnerReferences: p.ownerRefs,
@@ -161,25 +167,21 @@ func (p *Parser) parseRoleBinding(
 			return err
 		}
 
-		listOptions := metav1.ListOptions{LabelSelector: selector.String()}
-		namespaces, err := p.Clientset.CoreV1().Namespaces().List(context.TODO(), listOptions)
-		if err != nil {
-			logrus.Debug("Error listing namespaces")
-			return err
-		}
-
 		for _, namespace := range namespaces.Items {
-			logrus.Debugf("Adding Role Binding With Dynamic Namespace %v", namespace.Name)
+			// Lazy way to marshal map[] of labels in to a Set, which we can then match on.
+			if selector.Matches(labels.Merge(namespace.Labels, namespace.Labels)) {
+				logrus.Debugf("Adding Role Binding With Dynamic Namespace %v", namespace.Name)
 
-			om := objectMeta
-			om.Namespace = namespace.Name
-			subs := managerSubjectsToRbacSubjects(subjects)
+				om := objectMeta
+				om.Namespace = namespace.Name
+				subs := managerSubjectsToRbacSubjects(subjects)
 
-			p.parsedRoleBindings = append(p.parsedRoleBindings, rbacv1.RoleBinding{
-				ObjectMeta: om,
-				RoleRef:    roleRef,
-				Subjects:   subs,
-			})
+				p.parsedRoleBindings = append(p.parsedRoleBindings, rbacv1.RoleBinding{
+					ObjectMeta: om,
+					RoleRef:    roleRef,
+					Subjects:   subs,
+				})
+			}
 		}
 
 	} else if rb.Namespace != "" {
@@ -225,11 +227,11 @@ func (p *Parser) parseClusterRoleBindings(rbacDef *rbacmanagerv1beta1.RBACDefini
 	}
 }
 
-func (p *Parser) parseRoleBindings(rbacDef *rbacmanagerv1beta1.RBACDefinition) {
+func (p *Parser) parseRoleBindings(rbacDef *rbacmanagerv1beta1.RBACDefinition, namespaces *v1.NamespaceList) {
 	for _, rbacBinding := range rbacDef.RBACBindings {
 		for _, roleBinding := range rbacBinding.RoleBindings {
 			namePrefix := rdNamePrefix(rbacDef, &rbacBinding)
-			_ = p.parseRoleBinding(roleBinding, rbacBinding.Subjects, namePrefix)
+			_ = p.parseRoleBinding(roleBinding, rbacBinding.Subjects, namePrefix, namespaces)
 		}
 	}
 }
