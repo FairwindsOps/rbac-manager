@@ -78,6 +78,12 @@ func (r *Reconciler) ReconcileOwners(ownerRefs []metav1.OwnerReference, kind str
 	mux.Lock()
 	defer mux.Unlock()
 
+	namespaces, err := r.Clientset.CoreV1().Namespaces().List(context.TODO(), metav1.ListOptions{})
+	if err != nil {
+		logrus.Debug("Error listing namespaces")
+		return err
+	}
+
 	for _, ownerRef := range ownerRefs {
 		if ownerRef.Kind == "RBACDefinition" {
 			rbacDef, err := kube.GetRbacDefinition(ownerRef.Name)
@@ -93,7 +99,7 @@ func (r *Reconciler) ReconcileOwners(ownerRefs []metav1.OwnerReference, kind str
 			}
 
 			if kind == "RoleBinding" {
-				p.parseRoleBindings(&rbacDef)
+				p.parseRoleBindings(&rbacDef, namespaces)
 				return r.reconcileRoleBindings(&p.parsedRoleBindings)
 			} else if kind == "ClusterRoleBinding" {
 				p.parseClusterRoleBindings(&rbacDef)
