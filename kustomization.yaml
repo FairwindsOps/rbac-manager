@@ -1,0 +1,7 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - deploy/0_namespace.yaml
+  - deploy/1_rbac.yaml
+  - deploy/2_crd.yaml
+  - deploy/3_deployment.yaml
