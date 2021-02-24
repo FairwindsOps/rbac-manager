@@ -90,7 +90,7 @@ RBAC Manager is simple to install with either the [Helm chart](https://github.co
 
 ```
 helm repo add fairwinds-stable https://charts.fairwinds.com/stable
-helm install fairwinds-stable/rbac-manager rbac-manager --namespace rbac-manager --create-namespace
+helm install rbac-manager fairwinds-stable/rbac-manager --namespace rbac-manager --create-namespace
 ```
 
 If utilizing the below deploy directory to release or test, be aware that it now requires kubernetes 1.16+ because of apiVersion changes.
