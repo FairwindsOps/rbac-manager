@@ -4,14 +4,14 @@ Issues, whether bugs, tasks, or feature requests are essential for keeping rbac-
 
 ## Code of Conduct
 
-This project adheres to a [code of conduct](CODE_OF_CONDUCT.md). Please review this document before contributing to this project.
+This project adheres to a [code of conduct](/contributing/code-of-conduct). Please review this document before contributing to this project.
 
 ## Sign the CLA
 Before you can contribute, you will need to sign the [Contributor License Agreement](https://cla-assistant.io/fairwindsops/rbac-manager).
 
 ## Project Structure
 
-rbac-manager is a relatively simple cobra cli tool that looks up information about rbac in a cluster. The [/cmd](/cmd) folder contains the flags and other cobra config, while the [/lookup](/lookup) folder has the code for looking up rbac information a cluster. There is additinal code that allows the user to see GKE IAM information as well, since GKE IAM is so closely tied to rbac.
+rbac-manager is a relatively simple cobra cli tool that looks up information about rbac in a cluster. The [/cmd](https://github.com/FairwindsOps/rbac-manager/tree/master/cmd/manager) folder contains the flags and other cobra config.
 
 ## Getting Started
 

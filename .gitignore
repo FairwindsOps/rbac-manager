@@ -31,3 +31,5 @@ tmp
 
 coverage.txt
 cover-report.html
+node_modules
+/dist
