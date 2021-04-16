@@ -11,7 +11,6 @@ references:
         docker build --build-arg "VERSION=$DOCKER_BASE_TAG" -f Dockerfile -t quay.io/reactiveops/rbac-manager:$DOCKER_BASE_TAG .
 
         if [[ -z $CIRCLE_PR_NUMBER ]]; then
-          bash <(curl -s https://codecov.io/bash)
           docker login quay.io -u="reactiveops+circleci" -p="${quay_token}"
           docker push quay.io/reactiveops/rbac-manager:$DOCKER_BASE_TAG
 
