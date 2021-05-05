@@ -2,13 +2,13 @@
 // https://vuepress.vuejs.org/config/
 // https://vuepress.vuejs.org/theme/default-theme-config.html
 module.exports = {
-  title: "Rbac Manager Documentation",
+  title: "RBAC Manager Documentation",
   description: "Documentation for Fairwinds' Rbac Manager",
   themeConfig: {
     docsRepo: "FairwindsOps/rbac-manager",
     sidebar: [
       {
-        title: "Rbac Manager",
+        title: "RBAC Manager",
         path: "/",
         sidebarDepth: 0,
       },
@@ -17,7 +17,7 @@ module.exports = {
         path: "/introduction",
       },
       {
-        title: "RBACDefinitions",
+        title: "RBAC Definitions",
         path: "/rbacdefinitions"
       },
       {
