@@ -16,8 +16,10 @@ package reconciler
 
 import (
 	"context"
+	"reflect"
 	"testing"
 
+	"github.com/fairwindsops/rbac-manager/pkg/kube"
 	"github.com/stretchr/testify/assert"
 	corev1 "k8s.io/api/core/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
@@ -36,6 +38,7 @@ func TestParseStandard(t *testing.T) {
 	client := fake.NewSimpleClientset()
 	rbacDef := rbacmanagerv1beta1.RBACDefinition{}
 	rbacDef.Name = "rbac-config"
+	rbacDef.Labels = map[string]string{"someLabelKey": "someLabelValue"}
 
 	createNamespace(t, client, "web", map[string]string{"app": "web", "team": "devs"})
 	createNamespace(t, client, "api", map[string]string{"app": "api", "team": "devs"})
@@ -75,10 +78,16 @@ func TestParseStandard(t *testing.T) {
 		}},
 	}}
 
+	expectedLabels := map[string]string{"someLabelKey": "someLabelValue"}
+	for k, v := range kube.Labels {
+		expectedLabels[k] = v
+	}
+
 	newParseTest(t, client, rbacDef, []rbacv1.RoleBinding{{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "rbac-config-ci-bot-custom-bots",
 			Namespace: "bots",
+			Labels:    expectedLabels,
 		},
 		RoleRef: rbacv1.RoleRef{
 			Kind: "Role",
@@ -93,6 +102,7 @@ func TestParseStandard(t *testing.T) {
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "rbac-config-devs-edit",
 			Namespace: "web",
+			Labels:    expectedLabels,
 		},
 		RoleRef: rbacv1.RoleRef{
 			Kind: "ClusterRole",
@@ -109,6 +119,7 @@ func TestParseStandard(t *testing.T) {
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "rbac-config-devs-edit",
 			Namespace: "api",
+			Labels:    expectedLabels,
 		},
 		RoleRef: rbacv1.RoleRef{
 			Kind: "ClusterRole",
@@ -125,6 +136,7 @@ func TestParseStandard(t *testing.T) {
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "ci-bot",
 			Namespace: "bots",
+			Labels:    expectedLabels,
 		},
 	}})
 }
@@ -133,6 +145,7 @@ func TestParseLabels(t *testing.T) {
 	client := fake.NewSimpleClientset()
 	rbacDef := rbacmanagerv1beta1.RBACDefinition{}
 	rbacDef.Name = "rbac-config"
+	rbacDef.Labels = map[string]string{"anotherLabelKey": "anotherLabelValue"}
 
 	createNamespace(t, client, "web", map[string]string{"app": "web", "team": "devs"})
 	createNamespace(t, client, "api", map[string]string{"app": "api", "team": "devs"})
@@ -153,11 +166,17 @@ func TestParseLabels(t *testing.T) {
 		}},
 	}}
 
+	expectedLabels := map[string]string{"anotherLabelKey": "anotherLabelValue"}
+	for k, v := range kube.Labels {
+		expectedLabels[k] = v
+	}
+
 	// api and web edit access
 	newParseTest(t, client, rbacDef, []rbacv1.RoleBinding{{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "rbac-config-devs-edit",
 			Namespace: "web",
+			Labels:    expectedLabels,
 		},
 		RoleRef: rbacv1.RoleRef{
 			Kind: "ClusterRole",
@@ -171,6 +190,7 @@ func TestParseLabels(t *testing.T) {
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "rbac-config-devs-edit",
 			Namespace: "api",
+			Labels:    expectedLabels,
 		},
 		RoleRef: rbacv1.RoleRef{
 			Kind: "ClusterRole",
@@ -196,6 +216,7 @@ func TestParseLabels(t *testing.T) {
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "rbac-config-devs-edit",
 			Namespace: "web",
+			Labels:    expectedLabels,
 		},
 		RoleRef: rbacv1.RoleRef{
 			Kind: "ClusterRole",
@@ -220,6 +241,7 @@ func TestParseLabels(t *testing.T) {
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "rbac-config-devs-edit",
 			Namespace: "web",
+			Labels:    expectedLabels,
 		},
 		RoleRef: rbacv1.RoleRef{
 			Kind: "ClusterRole",
@@ -338,6 +360,7 @@ func expectParsedCRB(t *testing.T, p Parser, expected []rbacv1.ClusterRoleBindin
 				matchFound = true
 				assert.ElementsMatch(t, expectedCrb.Subjects, actualCrb.Subjects, "Expected subjects to match")
 				assert.EqualValues(t, expectedCrb.RoleRef, actualCrb.RoleRef, "Expected role ref to match")
+				assert.True(t, reflect.DeepEqual(expectedCrb.Labels, actualCrb.Labels), "Expected labels to match")
 				break
 			}
 		}
@@ -358,6 +381,7 @@ func expectParsedRB(t *testing.T, p Parser, expected []rbacv1.RoleBinding) {
 				matchFound = true
 				assert.ElementsMatch(t, expectedRb.Subjects, actualRb.Subjects, "Expected subjects to match")
 				assert.EqualValues(t, expectedRb.RoleRef, actualRb.RoleRef, "Expected role ref to match")
+				assert.True(t, reflect.DeepEqual(expectedRb.Labels, actualRb.Labels), "Expected labels to match")
 				break
 			}
 		}

@@ -52,9 +52,10 @@ func (p *Parser) Parse(rbacDef rbacmanagerv1beta1.RBACDefinition) error {
 		return err
 	}
 
+	label := labels.Merge(kube.Labels, rbacDef.ObjectMeta.Labels)
 	for _, rbacBinding := range rbacDef.RBACBindings {
 		namePrefix := rdNamePrefix(&rbacDef, &rbacBinding)
-		err := p.parseRBACBinding(rbacBinding, namePrefix, namespaces)
+		err := p.parseRBACBinding(rbacBinding, namePrefix, namespaces, label)
 		if err != nil {
 			return err
 		}
@@ -63,7 +64,7 @@ func (p *Parser) Parse(rbacDef rbacmanagerv1beta1.RBACDefinition) error {
 	return nil
 }
 
-func (p *Parser) parseRBACBinding(rbacBinding rbacmanagerv1beta1.RBACBinding, namePrefix string, namespaces *v1.NamespaceList) error {
+func (p *Parser) parseRBACBinding(rbacBinding rbacmanagerv1beta1.RBACBinding, namePrefix string, namespaces *v1.NamespaceList, label map[string]string) error {
 	if len(rbacBinding.Subjects) < 1 {
 		return errors.New("No subjects specified for RBAC Binding: " + namePrefix)
 	}
@@ -79,7 +80,7 @@ func (p *Parser) parseRBACBinding(rbacBinding rbacmanagerv1beta1.RBACBinding, na
 					Name:            requestedSubject.Name,
 					Namespace:       requestedSubject.Namespace,
 					OwnerReferences: p.ownerRefs,
-					Labels:          kube.Labels,
+					Labels:          label,
 				},
 				ImagePullSecrets: pullsecrets,
 			})
@@ -88,7 +89,7 @@ func (p *Parser) parseRBACBinding(rbacBinding rbacmanagerv1beta1.RBACBinding, na
 
 	if rbacBinding.ClusterRoleBindings != nil {
 		for _, requestedCRB := range rbacBinding.ClusterRoleBindings {
-			err := p.parseClusterRoleBinding(requestedCRB, rbacBinding.Subjects, namePrefix)
+			err := p.parseClusterRoleBinding(requestedCRB, rbacBinding.Subjects, namePrefix, label)
 			if err != nil {
 				return err
 			}
@@ -97,7 +98,7 @@ func (p *Parser) parseRBACBinding(rbacBinding rbacmanagerv1beta1.RBACBinding, na
 
 	if rbacBinding.RoleBindings != nil {
 		for _, requestedRB := range rbacBinding.RoleBindings {
-			err := p.parseRoleBinding(requestedRB, rbacBinding.Subjects, namePrefix, namespaces)
+			err := p.parseRoleBinding(requestedRB, rbacBinding.Subjects, namePrefix, namespaces, label)
 			if err != nil {
 				return err
 			}
@@ -107,7 +108,7 @@ func (p *Parser) parseRBACBinding(rbacBinding rbacmanagerv1beta1.RBACBinding, na
 }
 
 func (p *Parser) parseClusterRoleBinding(
-	crb rbacmanagerv1beta1.ClusterRoleBinding, subjects []rbacmanagerv1beta1.Subject, prefix string) error {
+	crb rbacmanagerv1beta1.ClusterRoleBinding, subjects []rbacmanagerv1beta1.Subject, prefix string, label map[string]string) error {
 	crbName := fmt.Sprintf("%v-%v", prefix, crb.ClusterRole)
 	subs := managerSubjectsToRbacSubjects(subjects)
 
@@ -115,7 +116,7 @@ func (p *Parser) parseClusterRoleBinding(
 		ObjectMeta: metav1.ObjectMeta{
 			Name:            crbName,
 			OwnerReferences: p.ownerRefs,
-			Labels:          kube.Labels,
+			Labels:          label,
 		},
 		RoleRef: rbacv1.RoleRef{
 			Kind: "ClusterRole",
@@ -128,11 +129,11 @@ func (p *Parser) parseClusterRoleBinding(
 }
 
 func (p *Parser) parseRoleBinding(
-	rb rbacmanagerv1beta1.RoleBinding, subjects []rbacmanagerv1beta1.Subject, prefix string, namespaces *v1.NamespaceList) error {
+	rb rbacmanagerv1beta1.RoleBinding, subjects []rbacmanagerv1beta1.Subject, prefix string, namespaces *v1.NamespaceList, label map[string]string) error {
 
 	objectMeta := metav1.ObjectMeta{
 		OwnerReferences: p.ownerRefs,
-		Labels:          kube.Labels,
+		Labels:          label,
 	}
 
 	var requestedRoleName string
@@ -222,7 +223,7 @@ func (p *Parser) parseClusterRoleBindings(rbacDef *rbacmanagerv1beta1.RBACDefini
 	for _, rbacBinding := range rbacDef.RBACBindings {
 		for _, clusterRoleBinding := range rbacBinding.ClusterRoleBindings {
 			namePrefix := rdNamePrefix(rbacDef, &rbacBinding)
-			_ = p.parseClusterRoleBinding(clusterRoleBinding, rbacBinding.Subjects, namePrefix)
+			_ = p.parseClusterRoleBinding(clusterRoleBinding, rbacBinding.Subjects, namePrefix, rbacDef.Labels)
 		}
 	}
 }
@@ -231,7 +232,7 @@ func (p *Parser) parseRoleBindings(rbacDef *rbacmanagerv1beta1.RBACDefinition, n
 	for _, rbacBinding := range rbacDef.RBACBindings {
 		for _, roleBinding := range rbacBinding.RoleBindings {
 			namePrefix := rdNamePrefix(rbacDef, &rbacBinding)
-			_ = p.parseRoleBinding(roleBinding, rbacBinding.Subjects, namePrefix, namespaces)
+			_ = p.parseRoleBinding(roleBinding, rbacBinding.Subjects, namePrefix, namespaces, rbacDef.Labels)
 		}
 	}
 }
