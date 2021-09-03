@@ -1,0 +1,30 @@
+version: 2
+updates:
+- package-ecosystem: gomod
+  directory: "/"
+  schedule:
+    interval: daily
+    time: "11:00"
+  ignore:
+  - dependency-name: k8s.io/apimachinery
+    versions:
+    - 0.20.3
+    - 0.20.4
+    - 0.20.5
+  - dependency-name: k8s.io/client-go
+    versions:
+    - 0.20.3
+    - 0.20.5
+  - dependency-name: k8s.io/api
+    versions:
+    - 0.20.3
+    - 0.20.4
+    - 0.20.5
+  - dependency-name: sigs.k8s.io/controller-runtime
+    versions:
+    - 0.8.1
+    - 0.8.2
+    - 0.8.3
+  - dependency-name: github.com/sirupsen/logrus
+    versions:
+    - 1.7.1
