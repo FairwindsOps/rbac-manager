@@ -23,6 +23,7 @@ RBAC Manager is designed to simplify authorization in Kubernetes. This is an ope
 The goal of the Fairwinds Community is to exchange ideas, influence the open source roadmap,
 and network with fellow Kubernetes users.
 [Chat with us on Slack](https://join.slack.com/t/fairwindscommunity/shared_invite/zt-e3c6vj4l-3lIH6dvKqzWII5fSSFDi1g)
+or
 [join the user group](https://www.fairwinds.com/open-source-software-user-group) to get involved!
 
 <a href="https://www.fairwinds.com/t-shirt-offer?utm_source=rbac-manager&utm_medium=rbac-manager&utm_campaign=rbac-manager-tshirt">
@@ -36,3 +37,5 @@ Enjoying rbac-manager? Check out some of our other projects:
 * [Goldilocks](https://github.com/FairwindsOps/Goldilocks) - Right-size your Kubernetes Deployments by compare your memory and CPU settings against actual usage
 * [Pluto](https://github.com/FairwindsOps/Pluto) - Detect Kubernetes resources that have been deprecated or removed in future versions
 * [Nova](https://github.com/FairwindsOps/Nova) - Check to see if any of your Helm charts have updates available
+
+Or [check out the full list](https://www.fairwinds.com/open-source-software?utm_source=reckoner&utm_medium=reckoner&utm_campaign=reckoner)
