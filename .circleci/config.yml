@@ -146,15 +146,17 @@ workflows:
           <<: *e2e_configuration
   release:
     jobs:
-      - publish_docs:
-          filters:
-            branches:
-              ignore: /.*/
-            tags:
-              only: /v.*/
       - build_and_release:
           filters:
             branches:
               ignore: /.*/
             tags:
               only: /.*/
+      - publish_docs:
+          requires:
+            - build_and_release
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /v.*/
