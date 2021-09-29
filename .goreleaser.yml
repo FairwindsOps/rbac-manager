@@ -3,7 +3,7 @@ release:
 builds:
   - main: ./cmd/manager
     ldflags:
-      - -X github.com/fairwindsops/rbac-manager/version.Version=={{.Version}} -s -w
+      - -X github.com/fairwindsops/rbac-manager/version.Version={{.Version}} -s -w
     goarch:
       - amd64
       - arm
