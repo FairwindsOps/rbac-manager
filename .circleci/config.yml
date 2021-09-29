@@ -151,7 +151,7 @@ workflows:
             branches:
               ignore: /.*/
             tags:
-              only: /.*/
+              only: /v.*/
       - publish_docs:
           requires:
             - build_and_release
