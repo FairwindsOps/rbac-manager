@@ -12,7 +12,22 @@ else
     echo "CI_SHA1: $CI_SHA1"
 fi
 
-yq w -i deploy/3_deployment.yaml 'spec.template.spec.containers[0].image' "quay.io/reactiveops/rbac-manager:dev-$CI_SHA1"
+printf "\n\n"
+echo "********************************************************************"
+echo "** LOADING IMAGES TO DOCKER AND KIND **"
+echo "********************************************************************"
+printf "\n\n"
+docker load --input /tmp/workspace/docker_save/rbac-manager_${CI_SHA1}-amd64.tar
+export PATH=$(pwd)/bin-kind:$PATH
+kind load docker-image --name e2e quay.io/reactiveops/rbac-manager:${CI_SHA1}-amd64
+printf "\n\n"
+echo "********************************************************************"
+echo "** END LOADING IMAGE **"
+echo "********************************************************************"
+printf "\n\n"
+
+yq w -i deploy/3_deployment.yaml 'spec.template.spec.containers[0].image' "quay.io/reactiveops/rbac-manager:${CI_SHA1}-amd64"
+yq w -i deploy/3_deployment.yaml 'spec.template.spec.containers[0].imagePullPolicy' "IfNotPresent"
 cat deploy/3_deployment.yaml
 
 docker cp deploy e2e-command-runner:/
