@@ -17,6 +17,9 @@
 
 RBAC Manager is designed to simplify authorization in Kubernetes. This is an operator that supports declarative configuration for RBAC with new custom resources. Instead of managing role bindings or service accounts directly, you can specify a desired state and RBAC Manager will make the necessary changes to achieve that state.
 
+# Documentation
+Check out the [documentation at docs.fairwinds.com](https://rbac-manager.docs.fairwinds.com/)
+
 <!-- Begin boilerplate -->
 ## Join the Fairwinds Open Source Community
 
