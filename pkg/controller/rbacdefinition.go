@@ -55,14 +55,14 @@ type ReconcileRBACDefinition struct {
 }
 
 // Reconcile makes changes in response to RBACDefinition changes
-func (r *ReconcileRBACDefinition) Reconcile(request reconcile.Request) (reconcile.Result, error) {
+func (r *ReconcileRBACDefinition) Reconcile(ctx context.Context, request reconcile.Request) (reconcile.Result, error) {
 	metrics.ReconcileCounter.WithLabelValues("rbacdefinition").Inc()
 	var err error
 	rdr := reconciler.Reconciler{Clientset: r.clientset}
 
 	// Fetch the RBACDefinition instance
 	rbacDef := &rbacmanagerv1beta1.RBACDefinition{}
-	err = r.Get(context.TODO(), request.NamespacedName, rbacDef)
+	err = r.Get(ctx, request.NamespacedName, rbacDef)
 	if err != nil {
 		metrics.ErrorCounter.Inc()
 		if errors.IsNotFound(err) {
