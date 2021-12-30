@@ -147,6 +147,10 @@ workflows:
           name: "End-To-End Kubernetes 1.22"
           kind_node_image: "kindest/node:v1.22.0@sha256:b8bda84bb3a190e6e028b1760d277454a72267a5454b57db34437c34a588d047"
           <<: *e2e_configuration
+      - rok8s-scripts/kubernetes_e2e_tests:
+          name: "End-To-End Kubernetes 1.23"
+          kind_node_image: "kindest/node:v1.23.0@sha256:2f93d3c7b12a3e93e6c1f34f331415e105979961fcddbe69a4e3ab5a93ccbb35"
+          <<: *e2e_configuration
   release:
     jobs:
       - build_and_release:
