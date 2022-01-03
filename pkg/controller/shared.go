@@ -26,7 +26,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 
-	rbacmanagerv1beta1 "github.com/fairwindsops/rbac-manager/pkg/apis/rbacmanager/v1beta1"
+	rbacmanagerv1beta1 "github.com/schlapzz/rbac-manager/pkg/apis/rbacmanager/v1beta1"
 )
 
 // Add creates a new RBACDefinition Controller and adds it to the Manager.

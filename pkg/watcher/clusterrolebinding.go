@@ -26,8 +26,8 @@ import (
 	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/kubernetes"
 
-	"github.com/fairwindsops/rbac-manager/pkg/kube"
-	"github.com/fairwindsops/rbac-manager/pkg/reconciler"
+	"github.com/schlapzz/rbac-manager/pkg/kube"
+	"github.com/schlapzz/rbac-manager/pkg/reconciler"
 )
 
 func watchClusterRoleBindings(clientset *kubernetes.Clientset) {

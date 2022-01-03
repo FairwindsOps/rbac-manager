@@ -26,8 +26,8 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/client-go/kubernetes"
 
-	rbacmanagerv1beta1 "github.com/fairwindsops/rbac-manager/pkg/apis/rbacmanager/v1beta1"
-	"github.com/fairwindsops/rbac-manager/pkg/kube"
+	rbacmanagerv1beta1 "github.com/schlapzz/rbac-manager/pkg/apis/rbacmanager/v1beta1"
+	"github.com/schlapzz/rbac-manager/pkg/kube"
 )
 
 // Parser parses RBAC Definitions and determines the Kubernetes resources that it specifies

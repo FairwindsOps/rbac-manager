@@ -17,7 +17,7 @@ limitations under the License.
 package watcher
 
 import (
-	"github.com/fairwindsops/rbac-manager/pkg/kube"
+	"github.com/schlapzz/rbac-manager/pkg/kube"
 )
 
 // WatchRelatedResources watches all resources owned by RBAC Definitions

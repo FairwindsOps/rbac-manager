@@ -4,11 +4,11 @@
     <a href="https://join.slack.com/t/fairwindscommunity/shared_invite/zt-e3c6vj4l-3lIH6dvKqzWII5fSSFDi1g">
       <img src="https://img.shields.io/static/v1?label=Slack&message=Join+our+Community&color=4a154b&logo=slack">
     </a>
-    <a href="https://github.com/FairwindsOps/rbac-manager/releases">
+    <a href="https://github.com/schlapzz/rbac-manager/releases">
         <img src="https://img.shields.io/github/v/release/FairwindsOps/rbac-manager">
     </a>
-    <a href="https://goreportcard.com/report/github.com/FairwindsOps/rbac-manager">
-        <img src="https://goreportcard.com/badge/github.com/FairwindsOps/rbac-manager">
+    <a href="https://goreportcard.com/report/github.com/schlapzz/rbac-manager">
+        <img src="https://goreportcard.com/badge/github.com/schlapzz/rbac-manager">
     </a>
     <a href="https://insights.fairwinds.com/gh/FairwindsOps/rbac-manager">
       <img src="https://insights.fairwinds.com/v0/gh/FairwindsOps/polaris/badge.svg">
@@ -36,9 +36,9 @@ or
 ## Other Projects from Fairwinds
 
 Enjoying rbac-manager? Check out some of our other projects:
-* [Polaris](https://github.com/FairwindsOps/Polaris) - Audit, enforce, and build policies for Kubernetes resources, including over 20 built-in checks for best practices
-* [Goldilocks](https://github.com/FairwindsOps/Goldilocks) - Right-size your Kubernetes Deployments by compare your memory and CPU settings against actual usage
-* [Pluto](https://github.com/FairwindsOps/Pluto) - Detect Kubernetes resources that have been deprecated or removed in future versions
-* [Nova](https://github.com/FairwindsOps/Nova) - Check to see if any of your Helm charts have updates available
+* [Polaris](https://github.com/schlapzz/Polaris) - Audit, enforce, and build policies for Kubernetes resources, including over 20 built-in checks for best practices
+* [Goldilocks](https://github.com/schlapzz/Goldilocks) - Right-size your Kubernetes Deployments by compare your memory and CPU settings against actual usage
+* [Pluto](https://github.com/schlapzz/Pluto) - Detect Kubernetes resources that have been deprecated or removed in future versions
+* [Nova](https://github.com/schlapzz/Nova) - Check to see if any of your Helm charts have updates available
 
 Or [check out the full list](https://www.fairwinds.com/open-source-software?utm_source=rbac-manager&utm_medium=rbac-manager&utm_campaign=rbac-manager)

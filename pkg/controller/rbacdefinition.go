@@ -26,9 +26,9 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
-	rbacmanagerv1beta1 "github.com/fairwindsops/rbac-manager/pkg/apis/rbacmanager/v1beta1"
-	"github.com/fairwindsops/rbac-manager/pkg/metrics"
-	"github.com/fairwindsops/rbac-manager/pkg/reconciler"
+	rbacmanagerv1beta1 "github.com/schlapzz/rbac-manager/pkg/apis/rbacmanager/v1beta1"
+	"github.com/schlapzz/rbac-manager/pkg/metrics"
+	"github.com/schlapzz/rbac-manager/pkg/reconciler"
 )
 
 // newRbacDefReconciler returns a new reconcile.Reconciler

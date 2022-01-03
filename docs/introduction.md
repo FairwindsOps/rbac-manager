@@ -80,7 +80,7 @@ With RBAC Manager, each RBAC Definition "owns" any resources it creates, and wil
 
 ## Getting Started
 
-RBAC Manager is simple to install with either the [Helm chart](https://github.com/FairwindsOps/charts/tree/master/stable/rbac-manager) or Kubernetes deployment YAML included in this repo:
+RBAC Manager is simple to install with either the [Helm chart](https://github.com/schlapzz/charts/tree/master/stable/rbac-manager) or Kubernetes deployment YAML included in this repo:
 
 ```
 helm repo add fairwinds-stable https://charts.fairwinds.com/stable
@@ -128,7 +128,7 @@ To properly configure authorization with RBAC in Kubernetes, you first need to h
 
 ### Better Visibility With RBAC Lookup
 
-We have a related open source tool that allows you to easily find roles and cluster roles attached to any user, service account, or group name in your Kubernetes cluster. If that sounds interesting, take a look at [rbac-lookup](https://github.com/FairwindsOps/rbac-lookup) on GitHub.
+We have a related open source tool that allows you to easily find roles and cluster roles attached to any user, service account, or group name in your Kubernetes cluster. If that sounds interesting, take a look at [rbac-lookup](https://github.com/schlapzz/rbac-lookup) on GitHub.
 
 ## License
 

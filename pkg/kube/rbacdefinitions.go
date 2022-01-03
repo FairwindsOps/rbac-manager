@@ -24,7 +24,7 @@ import (
 	"k8s.io/client-go/rest"
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
 
-	rbacmanagerv1beta1 "github.com/fairwindsops/rbac-manager/pkg/apis/rbacmanager/v1beta1"
+	rbacmanagerv1beta1 "github.com/schlapzz/rbac-manager/pkg/apis/rbacmanager/v1beta1"
 )
 
 // GetRbacDefinition returns an RbacDefinition for a specified name or an error

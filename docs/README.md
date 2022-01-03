@@ -4,11 +4,11 @@
     <a href="https://join.slack.com/t/fairwindscommunity/shared_invite/zt-e3c6vj4l-3lIH6dvKqzWII5fSSFDi1g">
       <img src="https://img.shields.io/static/v1?label=Slack&message=Join+our+Community&color=4a154b&logo=slack">
     </a>
-    <a href="https://github.com/FairwindsOps/rbac-manager/releases">
+    <a href="https://github.com/schlapzz/rbac-manager/releases">
         <img src="https://img.shields.io/github/v/release/FairwindsOps/rbac-manager">
     </a>
-    <a href="https://goreportcard.com/report/github.com/FairwindsOps/rbac-manager">
-        <img src="https://goreportcard.com/badge/github.com/FairwindsOps/rbac-manager">
+    <a href="https://goreportcard.com/report/github.com/schlapzz/rbac-manager">
+        <img src="https://goreportcard.com/badge/github.com/schlapzz/rbac-manager">
     </a>
     <a href="https://insights.fairwinds.com/gh/FairwindsOps/rbac-manager">
       <img src="https://insights.fairwinds.com/v0/gh/FairwindsOps/polaris/badge.svg">

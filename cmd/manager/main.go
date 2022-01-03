@@ -29,11 +29,11 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 
-	"github.com/fairwindsops/rbac-manager/pkg/apis"
-	"github.com/fairwindsops/rbac-manager/pkg/controller"
-	"github.com/fairwindsops/rbac-manager/pkg/metrics"
-	"github.com/fairwindsops/rbac-manager/pkg/watcher"
-	"github.com/fairwindsops/rbac-manager/version"
+	"github.com/schlapzz/rbac-manager/pkg/apis"
+	"github.com/schlapzz/rbac-manager/pkg/controller"
+	"github.com/schlapzz/rbac-manager/pkg/metrics"
+	"github.com/schlapzz/rbac-manager/pkg/watcher"
+	"github.com/schlapzz/rbac-manager/version"
 )
 
 var logLevel = flag.String("log-level", logrus.InfoLevel.String(), "Logrus log level")

@@ -1,7 +1,7 @@
 {
   "author": "",
   "bugs": {
-    "url": "https://github.com/FairwindsOps/insights-docs/issues"
+    "url": "https://github.com/schlapzz/insights-docs/issues"
   },
   "dependencies": {
     "vuepress-plugin-check-md": "0.0.2"
@@ -15,13 +15,13 @@
   "directories": {
     "doc": "docs"
   },
-  "homepage": "https://github.com/FairwindsOps/insights-docs#readme",
+  "homepage": "https://github.com/schlapzz/insights-docs#readme",
   "license": "MIT",
   "main": "index.js",
   "name": "fairwinds-docs-template",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/FairwindsOps/insights-docs.git"
+    "url": "git+https://github.com/schlapzz/insights-docs.git"
   },
   "scripts": {
     "build": "npm run build:readme && npm run build:docs",

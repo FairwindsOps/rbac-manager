@@ -26,9 +26,9 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/kubernetes"
 
-	rbacmanagerv1beta1 "github.com/fairwindsops/rbac-manager/pkg/apis/rbacmanager/v1beta1"
-	"github.com/fairwindsops/rbac-manager/pkg/kube"
-	"github.com/fairwindsops/rbac-manager/pkg/metrics"
+	rbacmanagerv1beta1 "github.com/schlapzz/rbac-manager/pkg/apis/rbacmanager/v1beta1"
+	"github.com/schlapzz/rbac-manager/pkg/kube"
+	"github.com/schlapzz/rbac-manager/pkg/metrics"
 )
 
 // Reconciler creates and deletes Kubernetes resources to achieve the desired state of an RBAC Definition

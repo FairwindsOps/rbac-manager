@@ -19,7 +19,7 @@ limitations under the License.
 // Package v1beta1 contains API Schema definitions for the rbacmanager v1beta1 API group
 // +k8s:openapi-gen=true
 // +k8s:deepcopy-gen=package,register
-// +k8s:conversion-gen=github.com/fairwindsops/rbac-manager/pkg/apis/rbacmanager
+// +k8s:conversion-gen=github.com/schlapzz/rbac-manager/pkg/apis/rbacmanager
 // +k8s:defaulter-gen=TypeMeta
 // +groupName=rbacmanager.reactiveops.io
 package v1beta1

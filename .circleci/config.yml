@@ -43,7 +43,7 @@ jobs:
     docker:
       - image: circleci/golang:1.17
 
-    working_directory: /go/src/github.com/fairwindsops/rbac-manager
+    working_directory: /go/src/github.com/schlapzz/rbac-manager
     steps:
       - checkout
       - run: go get -u golang.org/x/lint/golint
@@ -52,7 +52,7 @@ jobs:
       - run: go test ./... -coverprofile=coverage.txt -covermode=atomic
 
   build_and_release:
-    working_directory: /go/src/github.com/fairwindsops/rbac-manager
+    working_directory: /go/src/github.com/schlapzz/rbac-manager
     resource_class: large
     shell: /bin/bash
     docker:
@@ -73,7 +73,7 @@ jobs:
           password-variable: REACTIVEOPS_QUAY_TOKEN
       - run: goreleaser
   snapshot:
-    working_directory: /go/src/github.com/fairwindsops/rbac-manager
+    working_directory: /go/src/github.com/schlapzz/rbac-manager
     resource_class: large
     docker:
       - image: goreleaser/goreleaser:v0.174.2

@@ -25,10 +25,10 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
-	rbacmanagerv1beta1 "github.com/fairwindsops/rbac-manager/pkg/apis/rbacmanager/v1beta1"
-	"github.com/fairwindsops/rbac-manager/pkg/kube"
-	"github.com/fairwindsops/rbac-manager/pkg/metrics"
-	"github.com/fairwindsops/rbac-manager/pkg/reconciler"
+	rbacmanagerv1beta1 "github.com/schlapzz/rbac-manager/pkg/apis/rbacmanager/v1beta1"
+	"github.com/schlapzz/rbac-manager/pkg/kube"
+	"github.com/schlapzz/rbac-manager/pkg/metrics"
+	"github.com/schlapzz/rbac-manager/pkg/reconciler"
 )
 
 // newNamespaceReconciler returns a new reconcile.Reconciler

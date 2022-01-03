@@ -11,11 +11,11 @@ Before you can contribute, you will need to sign the [Contributor License Agreem
 
 ## Project Structure
 
-rbac-manager is a relatively simple cobra cli tool that looks up information about rbac in a cluster. The [/cmd](https://github.com/FairwindsOps/rbac-manager/tree/master/cmd/manager) folder contains the flags and other cobra config.
+rbac-manager is a relatively simple cobra cli tool that looks up information about rbac in a cluster. The [/cmd](https://github.com/schlapzz/rbac-manager/tree/master/cmd/manager) folder contains the flags and other cobra config.
 
 ## Getting Started
 
-We label issues with the ["good first issue" tag](https://github.com/FairwindsOps/rbac-manager/labels/good%20first%20issue) if we believe they'll be a good starting point for new contributors. If you're interested in working on an issue, please start a conversation on that issue, and we can help answer any questions as they come up.
+We label issues with the ["good first issue" tag](https://github.com/schlapzz/rbac-manager/labels/good%20first%20issue) if we believe they'll be a good starting point for new contributors. If you're interested in working on an issue, please start a conversation on that issue, and we can help answer any questions as they come up.
 
 ## Setting Up Your Development Environment
 ### Prerequisites
@@ -23,8 +23,8 @@ We label issues with the ["good first issue" tag](https://github.com/FairwindsOp
 * Access to a cluster via a properly configured KUBECONFIG
 
 ### Installation
-* Install the project with `go get github.com/fairwindsops/rbac-manager`
-* Change into the rbac-manager directory which is installed at `$GOPATH/src/github.com/fairwindsops/rbac-manager`
+* Install the project with `go get github.com/schlapzz/rbac-manager`
+* Change into the rbac-manager directory which is installed at `$GOPATH/src/github.com/schlapzz/rbac-manager`
 * Run tests with `make test`
 
 ## Creating a New Issue
