@@ -1,4 +1,4 @@
-module github.com/fairwindsops/rbac-manager
+module github.com/schlapzz/rbac-manager
 
 go 1.17
 
