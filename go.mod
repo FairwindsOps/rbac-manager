@@ -10,7 +10,7 @@ require (
 	github.com/google/gofuzz v1.2.0 // indirect
 	github.com/imdario/mergo v0.3.11 // indirect
 	github.com/kr/pretty v0.2.1 // indirect
-	github.com/prometheus/client_golang v1.12.0
+	github.com/prometheus/client_golang v1.12.1
 	github.com/sirupsen/logrus v1.8.1
 	github.com/stretchr/testify v1.7.0
 	go.uber.org/multierr v1.6.0 // indirect
