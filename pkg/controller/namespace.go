@@ -16,7 +16,7 @@ package controller
 import (
 	"context"
 
-	"k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes"
@@ -44,12 +44,12 @@ type ReconcileNamespace struct {
 }
 
 // Reconcile makes changes in response to Namespace changes
-func (r *ReconcileNamespace) Reconcile(request reconcile.Request) (reconcile.Result, error) {
+func (r *ReconcileNamespace) Reconcile(ctx context.Context, request reconcile.Request) (reconcile.Result, error) {
 	var err error
 
 	// Fetch the Namespace
 	namespace := &v1.Namespace{}
-	err = r.Get(context.TODO(), request.NamespacedName, namespace)
+	err = r.Get(ctx, request.NamespacedName, namespace)
 
 	if err != nil {
 		if errors.IsNotFound(err) {
