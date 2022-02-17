@@ -100,7 +100,7 @@ jobs:
       - checkout
       - setup_remote_docker
       - *install_vault
-      - rok8s/get_vault_env:
+      - rok8s-scripts/get_vault_env:
           vault_path: repo/global/env
       - run: echo 'export FAIRWINDS_TOKEN="${INSIGHTS_OSS_TOKEN}"' >> $BASH_ENV
       - run:
