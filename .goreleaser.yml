@@ -1,5 +1,11 @@
 release:
   prerelease: auto
+  footer: |
+    You can verify the signatures of both the checksums.txt file and the published docker images using [cosign](https://github.com/sigstore/cosign).
+
+    ```
+    cosign verify-blob checksums.txt --signature=checksums.txt.sig  --key https://artifacts.fairwinds.com/cosign.pub
+    ```
 builds:
   - main: ./cmd/manager
     ldflags:
@@ -16,6 +22,10 @@ builds:
     goarm:
       - 6
       - 7
+signs:
+- cmd: cosign
+  args: ["sign-blob", "--key=hashivault://cosign", "-output-signature=${signature}", "${artifact}"]
+  artifacts: checksum
 dockers:
 - image_templates:
   - "quay.io/reactiveops/rbac-manager:{{ .FullCommit }}-amd64"
