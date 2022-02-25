@@ -1,7 +1,7 @@
 version: 2.1
 
 orbs:
-  rok8s-scripts: fairwinds/rok8s-scripts@11
+  rok8s: fairwinds/rok8s-scripts@11
 
 references:
   enable_experimental_features: &enable_experimental_docker_features
@@ -19,8 +19,8 @@ references:
       name: install hashicorp vault
       command: |
         cd /tmp
-        curl -LO https://releases.hashicorp.com/vault/1.8.1/vault_1.8.1_linux_amd64.zip
-        unzip vault_1.8.1_linux_amd64.zip
+        curl -LO https://releases.hashicorp.com/vault/1.9.3/vault_1.9.3_linux_amd64.zip
+        unzip vault_1.9.3_linux_amd64.zip
         mv vault /usr/bin/vault
         apk --update add yq
   e2e_configuration: &e2e_configuration
@@ -65,9 +65,9 @@ jobs:
           version: 20.10.6
       - *enable_experimental_docker_features
       - *install_vault
-      - rok8s-scripts/get_vault_env:
+      - rok8s/get_vault_env:
           vault_path: repo/global/env
-      - rok8s-scripts/docker_login:
+      - rok8s/docker_login:
           registry: "quay.io"
           username: $REACTIVEOPS_QUAY_USER
           password-variable: REACTIVEOPS_QUAY_TOKEN
@@ -82,7 +82,7 @@ jobs:
       - setup_remote_docker:
           version: 20.10.6
       - *enable_experimental_docker_features
-      - run: goreleaser --snapshot
+      - run: goreleaser --snapshot --skip-sign
       - run: mkdir -p /tmp/workspace/docker_save/
       - run: docker save quay.io/reactiveops/rbac-manager:${CIRCLE_SHA1}-amd64 > /tmp/workspace/docker_save/rbac-manager_${CIRCLE_SHA1}-amd64.tar
       - run: pwd; ls -la *
@@ -100,7 +100,7 @@ jobs:
       - checkout
       - setup_remote_docker
       - *install_vault
-      - rok8s-scripts/get_vault_env:
+      - rok8s/get_vault_env:
           vault_path: repo/global/env
       - run: echo 'export FAIRWINDS_TOKEN="${INSIGHTS_OSS_TOKEN}"' >> $BASH_ENV
       - run:
@@ -110,6 +110,7 @@ jobs:
             echo "ba3fe515b332a0fc1e3048d8b4f6dd22d84d47393c558d245949ca085b97167b *insights-ci.sh" |  sha256sum -c
             chmod +x insights-ci.sh
             ./insights-ci.sh
+
   publish_docs:
     docker:
       - image: cimg/node:15.5.1
@@ -124,16 +125,34 @@ jobs:
             npm run check-links
             npm run build
       - run:
-          name: Install AWS CLI
+          name: Install Tools
           command: |
+            cd /tmp
+            echo "Installing AWS CLI"
             curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
             unzip awscliv2.zip
             sudo ./aws/install
+
+            echo "Installing Hashicorp Vault"
+            curl -LO https://releases.hashicorp.com/vault/1.9.3/vault_1.9.3_linux_amd64.zip
+            unzip vault_1.9.3_linux_amd64.zip
+            sudo mv vault /usr/bin/vault
+            sudo chmod +x /usr/bin/vault
+            vault --version
+
+            echo "Installing yq"
+            curl -LO https://github.com/mikefarah/yq/releases/download/v4.16.2/yq_linux_amd64.tar.gz
+            tar -zxvf yq_linux_amd64.tar.gz
+            sudo mv yq_linux_amd64 /usr/bin/yq
+            sudo chmod +x /usr/bin/yq
+            yq --version
+      - rok8s/get_vault_env:
+          vault_path: repo/rbac-manager/env
       - run:
           name: Publish Docs Site to S3
           command: |
             cd ./dist
-            aws s3 sync ./ s3://rbac-manager.docs.fairwinds.com --delete
+            aws s3 sync ./ s3://pluto.docs.fairwinds.com --delete
 
 workflows:
   version: 2
@@ -148,19 +167,19 @@ workflows:
           requires:
             - test
             - snapshot
-      - rok8s-scripts/kubernetes_e2e_tests:
+      - rok8s/kubernetes_e2e_tests:
           name: "End-To-End Kubernetes 1.19"
           kind_node_image: "kindest/node:v1.19.11@sha256:07db187ae84b4b7de440a73886f008cf903fcf5764ba8106a9fd5243d6f32729"
           <<: *e2e_configuration
-      - rok8s-scripts/kubernetes_e2e_tests:
+      - rok8s/kubernetes_e2e_tests:
           name: "End-To-End Kubernetes 1.20"
           kind_node_image: "kindest/node:v1.20.7@sha256:cbeaf907fc78ac97ce7b625e4bf0de16e3ea725daf6b04f930bd14c67c671ff9"
           <<: *e2e_configuration
-      - rok8s-scripts/kubernetes_e2e_tests:
+      - rok8s/kubernetes_e2e_tests:
           name: "End-To-End Kubernetes 1.21"
           kind_node_image: "kindest/node:v1.21.1@sha256:69860bda5563ac81e3c0057d654b5253219618a22ec3a346306239bba8cfa1a6"
           <<: *e2e_configuration
-      - rok8s-scripts/kubernetes_e2e_tests:
+      - rok8s/kubernetes_e2e_tests:
           name: "End-To-End Kubernetes 1.22"
           kind_node_image: "kindest/node:v1.22.0@sha256:b8bda84bb3a190e6e028b1760d277454a72267a5454b57db34437c34a588d047"
           <<: *e2e_configuration
