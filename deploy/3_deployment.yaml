@@ -5,6 +5,8 @@ metadata:
   namespace: rbac-manager
   labels:
     app: rbac-manager
+  annotations:
+    polaris.fairwinds.com/deploymentMissingReplicas-exempt: 'true'
 spec:
   replicas: 1
   selector:
