@@ -49,6 +49,11 @@ func TestParseStandard(t *testing.T) {
 				Name:      "ci-bot",
 				Namespace: "bots",
 			},
+		}, {
+			Subject: rbacv1.Subject{
+				Kind:      rbacv1.ServiceAccountKind,
+				Name:      "custom-bot",
+			},
 		}},
 		RoleBindings: []rbacmanagerv1beta1.RoleBinding{{
 			Namespace: "bots",
@@ -65,6 +70,11 @@ func TestParseStandard(t *testing.T) {
 			Subject: rbacv1.Subject{
 				Kind: rbacv1.UserKind,
 				Name: "sue",
+			},
+		}, {
+			Subject: rbacv1.Subject{
+				Kind:      rbacv1.ServiceAccountKind,
+				Name:      "custom-bot",
 			},
 		}},
 		RoleBindings: []rbacmanagerv1beta1.RoleBinding{{
@@ -88,6 +98,10 @@ func TestParseStandard(t *testing.T) {
 			Kind:      rbacv1.ServiceAccountKind,
 			Name:      "ci-bot",
 			Namespace: "bots",
+		}, {
+			Kind:      rbacv1.ServiceAccountKind,
+			Name:      "custom-bot",
+			Namespace: "bots",
 		}},
 	}, {
 		ObjectMeta: metav1.ObjectMeta{
@@ -104,6 +118,10 @@ func TestParseStandard(t *testing.T) {
 		}, {
 			Kind: rbacv1.UserKind,
 			Name: "sue",
+		}, {
+			Kind:      rbacv1.ServiceAccountKind,
+			Name:      "custom-bot",
+			Namespace: "web",
 		}},
 	}, {
 		ObjectMeta: metav1.ObjectMeta{
@@ -120,11 +138,30 @@ func TestParseStandard(t *testing.T) {
 		}, {
 			Kind: rbacv1.UserKind,
 			Name: "sue",
+		}, {
+			Kind:      rbacv1.ServiceAccountKind,
+			Name:      "custom-bot",
+			Namespace: "api",
 		}},
 	}}, []rbacv1.ClusterRoleBinding{}, []corev1.ServiceAccount{{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "ci-bot",
 			Namespace: "bots",
+		},
+	}, {
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "custom-bot",
+			Namespace: "bots",
+		},
+	}, {
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "custom-bot",
+			Namespace: "web",
+		},
+	}, {
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "custom-bot",
+			Namespace: "api",
 		},
 	}})
 }
@@ -303,7 +340,7 @@ func TestManagerToRbacSubjects(t *testing.T) {
 			Subject: expected[0],
 		},
 	}
-	actual := managerSubjectsToRbacSubjects(subjects)
+	actual := managerSubjectsToRbacSubjects(subjects, "default")
 	assert.ElementsMatch(t, expected, actual, "expected subjects to match")
 }
 

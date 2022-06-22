@@ -68,13 +68,14 @@ func (p *Parser) parseRBACBinding(rbacBinding rbacmanagerv1beta1.RBACBinding, na
 		return errors.New("No subjects specified for RBAC Binding: " + namePrefix)
 	}
 
+	genericServiceAccounts := []v1.ServiceAccount{}
 	for _, requestedSubject := range rbacBinding.Subjects {
 		if requestedSubject.Kind == "ServiceAccount" {
 			pullsecrets := []v1.LocalObjectReference{}
 			for _, secret := range requestedSubject.ImagePullSecrets {
 				pullsecrets = append(pullsecrets, v1.LocalObjectReference{Name: secret})
 			}
-			p.parsedServiceAccounts = append(p.parsedServiceAccounts, v1.ServiceAccount{
+			serviceAccount := v1.ServiceAccount{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:            requestedSubject.Name,
 					Namespace:       requestedSubject.Namespace,
@@ -82,7 +83,13 @@ func (p *Parser) parseRBACBinding(rbacBinding rbacmanagerv1beta1.RBACBinding, na
 					Labels:          kube.Labels,
 				},
 				ImagePullSecrets: pullsecrets,
-			})
+			}
+
+			if requestedSubject.Namespace != "" {
+				p.parsedServiceAccounts = append(p.parsedServiceAccounts, serviceAccount)
+			} else {
+				genericServiceAccounts = append(genericServiceAccounts, serviceAccount)
+			}
 		}
 	}
 
@@ -97,9 +104,25 @@ func (p *Parser) parseRBACBinding(rbacBinding rbacmanagerv1beta1.RBACBinding, na
 
 	if rbacBinding.RoleBindings != nil {
 		for _, requestedRB := range rbacBinding.RoleBindings {
-			err := p.parseRoleBinding(requestedRB, rbacBinding.Subjects, namePrefix, namespaces)
+			namespacesList, err := p.parseRoleBinding(requestedRB, rbacBinding.Subjects, namePrefix, namespaces)
 			if err != nil {
 				return err
+			}
+			for _, namespace := range namespacesList {
+				for _, serviceAccount := range genericServiceAccounts {
+					found := false
+					for _, parsedServiceAccount := range p.parsedServiceAccounts {
+						if parsedServiceAccount.Name == serviceAccount.Name && parsedServiceAccount.Namespace == namespace {
+							found = true
+							break
+						}
+					}
+					
+					if !found {
+						serviceAccount.Namespace = namespace
+						p.parsedServiceAccounts = append(p.parsedServiceAccounts, serviceAccount)
+					}
+				}
 			}
 		}
 	}
@@ -109,7 +132,7 @@ func (p *Parser) parseRBACBinding(rbacBinding rbacmanagerv1beta1.RBACBinding, na
 func (p *Parser) parseClusterRoleBinding(
 	crb rbacmanagerv1beta1.ClusterRoleBinding, subjects []rbacmanagerv1beta1.Subject, prefix string) error {
 	crbName := fmt.Sprintf("%v-%v", prefix, crb.ClusterRole)
-	subs := managerSubjectsToRbacSubjects(subjects)
+	subs := managerSubjectsToRbacSubjects(subjects, "")
 
 	p.parsedClusterRoleBindings = append(p.parsedClusterRoleBindings, rbacv1.ClusterRoleBinding{
 		ObjectMeta: metav1.ObjectMeta{
@@ -128,7 +151,7 @@ func (p *Parser) parseClusterRoleBinding(
 }
 
 func (p *Parser) parseRoleBinding(
-	rb rbacmanagerv1beta1.RoleBinding, subjects []rbacmanagerv1beta1.Subject, prefix string, namespaces *v1.NamespaceList) error {
+	rb rbacmanagerv1beta1.RoleBinding, subjects []rbacmanagerv1beta1.Subject, prefix string, namespaces *v1.NamespaceList) ([]string, error) {
 
 	objectMeta := metav1.ObjectMeta{
 		OwnerReferences: p.ownerRefs,
@@ -153,18 +176,18 @@ func (p *Parser) parseRoleBinding(
 			Name: rb.Role,
 		}
 	} else {
-		return errors.New("Invalid role binding, role or clusterRole required")
+		return []string{}, errors.New("Invalid role binding, role or clusterRole required")
 	}
 
 	objectMeta.Name = fmt.Sprintf("%v-%v", prefix, requestedRoleName)
-
+	namespacesList := []string{}
 	if rb.NamespaceSelector.MatchLabels != nil || len(rb.NamespaceSelector.MatchExpressions) > 0 {
 		logrus.Debugf("Processing Namespace Selector %v", rb.NamespaceSelector)
 
 		selector, err := metav1.LabelSelectorAsSelector(&rb.NamespaceSelector)
 		if err != nil {
 			logrus.Infof("Error parsing label selector: %s", err.Error())
-			return err
+			return []string{}, err
 		}
 
 		for _, namespace := range namespaces.Items {
@@ -174,7 +197,8 @@ func (p *Parser) parseRoleBinding(
 
 				om := objectMeta
 				om.Namespace = namespace.Name
-				subs := managerSubjectsToRbacSubjects(subjects)
+				namespacesList = append(namespacesList, namespace.Name)
+				subs := managerSubjectsToRbacSubjects(subjects, namespace.Name)
 
 				p.parsedRoleBindings = append(p.parsedRoleBindings, rbacv1.RoleBinding{
 					ObjectMeta: om,
@@ -186,7 +210,8 @@ func (p *Parser) parseRoleBinding(
 
 	} else if rb.Namespace != "" {
 		objectMeta.Namespace = rb.Namespace
-		subs := managerSubjectsToRbacSubjects(subjects)
+		namespacesList = append(namespacesList, rb.Namespace)
+		subs := managerSubjectsToRbacSubjects(subjects, rb.Namespace)
 
 		p.parsedRoleBindings = append(p.parsedRoleBindings, rbacv1.RoleBinding{
 			ObjectMeta: objectMeta,
@@ -195,10 +220,10 @@ func (p *Parser) parseRoleBinding(
 		})
 
 	} else {
-		return errors.New("Invalid role binding, namespace or namespace selector required")
+		return []string{}, errors.New("Invalid role binding, namespace or namespace selector required")
 	}
 
-	return nil
+	return namespacesList, nil
 }
 
 func (p *Parser) hasNamespaceSelectors(rbacDef *rbacmanagerv1beta1.RBACDefinition) bool {
@@ -231,7 +256,7 @@ func (p *Parser) parseRoleBindings(rbacDef *rbacmanagerv1beta1.RBACDefinition, n
 	for _, rbacBinding := range rbacDef.RBACBindings {
 		for _, roleBinding := range rbacBinding.RoleBindings {
 			namePrefix := rdNamePrefix(rbacDef, &rbacBinding)
-			_ = p.parseRoleBinding(roleBinding, rbacBinding.Subjects, namePrefix, namespaces)
+			_, _ = p.parseRoleBinding(roleBinding, rbacBinding.Subjects, namePrefix, namespaces)
 		}
 	}
 }
@@ -240,14 +265,18 @@ func rdNamePrefix(rbacDef *rbacmanagerv1beta1.RBACDefinition, rbacBinding *rbacm
 	return fmt.Sprintf("%v-%v", rbacDef.Name, rbacBinding.Name)
 }
 
-func managerSubjectsToRbacSubjects(subjects []rbacmanagerv1beta1.Subject) []rbacv1.Subject {
+func managerSubjectsToRbacSubjects(subjects []rbacmanagerv1beta1.Subject, namespace string) []rbacv1.Subject {
 	var subs []rbacv1.Subject
 	for _, sub := range subjects {
+		subjectNamespace := sub.Namespace
+		if subjectNamespace == "" && sub.Kind == rbacv1.ServiceAccountKind {
+			subjectNamespace = namespace
+		}
 		subs = append(subs, rbacv1.Subject{
 			Kind:      sub.Kind,
 			APIGroup:  sub.APIGroup,
 			Name:      sub.Name,
-			Namespace: sub.Namespace,
+			Namespace: subjectNamespace,
 		})
 	}
 	return subs
