@@ -154,7 +154,6 @@ workflows:
           repository: rbac-manager
           filters:
             branches:
-              #ignore: /.*/
-              only: sudermanjr/oss-docs
+              ignore: /.*/
             tags:
               only: /^.*/
