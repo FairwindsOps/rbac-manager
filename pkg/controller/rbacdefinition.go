@@ -77,6 +77,7 @@ func (r *ReconcileRBACDefinition) Reconcile(ctx context.Context, request reconci
 	err = rdr.Reconcile(rbacDef)
 	if err != nil {
 		metrics.ErrorCounter.Inc()
+		return reconcile.Result{}, err
 	}
 
 	return reconcile.Result{}, nil
