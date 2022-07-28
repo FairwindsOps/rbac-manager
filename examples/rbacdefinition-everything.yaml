@@ -30,6 +30,9 @@ rbacBindings:
       - kind: ServiceAccount
         name: example
         namespace: default
+        imagePullSecrets:
+          - robot-secret
+        automountServiceAccountToken: false
     clusterRoleBindings:
       - clusterRole: view
     roleBindings:
