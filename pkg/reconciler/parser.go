@@ -77,7 +77,8 @@ func (p *Parser) parseRBACBinding(rbacBinding rbacmanagerv1beta1.RBACBinding, na
 					OwnerReferences: p.ownerRefs,
 					Labels:          kube.Labels,
 				},
-				ImagePullSecrets: pullsecrets,
+				ImagePullSecrets:             pullsecrets,
+				AutomountServiceAccountToken: requestedSubject.AutomountServiceAccountToken,
 			})
 		}
 	}
