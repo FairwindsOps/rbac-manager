@@ -378,7 +378,7 @@ func expectParsedSA(t *testing.T, p Parser, expected []corev1.ServiceAccount) {
 		}
 
 		if !matchFound {
-			t.Fatalf("Matching service account not found for %v in namespace %v", expectedSa.Name, expectedSa.Namespace)
+			t.Fatalf("Matching service account not found for %s in namespace %s", expectedSa.Name, expectedSa.Namespace)
 		}
 	}
 }
