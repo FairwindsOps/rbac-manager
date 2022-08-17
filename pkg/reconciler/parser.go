@@ -64,10 +64,6 @@ func (p *Parser) Parse(rbacDef rbacmanagerv1beta1.RBACDefinition) error {
 }
 
 func (p *Parser) parseRBACBinding(rbacBinding rbacmanagerv1beta1.RBACBinding, namePrefix string, namespaces *v1.NamespaceList) error {
-	if len(rbacBinding.Subjects) < 1 {
-		return errors.New("No subjects specified for RBAC Binding: " + namePrefix)
-	}
-
 	for _, requestedSubject := range rbacBinding.Subjects {
 		if requestedSubject.Kind == "ServiceAccount" {
 			pullsecrets := []v1.LocalObjectReference{}
@@ -81,7 +77,8 @@ func (p *Parser) parseRBACBinding(rbacBinding rbacmanagerv1beta1.RBACBinding, na
 					OwnerReferences: p.ownerRefs,
 					Labels:          kube.Labels,
 				},
-				ImagePullSecrets: pullsecrets,
+				ImagePullSecrets:             pullsecrets,
+				AutomountServiceAccountToken: requestedSubject.AutomountServiceAccountToken,
 			})
 		}
 	}

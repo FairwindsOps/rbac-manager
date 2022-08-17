@@ -84,7 +84,7 @@ RBAC Manager is simple to install with either the [Helm chart](https://github.co
 
 ```
 helm repo add fairwinds-stable https://charts.fairwinds.com/stable
-helm install fairwinds-stable/rbac-manager --name rbac-manager --namespace rbac-manager --create-namespace
+helm install rbac-manager fairwinds-stable/rbac-manager --namespace rbac-manager --create-namespace
 ```
 
 ```

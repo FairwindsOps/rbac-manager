@@ -267,29 +267,6 @@ func TestParseMissingNamespace(t *testing.T) {
 	newParseTest(t, client, rbacDef, []rbacv1.RoleBinding{}, []rbacv1.ClusterRoleBinding{}, []corev1.ServiceAccount{})
 }
 
-func TestParseMissingSubjects(t *testing.T) {
-	client := fake.NewSimpleClientset()
-	rbacDef := rbacmanagerv1beta1.RBACDefinition{}
-	rbacDef.Name = "rbac-config"
-
-	createNamespace(t, client, "web", map[string]string{"app": "web", "team": "devs"})
-	createNamespace(t, client, "api", map[string]string{"app": "api", "team": "devs"})
-	createNamespace(t, client, "db", map[string]string{"app": "db", "team": "db"})
-
-	rbacDef.RBACBindings = []rbacmanagerv1beta1.RBACBinding{{
-		Name:     "devs",
-		Subjects: []rbacmanagerv1beta1.Subject{},
-		RoleBindings: []rbacmanagerv1beta1.RoleBinding{{
-			NamespaceSelector: metav1.LabelSelector{
-				MatchLabels: map[string]string{"team": "devs"},
-			},
-			ClusterRole: "edit",
-		}},
-	}}
-
-	newParseTest(t, client, rbacDef, []rbacv1.RoleBinding{}, []rbacv1.ClusterRoleBinding{}, []corev1.ServiceAccount{})
-}
-
 func TestManagerToRbacSubjects(t *testing.T) {
 	expected := []rbacv1.Subject{
 		{
@@ -305,6 +282,24 @@ func TestManagerToRbacSubjects(t *testing.T) {
 	}
 	actual := managerSubjectsToRbacSubjects(subjects)
 	assert.ElementsMatch(t, expected, actual, "expected subjects to match")
+}
+
+func TestServiceAccountParsing(t *testing.T) {
+	for _, n := range saTestCases {
+		t.Run(n.name, func(t *testing.T) {
+			client := fake.NewSimpleClientset()
+			rbacDef := rbacmanagerv1beta1.RBACDefinition{}
+			rbacDef.Name = "rbac-config"
+
+			rbacDef.RBACBindings = []rbacmanagerv1beta1.RBACBinding{{
+				Name:                "devs",
+				Subjects:            n.given,
+				ClusterRoleBindings: []rbacmanagerv1beta1.ClusterRoleBinding{},
+			}}
+
+			newParseTest(t, client, rbacDef, []rbacv1.RoleBinding{}, []rbacv1.ClusterRoleBinding{}, n.expected)
+		})
+	}
 }
 
 func newParseTest(t *testing.T, client *fake.Clientset, rbacDef rbacmanagerv1beta1.RBACDefinition, expectedRb []rbacv1.RoleBinding, expectedCrb []rbacv1.ClusterRoleBinding, expectedSa []corev1.ServiceAccount) {
@@ -376,12 +371,14 @@ func expectParsedSA(t *testing.T, p Parser, expected []corev1.ServiceAccount) {
 		for _, actualSa := range p.parsedServiceAccounts {
 			if actualSa.Name == expectedSa.Name && expectedSa.Namespace == actualSa.Namespace {
 				matchFound = true
+				assert.ElementsMatch(t, actualSa.ImagePullSecrets, expectedSa.ImagePullSecrets)
+				assert.EqualValues(t, expectedSa.AutomountServiceAccountToken, actualSa.AutomountServiceAccountToken)
 				break
 			}
 		}
 
 		if !matchFound {
-			t.Fatalf("Matching service account not found for %v", expectedSa.Name)
+			t.Fatalf("Matching service account not found for %s in namespace %s", expectedSa.Name, expectedSa.Namespace)
 		}
 	}
 }
