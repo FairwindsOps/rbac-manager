@@ -94,24 +94,6 @@ jobs:
       - store_artifacts:
           path: dist
           destination: snapshot
-  insights:
-    docker:
-      - image: quay.io/reactiveops/ci-images:v11-alpine
-    steps:
-      - checkout
-      - setup_remote_docker
-      - *install_vault
-      - rok8s/get_vault_env:
-          vault_path: repo/global/env
-      - run: echo 'export FAIRWINDS_TOKEN="${INSIGHTS_OSS_TOKEN}"' >> $BASH_ENV
-      - run:
-          name: Insights CI
-          command: |
-            curl -L https://insights.fairwinds.com/v0/insights-ci-0.6.0.sh > insights-ci.sh
-            echo "ba3fe515b332a0fc1e3048d8b4f6dd22d84d47393c558d245949ca085b97167b *insights-ci.sh" |  sha256sum -c
-            chmod +x insights-ci.sh
-            ./insights-ci.sh
-
 
 workflows:
   version: 2
@@ -122,10 +104,6 @@ workflows:
           context: org-global
           requires:
             - test
-      - insights:
-          requires:
-            - test
-            - snapshot
       - rok8s/kubernetes_e2e_tests:
           name: "End-To-End Kubernetes 1.19"
           kind_node_image: "kindest/node:v1.19.11@sha256:07db187ae84b4b7de440a73886f008cf903fcf5764ba8106a9fd5243d6f32729"
