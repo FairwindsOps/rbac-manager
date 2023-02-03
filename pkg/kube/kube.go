@@ -18,6 +18,8 @@ package kube
 
 import (
 	"os"
+	"regexp"
+	"strconv"
 
 	"github.com/sirupsen/logrus"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -54,4 +56,30 @@ func GetClientsetOrDie() *kubernetes.Clientset {
 	}
 
 	return clientset
+}
+
+// GetKubeVersion returns the major and minor version of the Kubernetes cluster
+func GetKubeVersion() (major, minor int) {
+	clientset := GetClientsetOrDie()
+	version, err := clientset.ServerVersion()
+	if err != nil {
+		logrus.Error(err, "unable to get Kubernetes version")
+		os.Exit(1)
+	}
+
+	reVersion := regexp.MustCompile(`^\d+`)
+	version.Major = reVersion.FindString(version.Major)
+	version.Minor = reVersion.FindString(version.Minor)
+
+	majorInt, err := strconv.Atoi(version.Major)
+	if err != nil {
+		logrus.Error(err, "unable to convert server major version to int")
+		os.Exit(1)
+	}
+	minorInt, err := strconv.Atoi(version.Minor)
+	if err != nil {
+		logrus.Error(err, "unable to convert server minor version to int")
+		os.Exit(1)
+	}
+	return majorInt, minorInt
 }

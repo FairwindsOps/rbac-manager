@@ -40,7 +40,8 @@ type Reconciler struct {
 var mux = sync.Mutex{}
 
 // ReconcileNamespaceChange reconciles relevant portions of RBAC Definitions
-//   after changes to namespaces within the cluster
+//
+//	after changes to namespaces within the cluster
 func (r *Reconciler) ReconcileNamespaceChange(rbacDef *rbacmanagerv1beta1.RBACDefinition, namespace *v1.Namespace) error {
 	mux.Lock()
 	defer mux.Unlock()
@@ -117,7 +118,8 @@ func (r *Reconciler) ReconcileOwners(ownerRefs []metav1.OwnerReference, kind str
 }
 
 // Reconcile creates, updates, or deletes Kubernetes resources to match
-//   the desired state defined in an RBAC Definition
+//
+//	the desired state defined in an RBAC Definition
 func (r *Reconciler) Reconcile(rbacDef *rbacmanagerv1beta1.RBACDefinition) error {
 	mux.Lock()
 	defer mux.Unlock()
@@ -162,8 +164,8 @@ func (r *Reconciler) reconcileServiceAccounts(requested *[]v1.ServiceAccount) er
 		return err
 	}
 
-	matchingServiceAccounts := []v1.ServiceAccount{}
-	serviceAccountsToCreate := []v1.ServiceAccount{}
+	var matchingServiceAccounts []v1.ServiceAccount
+	var serviceAccountsToCreate []v1.ServiceAccount
 
 	for _, requestedSA := range *requested {
 		alreadyExists := false
@@ -209,11 +211,35 @@ func (r *Reconciler) reconcileServiceAccounts(requested *[]v1.ServiceAccount) er
 
 	for _, serviceAccountToCreate := range serviceAccountsToCreate {
 		logrus.Infof("Creating Service Account: %v", serviceAccountToCreate.Name)
-		_, err := r.Clientset.CoreV1().ServiceAccounts(serviceAccountToCreate.ObjectMeta.Namespace).Create(context.TODO(), &serviceAccountToCreate, metav1.CreateOptions{})
+		_, err = r.Clientset.CoreV1().ServiceAccounts(serviceAccountToCreate.ObjectMeta.Namespace).Create(context.TODO(), &serviceAccountToCreate, metav1.CreateOptions{})
 		if err != nil {
 			logrus.Errorf("Error creating Service Account: %v", err)
 			metrics.ErrorCounter.Inc()
 		} else {
+			_, minor := kube.GetKubeVersion()
+			if minor >= 24 {
+				// Kubernetes 1.24+ requires that after creating a ServiceAccount, create a Secret with a link to it.
+				logrus.Infof("Creating Secret for Service Account: %v", serviceAccountToCreate.Name)
+				_, err = r.Clientset.CoreV1().Secrets(serviceAccountToCreate.ObjectMeta.Namespace).Create(
+					context.TODO(),
+					&v1.Secret{
+						ObjectMeta: metav1.ObjectMeta{
+							Name:      serviceAccountToCreate.Name,
+							Namespace: serviceAccountToCreate.ObjectMeta.Namespace,
+							Annotations: map[string]string{
+								"kubernetes.io/service-account.name": serviceAccountToCreate.Name,
+								"email":                              serviceAccountToCreate.Annotations["email"],
+							},
+						},
+						Type: v1.SecretTypeServiceAccountToken,
+					},
+					metav1.CreateOptions{},
+				)
+				if err != nil {
+					logrus.Errorf("Error creating Secret: %v", err)
+					metrics.ErrorCounter.Inc()
+				}
+			}
 			metrics.ChangeCounter.WithLabelValues("serviceaccounts", "create").Inc()
 		}
 	}
@@ -228,8 +254,8 @@ func (r *Reconciler) reconcileClusterRoleBindings(requested *[]rbacv1.ClusterRol
 		return err
 	}
 
-	matchingClusterRoleBindings := []rbacv1.ClusterRoleBinding{}
-	clusterRoleBindingsToCreate := []rbacv1.ClusterRoleBinding{}
+	var matchingClusterRoleBindings []rbacv1.ClusterRoleBinding
+	var clusterRoleBindingsToCreate []rbacv1.ClusterRoleBinding
 
 	for _, requestedCRB := range *requested {
 		alreadyExists := false
@@ -293,8 +319,8 @@ func (r *Reconciler) reconcileRoleBindings(requested *[]rbacv1.RoleBinding) erro
 		return err
 	}
 
-	matchingRoleBindings := []rbacv1.RoleBinding{}
-	roleBindingsToCreate := []rbacv1.RoleBinding{}
+	var matchingRoleBindings []rbacv1.RoleBinding
+	var roleBindingsToCreate []rbacv1.RoleBinding
 
 	for _, requestedRB := range *requested {
 		alreadyExists := false

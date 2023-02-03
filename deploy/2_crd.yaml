@@ -99,9 +99,12 @@ spec:
                           type: string
                         namespace:
                           type: string
+                        email:
+                          type: string
                       required:
                         - name
                         - kind
+                        - email
                     type: array
                 required:
                   - name

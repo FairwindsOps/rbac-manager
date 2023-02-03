@@ -26,6 +26,7 @@ type Subject struct {
 	rbacv1.Subject
 	ImagePullSecrets             []string `json:"imagePullSecrets"`
 	AutomountServiceAccountToken *bool    `json:"automountServiceAccountToken,omitempty"`
+	Email                        string   `json:"email"`
 }
 
 // RBACBinding is a specification for a RBACBinding resource

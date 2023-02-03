@@ -76,6 +76,7 @@ func (p *Parser) parseRBACBinding(rbacBinding rbacmanagerv1beta1.RBACBinding, na
 					Namespace:       requestedSubject.Namespace,
 					OwnerReferences: p.ownerRefs,
 					Labels:          kube.Labels,
+					Annotations:     map[string]string{"email": requestedSubject.Email},
 				},
 				ImagePullSecrets:             pullsecrets,
 				AutomountServiceAccountToken: requestedSubject.AutomountServiceAccountToken,
