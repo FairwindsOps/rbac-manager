@@ -68,7 +68,7 @@ jobs:
       - image: goreleaser/goreleaser:v1.5.0
     steps:
       - checkout
-      - setup_remote_docker:
+      - setup_remote_docker
       - run: goreleaser --snapshot --skip-sign
       - run: mkdir -p /tmp/workspace/docker_save/
       - run: docker save quay.io/reactiveops/rbac-manager:${CIRCLE_SHA1}-amd64 > /tmp/workspace/docker_save/rbac-manager_${CIRCLE_SHA1}-amd64.tar
