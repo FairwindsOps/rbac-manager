@@ -10,8 +10,8 @@ references:
       name: install hashicorp vault
       command: |
         cd /tmp
-        curl -LO https://releases.hashicorp.com/vault/1.9.3/vault_1.9.3_linux_amd64.zip
-        unzip vault_1.9.3_linux_amd64.zip
+        curl -LO https://releases.hashicorp.com/vault/1.12.5/vault_1.12.5_linux_amd64.zip
+        unzip vault_1.12.5_linux_amd64.zip
         mv vault /usr/bin/vault
         apk --update add yq
   e2e_configuration: &e2e_configuration
@@ -32,22 +32,25 @@ references:
 jobs:
   test:
     docker:
-      - image: circleci/golang:1.17
-
-    working_directory: /go/src/github.com/fairwindsops/rbac-manager
+      - image: cimg/go:1.20
+    working_directory: /home/circleci/go/src/github.com/fairwindsops/rbac-manager
     steps:
       - checkout
-      - run: go get -u golang.org/x/lint/golint
-      - run: go list ./... | grep -v vendor | xargs golint -set_exit_status
-      - run: go list ./... | grep -v vendor | xargs go vet
       - run: go test ./... -coverprofile=coverage.txt -covermode=atomic
 
+  lint:
+    docker:
+      - image: golangci/golangci-lint:v1.52.2
+    steps:
+      - checkout
+      - run: golangci-lint run --timeout=10m -v
+
   build_and_release:
-    working_directory: /go/src/github.com/fairwindsops/rbac-manager
+    working_directory: /home/circleci/go/src/github.com/fairwindsops/rbac-manager
     resource_class: large
     shell: /bin/bash
     docker:
-      - image: goreleaser/goreleaser:v1.5.0
+      - image: goreleaser/goreleaser:v1.17.2
         environment:
           GO111MODULE: "on"
     steps:
@@ -62,10 +65,10 @@ jobs:
           password-variable: REACTIVEOPS_QUAY_TOKEN
       - run: goreleaser
   snapshot:
-    working_directory: /go/src/github.com/fairwindsops/rbac-manager
+    working_directory: /home/circleci/go/src/github.com/fairwindsops/rbac-manager
     resource_class: large
     docker:
-      - image: goreleaser/goreleaser:v1.5.0
+      - image: goreleaser/goreleaser:v1.17.2
     steps:
       - checkout
       - setup_remote_docker
@@ -86,10 +89,12 @@ workflows:
   tests:
     jobs:
       - test
+      - lint
       - snapshot:
           context: org-global
           requires:
             - test
+            - lint
       - rok8s/kubernetes_e2e_tests:
           name: "End-To-End Kubernetes 1.19"
           kind_node_image: "kindest/node:v1.19.11@sha256:07db187ae84b4b7de440a73886f008cf903fcf5764ba8106a9fd5243d6f32729"
