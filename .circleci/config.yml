@@ -43,7 +43,7 @@ jobs:
       - image: golangci/golangci-lint:v1.52.2
     steps:
       - checkout
-      - run: golangci-lint run -v
+      - run: golangci-lint run --timeout=10m -v
 
   build_and_release:
     working_directory: /home/circleci/go/src/github.com/fairwindsops/rbac-manager
