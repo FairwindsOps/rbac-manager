@@ -33,7 +33,7 @@ jobs:
   test:
     docker:
       - image: cimg/go:1.20
-    working_directory: /hom/circleci/go/src/github.com/fairwindsops/rbac-manager
+    working_directory: /home/circleci/go/src/github.com/fairwindsops/rbac-manager
     steps:
       - checkout
       - run: go test ./... -coverprofile=coverage.txt -covermode=atomic
