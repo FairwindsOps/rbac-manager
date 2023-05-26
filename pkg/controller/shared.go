@@ -62,9 +62,7 @@ func addController(mgr manager.Manager, r reconcile.Reconciler, name string, cTy
 	}
 
 	// Watch for changes to Resource
-	err = c.Watch(&source.Kind{
-		Type: cType,
-	}, &handler.EnqueueRequestForObject{})
+	err = c.Watch(source.Kind(nil, cType), &handler.EnqueueRequestForObject{})
 
 	if err != nil {
 		return err
