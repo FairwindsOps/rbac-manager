@@ -1,17 +1,17 @@
 <div align="center">
-    <img src="/img/rbac-manager-logo.svg" height="200" alt="RBAC Manager" style="padding-bottom: 20px" />
+    <img src="/img/rbac-manager-logo.svg" height="200" alt="RBAC Manager" style="padding-bottom: 20px" class="no-border">
     <br>
     <a href="https://join.slack.com/t/fairwindscommunity/shared_invite/zt-e3c6vj4l-3lIH6dvKqzWII5fSSFDi1g">
-      <img src="https://img.shields.io/static/v1?label=Slack&message=Join+our+Community&color=4a154b&logo=slack">
+      <img src="https://img.shields.io/static/v1?label=Slack&message=Join+our+Community&color=4a154b&logo=slack" class="no-border">
     </a>
     <a href="https://github.com/FairwindsOps/rbac-manager/releases">
-        <img src="https://img.shields.io/github/v/release/FairwindsOps/rbac-manager">
+        <img src="https://img.shields.io/github/v/release/FairwindsOps/rbac-manager" class="no-border">
     </a>
     <a href="https://goreportcard.com/report/github.com/FairwindsOps/rbac-manager">
-        <img src="https://goreportcard.com/badge/github.com/FairwindsOps/rbac-manager">
+        <img src="https://goreportcard.com/badge/github.com/FairwindsOps/rbac-manager" class="no-border">
     </a>
     <a href="https://insights.fairwinds.com/gh/FairwindsOps/rbac-manager">
-      <img src="https://insights.fairwinds.com/v0/gh/FairwindsOps/polaris/badge.svg">
+      <img src="https://insights.fairwinds.com/v0/gh/FairwindsOps/polaris/badge.svg" class="no-border">
     </a>
 </div>
 
