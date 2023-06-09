@@ -1,5 +1,6 @@
 .pre-commit-config.yaml
 /rbac-manager
+docs/README.md
 
 # Binaries for programs and plugins
 *.exe
