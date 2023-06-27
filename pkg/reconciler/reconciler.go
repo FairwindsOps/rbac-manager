@@ -40,7 +40,8 @@ type Reconciler struct {
 var mux = sync.Mutex{}
 
 // ReconcileNamespaceChange reconciles relevant portions of RBAC Definitions
-//   after changes to namespaces within the cluster
+//
+//	after changes to namespaces within the cluster
 func (r *Reconciler) ReconcileNamespaceChange(rbacDef *rbacmanagerv1beta1.RBACDefinition, namespace *v1.Namespace) error {
 	mux.Lock()
 	defer mux.Unlock()
@@ -117,7 +118,8 @@ func (r *Reconciler) ReconcileOwners(ownerRefs []metav1.OwnerReference, kind str
 }
 
 // Reconcile creates, updates, or deletes Kubernetes resources to match
-//   the desired state defined in an RBAC Definition
+//
+//	the desired state defined in an RBAC Definition
 func (r *Reconciler) Reconcile(rbacDef *rbacmanagerv1beta1.RBACDefinition) error {
 	mux.Lock()
 	defer mux.Unlock()

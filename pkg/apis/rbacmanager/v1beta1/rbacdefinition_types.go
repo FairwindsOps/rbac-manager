@@ -23,7 +23,7 @@ import (
 
 // Subject is an expansion on the rbacv1.Subject to allow definition of ImagePullSecrets for a Service Account
 type Subject struct {
-	rbacv1.Subject `json:",inline"`
+	rbacv1.Subject               `json:",inline"`
 	ImagePullSecrets             []string `json:"imagePullSecrets"`
 	AutomountServiceAccountToken *bool    `json:"automountServiceAccountToken,omitempty"`
 }
