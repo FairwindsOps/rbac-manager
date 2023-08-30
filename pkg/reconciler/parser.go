@@ -18,6 +18,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/sirupsen/logrus"
 	v1 "k8s.io/api/core/v1"
@@ -38,6 +39,8 @@ type Parser struct {
 	parsedRoleBindings        []rbacv1.RoleBinding
 	parsedServiceAccounts     []v1.ServiceAccount
 }
+
+const ManagedPullSecretsAnnotationKey string = "rbacmanager.reactiveops.io/managed-pull-secrets"
 
 // Parse determines the desired Kubernetes resources an RBAC Definition refers to
 func (p *Parser) Parse(rbacDef rbacmanagerv1beta1.RBACDefinition) error {
@@ -70,12 +73,16 @@ func (p *Parser) parseRBACBinding(rbacBinding rbacmanagerv1beta1.RBACBinding, na
 			for _, secret := range requestedSubject.ImagePullSecrets {
 				pullsecrets = append(pullsecrets, v1.LocalObjectReference{Name: secret})
 			}
+			annotations := make(map[string]string)
+			managedPullSecrets := strings.Join(requestedSubject.ImagePullSecrets, ",")
+			annotations[ManagedPullSecretsAnnotationKey] = managedPullSecrets
 			p.parsedServiceAccounts = append(p.parsedServiceAccounts, v1.ServiceAccount{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:            requestedSubject.Name,
 					Namespace:       requestedSubject.Namespace,
 					OwnerReferences: p.ownerRefs,
 					Labels:          kube.Labels,
+					Annotations:     annotations,
 				},
 				ImagePullSecrets:             pullsecrets,
 				AutomountServiceAccountToken: requestedSubject.AutomountServiceAccountToken,
