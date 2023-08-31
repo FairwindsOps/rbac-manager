@@ -239,16 +239,16 @@ func TestSAMatches(t *testing.T) {
 		t.Fatal("SA 1 should not match SA 3")
 	}
 
-	if !saMatches(&sa1, &sa4) {
-		t.Fatal("SA 1 should match SA 4")
+	if !saMatches(&sa4, &sa1) {
+		t.Fatal("SA 4 should match SA 1")
 	}
 
 	if saMatches(&sa1, &sa5) {
 		t.Fatal("SA 1 should not match SA 3")
 	}
 
-	if saMatches(&sa3, &sa4) {
-		t.Fatal("SA 3 should not match SA 4")
+	if saMatches(&sa4, &sa3) {
+		t.Fatal("SA 4 should not match SA 3")
 	}
 
 	if saMatches(&sa5, &sa3) {

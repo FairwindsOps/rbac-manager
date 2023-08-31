@@ -15,8 +15,6 @@
 package reconciler
 
 import (
-	"strings"
-
 	v1 "k8s.io/api/core/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -70,10 +68,10 @@ func saMatches(existingSA *v1.ServiceAccount, requestedSA *v1.ServiceAccount) bo
 		return false
 	}
 
-	for _, requestedSAManagedPullSecret := range strings.Split(requestedSAManagedPullSecretsAnnotation, ",") {
+	for _, requestedSAImagePullSecrets := range requestedSA.ImagePullSecrets {
 		matches := false
 		for _, existingSAPullSecret := range existingSA.ImagePullSecrets {
-			if requestedSAManagedPullSecret == existingSAPullSecret.Name {
+			if requestedSAImagePullSecrets.Name == existingSAPullSecret.Name {
 				matches = true
 			}
 		}
