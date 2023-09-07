@@ -1,5 +1,11 @@
 BASE_DIR=$(dirname $BASH_SOURCE)
 
+printf "\n\n"
+echo "********************************************************************"
+echo "** Test clusterrolebindings **"
+echo "********************************************************************"
+printf "\n\n"
+
 # Execute the setup, then execute the tests just if the setup contains no errors.
 # Finally always execute the cleanup and return the whole error of the steps
 error=$((0))
