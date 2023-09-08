@@ -26,8 +26,8 @@ echo "** END LOADING IMAGE **"
 echo "********************************************************************"
 printf "\n\n"
 
-yq w -i deploy/3_deployment.yaml 'spec.template.spec.containers[0].image' "quay.io/reactiveops/rbac-manager:${CI_SHA1}-amd64"
-yq w -i deploy/3_deployment.yaml 'spec.template.spec.containers[0].imagePullPolicy' "IfNotPresent"
+yq -i '.spec.template.spec.containers[0].image = "quay.io/reactiveops/rbac-manager:${CI_SHA1}-amd64"' deploy/3_deployment.yaml
+yq -i '.spec.template.spec.containers[0].imagePullPolicy = "IfNotPresent"' deploy/3_deployment.yaml
 cat deploy/3_deployment.yaml
 
 docker cp deploy e2e-command-runner:/
