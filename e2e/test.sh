@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BASE_DIR=$(dirname $BASH_SOURCE)
+BASE_DIR="$( cd -- "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
 
 printf "\n\n"
 echo "**************************"
