@@ -1,4 +1,4 @@
-BASE_DIR="$( cd -- "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
+BASE_DIR=$(dirname $BASH_SOURCE)
 
 printf "\n\n"
 echo "********************************************************************"
