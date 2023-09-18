@@ -32,3 +32,4 @@ yq -i '.spec.template.spec.containers[0].imagePullPolicy = "IfNotPresent"' deplo
 cat deploy/3_deployment.yaml
 
 docker cp deploy e2e-command-runner:/
+docker cp e2e/rbacdefinition e2e-command-runner:/
