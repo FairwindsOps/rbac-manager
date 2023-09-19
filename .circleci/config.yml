@@ -1,7 +1,7 @@
 version: 2.1
 
 orbs:
-  rok8s: fairwinds/rok8s-scripts@11
+  rok8s: fairwinds/rok8s-scripts@13
   oss-docs: fairwinds/oss-docs@0
 
 references:
@@ -18,7 +18,7 @@ references:
   e2e_configuration: &e2e_configuration
     pre_script: e2e/pre.sh
     script: e2e/test.sh
-    command_runner_image: quay.io/reactiveops/ci-images:v12-buster
+    command_runner_image: quay.io/reactiveops/ci-images:v13-buster
     enable_docker_layer_caching: true
     attach-workspace: true
     requires:
