@@ -15,8 +15,6 @@
 package reconciler
 
 import (
-	"reflect"
-
 	v1 "k8s.io/api/core/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -53,13 +51,36 @@ func rbMatches(existingRB *rbacv1.RoleBinding, requestedRB *rbacv1.RoleBinding) 
 }
 
 func saMatches(existingSA *v1.ServiceAccount, requestedSA *v1.ServiceAccount) bool {
-	if metaMatches(&existingSA.ObjectMeta, &requestedSA.ObjectMeta) {
-		if len(requestedSA.ImagePullSecrets) < 1 && existingSA.ImagePullSecrets == nil {
-			return true
-		}
-		return reflect.DeepEqual(&existingSA.ImagePullSecrets, &requestedSA.ImagePullSecrets)
+	if !metaMatches(&existingSA.ObjectMeta, &requestedSA.ObjectMeta) {
+		return false
 	}
-	return false
+	requestedSAManagedPullSecretsAnnotation, exists := requestedSA.Annotations[ManagedPullSecretsAnnotationKey]
+	if !exists {
+		return false
+	}
+
+	existingSAManagedPullSecretsAnnotation, exists := existingSA.Annotations[ManagedPullSecretsAnnotationKey]
+	if !exists {
+		return false
+	}
+
+	if requestedSAManagedPullSecretsAnnotation != existingSAManagedPullSecretsAnnotation {
+		return false
+	}
+
+	for _, requestedSAImagePullSecrets := range requestedSA.ImagePullSecrets {
+		matches := false
+		for _, existingSAPullSecret := range existingSA.ImagePullSecrets {
+			if requestedSAImagePullSecrets.Name == existingSAPullSecret.Name {
+				matches = true
+			}
+		}
+		if !matches {
+			return false
+		}
+	}
+
+	return true
 }
 
 func metaMatches(existingMeta *metav1.ObjectMeta, requestedMeta *metav1.ObjectMeta) bool {

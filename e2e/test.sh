@@ -1,6 +1,6 @@
 #!/bin/bash
 
-
+BASE_DIR=$(dirname $BASH_SOURCE)
 
 printf "\n\n"
 echo "**************************"
@@ -20,36 +20,7 @@ printf "\n\n"
 kubectl apply -f deploy/
 kubectl -n rbac-manager wait deployment/rbac-manager --timeout=120s --for condition=available
 
-
-printf "\n\n"
-echo "********************************************************************"
-echo "** Test rbacDefinition **"
-echo "********************************************************************"
-printf "\n\n"
-kubectl create clusterrole test-rbac-manager --verb="create" --resource=deployment
-
-cat <<EOF | kubectl create -f -
-apiVersion: rbacmanager.reactiveops.io/v1beta1
-kind: RBACDefinition
-metadata:
-  name: rbac-manager-definition
-rbacBindings:
-  - name: admins
-    subjects:
-      - kind: ServiceAccount
-        name: test-rbac-manager
-        namespace: rbac-manager
-    clusterRoleBindings:
-      - clusterRole: test-rbac-manager
-EOF
-
-# wait up to 2 minutes for rbac-manager to create the binding
-counter=0
-until kubectl get clusterrolebinding/rbac-manager-definition-admins-test-rbac-manager; do
-  let "counter=counter+1"
-  sleep 10
-  if [ $counter -gt 11 ]; then
-    break
-  fi
-done
-kubectl auth can-i create deployments --as=system:serviceaccount:rbac-manager:test-rbac-manager
+bash "$BASE_DIR/rbacdefinition/run.sh"
+if [ $? -ne 0 ]; then
+  exit 1
+fi
