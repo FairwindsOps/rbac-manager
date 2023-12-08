@@ -1,6 +1,3 @@
-kubectl create clusterrole test-rbac-manager --verb="create" --resource=deployment
-
-cat <<EOF | kubectl create -f -
 apiVersion: rbacmanager.reactiveops.io/v1beta1
 kind: RBACDefinition
 metadata:
@@ -13,4 +10,3 @@ rbacBindings:
         namespace: rbac-manager
     clusterRoleBindings:
       - clusterRole: test-rbac-manager
-EOF
