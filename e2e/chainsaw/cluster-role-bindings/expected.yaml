@@ -1,0 +1,17 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  labels:
+    rbac-manager: reactiveops
+  ownerReferences:
+  - apiVersion: rbacmanager.reactiveops.io/v1beta1
+    kind: RBACDefinition
+    name: rbac-manager-definition
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: test-rbac-manager
+subjects:
+- kind: ServiceAccount
+  name: test-rbac-manager
+  namespace: rbac-manager
