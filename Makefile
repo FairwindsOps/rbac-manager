@@ -10,7 +10,7 @@ VERSION := "dev"
 all: test
 test:
 	@printf "Linter:\n"
-	/home/stevie/go/bin/golangci-lint run
+	golangci-lint run
 	@printf "\n\nTests:\n\n"
 	$(GOCMD) test -v -coverprofile coverage.txt -covermode=atomic ./...
 	$(GOCMD) vet ./... 2> govet-report.out
