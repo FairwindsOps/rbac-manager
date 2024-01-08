@@ -80,7 +80,7 @@ var saTestCases = []struct {
 			ImagePullSecrets: []string{"secret-z", "secret-a"},
 		}},
 		[]v1.ServiceAccount{{
-			ObjectMeta:       metav1.ObjectMeta{Name: "robot", Namespace: "default"},
+			ObjectMeta:       metav1.ObjectMeta{Name: "robot", Namespace: "default", Annotations: map[string]string{ManagedPullSecretsAnnotationKey: "secret-z,secret-a"}},
 			ImagePullSecrets: []v1.LocalObjectReference{{Name: "secret-a"}, {Name: "secret-z"}},
 		}},
 	},
@@ -96,5 +96,59 @@ var saTestCases = []struct {
 			{ObjectMeta: metav1.ObjectMeta{Name: "robot-a", Namespace: "non-default"}},
 			{ObjectMeta: metav1.ObjectMeta{Name: "robot-a", Namespace: "default"}},
 		},
+	},
+	{
+		"Annotations are passed",
+		[]rbacmanagerv1beta1.Subject{{
+			Subject:  rbacv1.Subject{Kind: rbacv1.ServiceAccountKind, Name: "robot", Namespace: "default"},
+			Metadata: &metav1.ObjectMeta{Annotations: map[string]string{"annotation-a": "annotation-value-a", "annotation-b": "annotation-value-b"}},
+		}},
+		[]v1.ServiceAccount{{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:        "robot",
+				Namespace:   "default",
+				Annotations: map[string]string{"annotation-a": "annotation-value-a", "annotation-b": "annotation-value-b"},
+			},
+		}},
+	},
+	{
+		"RBAC manager annotations may not be set directly",
+		[]rbacmanagerv1beta1.Subject{{
+			Subject:  rbacv1.Subject{Kind: rbacv1.ServiceAccountKind, Name: "robot", Namespace: "default"},
+			Metadata: &metav1.ObjectMeta{Annotations: map[string]string{ManagedPullSecretsAnnotationKey: "some-explicit-value", "annotation-a": "annotation-value-a", "annotation-b": "annotation-value-b"}},
+		}},
+		[]v1.ServiceAccount{{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:        "robot",
+				Namespace:   "default",
+				Annotations: map[string]string{"annotation-a": "annotation-value-a", "annotation-b": "annotation-value-b"},
+			},
+		}},
+	},
+	{
+		"RBAC manager annotations may not be changed by overwriting it",
+		[]rbacmanagerv1beta1.Subject{{
+			Subject:          rbacv1.Subject{Kind: rbacv1.ServiceAccountKind, Name: "robot", Namespace: "default"},
+			Metadata:         &metav1.ObjectMeta{Annotations: map[string]string{ManagedPullSecretsAnnotationKey: "some-explicit-value"}},
+			ImagePullSecrets: []string{"secret-z", "secret-a"},
+		}},
+		[]v1.ServiceAccount{{
+			ObjectMeta:       metav1.ObjectMeta{Name: "robot", Namespace: "default", Annotations: map[string]string{ManagedPullSecretsAnnotationKey: "secret-z,secret-a"}},
+			ImagePullSecrets: []v1.LocalObjectReference{{Name: "secret-a"}, {Name: "secret-z"}},
+		}},
+	},
+	{
+		"Labels are passed",
+		[]rbacmanagerv1beta1.Subject{{
+			Subject:  rbacv1.Subject{Kind: rbacv1.ServiceAccountKind, Name: "robot", Namespace: "default"},
+			Metadata: &metav1.ObjectMeta{Labels: map[string]string{"label-a": "label-value-a", "label-b": "label-value-b"}},
+		}},
+		[]v1.ServiceAccount{{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "robot",
+				Namespace: "default",
+				Labels:    map[string]string{"label-a": "label-value-a", "label-b": "label-value-b"},
+			},
+		}},
 	},
 }

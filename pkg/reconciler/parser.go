@@ -24,7 +24,7 @@ import (
 	v1 "k8s.io/api/core/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/labels"
+	machineryLabels "k8s.io/apimachinery/pkg/labels"
 	"k8s.io/client-go/kubernetes"
 
 	rbacmanagerv1beta1 "github.com/fairwindsops/rbac-manager/pkg/apis/rbacmanager/v1beta1"
@@ -76,12 +76,26 @@ func (p *Parser) parseRBACBinding(rbacBinding rbacmanagerv1beta1.RBACBinding, na
 			annotations := make(map[string]string)
 			managedPullSecrets := strings.Join(requestedSubject.ImagePullSecrets, ",")
 			annotations[ManagedPullSecretsAnnotationKey] = managedPullSecrets
+			labels := make(map[string]string)
+			for key, value := range kube.Labels {
+				labels[key] = value
+			}
+			if requestedSubject.Metadata != nil {
+				for key, value := range requestedSubject.Metadata.Labels {
+					labels[key] = value
+				}
+				for key, value := range requestedSubject.Metadata.Annotations {
+					if key != ManagedPullSecretsAnnotationKey {
+						annotations[key] = value
+					}
+				}
+			}
 			p.parsedServiceAccounts = append(p.parsedServiceAccounts, v1.ServiceAccount{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:            requestedSubject.Name,
 					Namespace:       requestedSubject.Namespace,
 					OwnerReferences: p.ownerRefs,
-					Labels:          kube.Labels,
+					Labels:          labels,
 					Annotations:     annotations,
 				},
 				ImagePullSecrets:             pullsecrets,
@@ -173,7 +187,7 @@ func (p *Parser) parseRoleBinding(
 
 		for _, namespace := range namespaces.Items {
 			// Lazy way to marshal map[] of labels in to a Set, which we can then match on.
-			if selector.Matches(labels.Merge(namespace.Labels, namespace.Labels)) {
+			if selector.Matches(machineryLabels.Merge(namespace.Labels, namespace.Labels)) {
 				logrus.Debugf("Adding Role Binding With Dynamic Namespace %v", namespace.Name)
 
 				om := objectMeta

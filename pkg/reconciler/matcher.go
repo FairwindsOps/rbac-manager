@@ -96,6 +96,18 @@ func metaMatches(existingMeta *metav1.ObjectMeta, requestedMeta *metav1.ObjectMe
 		return false
 	}
 
+	for labelKey, labelValue := range requestedMeta.Labels {
+		if existingMeta.Labels[labelKey] != labelValue {
+			return false
+		}
+	}
+
+	for annotationKey, annotationValue := range requestedMeta.Annotations {
+		if existingMeta.Annotations[annotationKey] != annotationValue {
+			return false
+		}
+	}
+
 	return true
 }
 

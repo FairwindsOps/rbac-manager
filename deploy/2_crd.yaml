@@ -99,6 +99,15 @@ spec:
                           type: string
                         namespace:
                           type: string
+                        metadata:
+                          type: object
+                          properties:
+                            annotations:
+                              type: object
+                              additionalProperties: true
+                            labels:
+                              type: object
+                              additionalProperties: true
                       required:
                         - name
                         - kind

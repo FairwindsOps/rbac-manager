@@ -230,6 +230,30 @@ func TestSAMatches(t *testing.T) {
 		},
 		ImagePullSecrets: []v1.LocalObjectReference{{Name: "fairwinds"}},
 	}
+	sa6 := v1.ServiceAccount{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:            "sample-name",
+			Namespace:       "sample",
+			OwnerReferences: generateOwnerReferences("foo"),
+			Annotations:     map[string]string{"annotation-a": "annotation-value-a"},
+		},
+	}
+	sa7 := v1.ServiceAccount{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:            "sample-name",
+			Namespace:       "sample",
+			OwnerReferences: generateOwnerReferences("foo"),
+			Labels:          map[string]string{"label-a": "label-value-a"},
+		},
+	}
+	sa8 := v1.ServiceAccount{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:            "sample-name",
+			Namespace:       "sample",
+			OwnerReferences: generateOwnerReferences("foo"),
+			Labels:          map[string]string{"label-a": "label-value-a", "label-b": "label-value-b"},
+		},
+	}
 
 	if !saMatches(&sa1, &sa2) {
 		t.Fatal("SA 1 should match SA 2")
@@ -247,6 +271,10 @@ func TestSAMatches(t *testing.T) {
 		t.Fatal("SA 1 should not match SA 3")
 	}
 
+	if saMatches(&sa1, &sa6) {
+		t.Fatal("SA 1 should not match SA 6")
+	}
+
 	if saMatches(&sa4, &sa3) {
 		t.Fatal("SA 4 should not match SA 3")
 	}
@@ -257,5 +285,17 @@ func TestSAMatches(t *testing.T) {
 
 	if saMatches(&sa5, &sa4) {
 		t.Fatal("SA 5 should not match SA 4")
+	}
+
+	if saMatches(&sa5, &sa6) {
+		t.Fatal("SA 5 should not match SA 6")
+	}
+
+	if saMatches(&sa6, &sa7) {
+		t.Fatal("SA 6 should not match SA 7")
+	}
+
+	if saMatches(&sa7, &sa8) {
+		t.Fatal("SA 7 should not match SA 8")
 	}
 }

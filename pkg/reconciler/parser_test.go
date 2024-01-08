@@ -373,6 +373,9 @@ func expectParsedSA(t *testing.T, p Parser, expected []corev1.ServiceAccount) {
 				matchFound = true
 				assert.ElementsMatch(t, actualSa.ImagePullSecrets, expectedSa.ImagePullSecrets)
 				assert.EqualValues(t, expectedSa.AutomountServiceAccountToken, actualSa.AutomountServiceAccountToken)
+				if !metaMatches(&actualSa.ObjectMeta, &expectedSa.ObjectMeta) {
+					t.Fatal("ObjectMeta is not matching")
+				}
 				break
 			}
 		}
