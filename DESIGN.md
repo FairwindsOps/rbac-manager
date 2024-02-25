@@ -14,11 +14,11 @@ Here the rbacDefinition is parsed into ServiceAccounts, ClusterRoleBindings, and
 
 ## pkg/controller
 
-This package contains the watchers of Namesapces and RbacDefinitions, which are the primary things that can be used to trigger rbac-manager actions.
+This package contains the watchers of Namespaces and RbacDefinitions, which are the primary things that can be used to trigger rbac-manager actions.
 
 ## pkg/reconciler/reconciler.go
 
-This contains the functions that reconcile Namespaces, ServiceAccounts, ClusterRoleBindings, RoleBindings, and OnwerReferences
+This contains the functions that reconcile Namespaces, ServiceAccounts, ClusterRoleBindings, RoleBindings, and OwnerReferences
 
 ## pkg/apis
 
