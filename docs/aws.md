@@ -94,7 +94,7 @@ With this approach, all IAM users are mapped to Kubernetes users with the full A
 rbac-lookup system:authenticated
 ```
 
-To grant specific permissions to users with RBAC Manager we can use an RBAC Definition:
+To grant specific permissions to users with RBAC Manager, we can use an RBAC Definition:
 
 ```yaml
 apiVersion: rbacmanager.reactiveops.io/v1beta1

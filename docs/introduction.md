@@ -70,7 +70,7 @@ This approach is incredibly helpful for 2 specific cases:
 
 #### 1. Updating a Role Binding
 
-Unfortunately there's no way to change the role an existing Kubernetes Role Binding refers to. That means that changing a role granted to a user involves deleting and recreating a Kubernetes Role Binding. With RBAC Manager, that process happens automatically when an RBAC Definition is updated.
+Unfortunately, there's no way to change the role an existing Kubernetes Role Binding refers to. That means that changing a role granted to a user involves deleting and recreating a Kubernetes Role Binding. With RBAC Manager, that process happens automatically when an RBAC Definition is updated.
 
 #### 2. Detecting Role Binding Removal
 
