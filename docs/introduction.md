@@ -124,7 +124,7 @@ RBAC Definitions can manage Cluster Role Bindings, Role Bindings, and Service Ac
 
 ### Cloud Specific Authentication Tips
 
-To properly configure authorization with RBAC in Kubernetes, you first need to have good authentication. We've provided some helpful documentation for working with authentication on [AWS](aws.md), [GKE](gke.md), and [Azure](azure.md).
+To properly configure authorization with RBAC in Kubernetes, you first need to have good authentication. We've provided some helpful documentation for working with authentication on [AWS](aws.md), [GKE](gke.md), and [Azure](aks.md).
 
 ### Better Visibility With RBAC Lookup
 
