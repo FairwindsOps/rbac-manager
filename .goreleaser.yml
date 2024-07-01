@@ -24,7 +24,7 @@ builds:
       - 7
 signs:
 - cmd: cosign
-  args: ["sign-blob", "--key=hashivault://cosign", "-output-signature=${signature}", "${artifact}"]
+  args: ["sign-blob", "--key=hashivault://cosign", "-output-signature=${signature}", "${artifact}", "--yes"]
   artifacts: checksum
 dockers:
 - image_templates:
