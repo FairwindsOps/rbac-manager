@@ -34,7 +34,7 @@ references:
 jobs:
   test:
     docker:
-      - image: cimg/go:1.22
+      - image: cimg/go:1.24
     working_directory: /home/circleci/go/src/github.com/fairwindsops/rbac-manager
     steps:
       - checkout
@@ -42,7 +42,7 @@ jobs:
 
   lint:
     docker:
-      - image: golangci/golangci-lint:v1.59.1
+      - image: golangci/golangci-lint:v1.64.8
     steps:
       - checkout
       - run: golangci-lint run --timeout=10m -v
@@ -98,16 +98,16 @@ workflows:
             - test
             - lint
       - rok8s/kubernetes_e2e_tests:
-          name: "End-To-End Kubernetes 1.28"
-          kind_node_image: "kindest/node:v1.28.9@sha256:dca54bc6a6079dd34699d53d7d4ffa2e853e46a20cd12d619a09207e35300bd0"
-          <<: *chainsaw_configuration
-      - rok8s/kubernetes_e2e_tests:
           name: "End-To-End Kubernetes 1.29"
           kind_node_image: "kindest/node:v1.29.4@sha256:3abb816a5b1061fb15c6e9e60856ec40d56b7b52bcea5f5f1350bc6e2320b6f8"
           <<: *chainsaw_configuration
       - rok8s/kubernetes_e2e_tests:
           name: "End-To-End Kubernetes 1.30"
           kind_node_image: "kindest/node:v1.30.0@sha256:047357ac0cfea04663786a612ba1eaba9702bef25227a794b52890dd8bcd692e"
+          <<: *chainsaw_configuration
+      - rok8s/kubernetes_e2e_tests:
+          name: "End-To-End Kubernetes 1.31"
+          kind_node_image: "kindest/node:v1.31.9@sha256:b94a3a6c06198d17f59cca8c6f486236fa05e2fb359cbd75dabbfc348a10b211"
           <<: *chainsaw_configuration
   release:
     jobs:
