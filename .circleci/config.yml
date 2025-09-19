@@ -43,6 +43,7 @@ jobs:
   lint:
     docker:
       - image: golangci/golangci-lint:v1.64.8
+    resource_class: large
     steps:
       - checkout
       - run: golangci-lint run --timeout=10m -v
