@@ -18,8 +18,8 @@ package watcher
 
 import (
 	"context"
+	"log/slog"
 
-	"github.com/sirupsen/logrus"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/apimachinery/pkg/watch"
@@ -33,7 +33,7 @@ func watchServiceAccounts(clientset *kubernetes.Clientset) {
 	watcher, err := clientset.CoreV1().ServiceAccounts("").Watch(context.TODO(), kube.ListOptions)
 
 	if err != nil {
-		logrus.Error(err, "unable to watch Service Accounts")
+		slog.Error("unable to watch Service Accounts", "error", err)
 		runtime.HandleError(err)
 	}
 
@@ -42,9 +42,9 @@ func watchServiceAccounts(clientset *kubernetes.Clientset) {
 	for event := range ch {
 		sa, ok := event.Object.(*corev1.ServiceAccount)
 		if !ok {
-			logrus.Error("Could not parse Service Account")
+			slog.Error("Could not parse Service Account")
 		} else if event.Type == watch.Modified || event.Type == watch.Deleted {
-			logrus.Debugf("Reconciling RBACDefinition for %s ServiceAccount after %s event", sa.Name, event.Type)
+			slog.Debug("Reconciling RBACDefinition for ServiceAccount", "name", sa.Name, "event", event.Type)
 			r := reconciler.Reconciler{Clientset: kube.GetClientsetOrDie()}
 			_ = r.ReconcileOwners(sa.OwnerReferences, "ServiceAccount")
 		}

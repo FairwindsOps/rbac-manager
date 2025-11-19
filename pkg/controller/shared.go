@@ -17,7 +17,8 @@ limitations under the License.
 package controller
 
 import (
-	"github.com/sirupsen/logrus"
+	"log/slog"
+
 	corev1 "k8s.io/api/core/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
@@ -38,7 +39,7 @@ func Add(mgr manager.Manager) error {
 	err = addController(mgr, newRbacDefReconciler(mgr), "rbacdefinition", rbacDef)
 
 	if err != nil {
-		logrus.Errorf("Error adding RBAC Definition reconciler")
+		slog.Error("Error adding RBAC Definition reconciler", "error", err)
 		return err
 	}
 
@@ -46,7 +47,7 @@ func Add(mgr manager.Manager) error {
 	err = addController(mgr, newNamespaceReconciler(mgr), "namespace", namespace)
 
 	if err != nil {
-		logrus.Errorf("Error adding Namespace reconciler")
+		slog.Error("Error adding Namespace reconciler", "error", err)
 		return err
 	}
 

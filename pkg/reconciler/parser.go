@@ -18,9 +18,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log/slog"
 	"strings"
 
-	"github.com/sirupsen/logrus"
 	v1 "k8s.io/api/core/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -45,13 +45,13 @@ const ManagedPullSecretsAnnotationKey string = "rbacmanager.reactiveops.io/manag
 // Parse determines the desired Kubernetes resources an RBAC Definition refers to
 func (p *Parser) Parse(rbacDef rbacmanagerv1beta1.RBACDefinition) error {
 	if rbacDef.RBACBindings == nil {
-		logrus.Warn("No RBACBindings defined")
+		slog.Warn("No RBACBindings defined")
 		return nil
 	}
 
 	namespaces, err := p.Clientset.CoreV1().Namespaces().List(context.TODO(), metav1.ListOptions{})
 	if err != nil {
-		logrus.Debug("Error listing namespaces")
+		slog.Debug("Error listing namespaces", "error", err)
 		return err
 	}
 
@@ -143,14 +143,14 @@ func (p *Parser) parseRoleBinding(
 	var roleRef rbacv1.RoleRef
 
 	if rb.ClusterRole != "" {
-		logrus.Debugf("Processing Requested ClusterRole %v <> %v <> %v", rb.ClusterRole, rb.Namespace, rb)
+		slog.Debug("Processing Requested ClusterRole", "clusterRole", rb.ClusterRole, "namespace", rb.Namespace, "roleBinding", rb)
 		requestedRoleName = rb.ClusterRole
 		roleRef = rbacv1.RoleRef{
 			Kind: "ClusterRole",
 			Name: rb.ClusterRole,
 		}
 	} else if rb.Role != "" {
-		logrus.Debugf("Processing Requested Role %v <> %v <> %v", rb.Role, rb.Namespace, rb)
+		slog.Debug("Processing Requested Role", "role", rb.Role, "namespace", rb.Namespace, "roleBinding", rb)
 		requestedRoleName = fmt.Sprintf("%v-%v", rb.Role, rb.Namespace)
 		roleRef = rbacv1.RoleRef{
 			Kind: "Role",
@@ -163,18 +163,18 @@ func (p *Parser) parseRoleBinding(
 	objectMeta.Name = fmt.Sprintf("%v-%v", prefix, requestedRoleName)
 
 	if rb.NamespaceSelector.MatchLabels != nil || len(rb.NamespaceSelector.MatchExpressions) > 0 {
-		logrus.Debugf("Processing Namespace Selector %v", rb.NamespaceSelector)
+		slog.Debug("Processing Namespace Selector", "selector", rb.NamespaceSelector)
 
 		selector, err := metav1.LabelSelectorAsSelector(&rb.NamespaceSelector)
 		if err != nil {
-			logrus.Infof("Error parsing label selector: %s", err.Error())
+			slog.Info("Error parsing label selector", "error", err)
 			return err
 		}
 
 		for _, namespace := range namespaces.Items {
 			// Lazy way to marshal map[] of labels in to a Set, which we can then match on.
 			if selector.Matches(labels.Merge(namespace.Labels, namespace.Labels)) {
-				logrus.Debugf("Adding Role Binding With Dynamic Namespace %v", namespace.Name)
+				slog.Debug("Adding Role Binding With Dynamic Namespace", "namespace", namespace.Name)
 
 				om := objectMeta
 				om.Namespace = namespace.Name

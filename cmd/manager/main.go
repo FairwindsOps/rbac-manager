@@ -18,14 +18,17 @@ package main
 
 import (
 	"flag"
+	"log/slog"
 	"net/http"
 	"os"
+	"strings"
 
+	"github.com/go-logr/logr"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"github.com/sirupsen/logrus"
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
 	"k8s.io/klog"
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
+	ctrl "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/manager/signals"
 
@@ -36,62 +39,101 @@ import (
 	"github.com/fairwindsops/rbac-manager/version"
 )
 
-var logLevel = flag.String("log-level", logrus.InfoLevel.String(), "Logrus log level")
+var logLevel = flag.String("log-level", "info", "Log level (debug, info, warn, error)")
 var addr = flag.String("metrics-address", ":8042", "The address to serve prometheus metrics.")
 
 func init() {
 	klog.InitFlags(nil)
 }
 
+func parseLogLevel(level string) slog.Level {
+	switch strings.ToLower(level) {
+	case "debug":
+		return slog.LevelDebug
+	case "info":
+		return slog.LevelInfo
+	case "warn", "warning":
+		return slog.LevelWarn
+	case "error":
+		return slog.LevelError
+	default:
+		return slog.LevelInfo
+	}
+}
+
+// slogToLogrAdapter adapts slog.Logger to logr.Logger for controller-runtime
+type slogToLogrAdapter struct {
+	logger *slog.Logger
+}
+
+func (a *slogToLogrAdapter) Init(info logr.RuntimeInfo) {}
+func (a *slogToLogrAdapter) Enabled(level int) bool     { return true }
+func (a *slogToLogrAdapter) Info(level int, msg string, keysAndValues ...interface{}) {
+	a.logger.Info(msg, keysAndValues...)
+}
+func (a *slogToLogrAdapter) Error(err error, msg string, keysAndValues ...interface{}) {
+	args := append([]interface{}{"error", err}, keysAndValues...)
+	a.logger.Error(msg, args...)
+}
+func (a *slogToLogrAdapter) WithValues(keysAndValues ...interface{}) logr.LogSink {
+	return &slogToLogrAdapter{logger: a.logger.With(keysAndValues...)}
+}
+func (a *slogToLogrAdapter) WithName(name string) logr.LogSink {
+	return &slogToLogrAdapter{logger: a.logger.With("name", name)}
+}
+
 func main() {
 	flag.Parse()
 
-	parsedLevel, err := logrus.ParseLevel(*logLevel)
-	if err != nil {
-		// This should theoretically never happen
-		logrus.Errorf("log-level flag has invalid value %s", *logLevel)
-	} else {
-		logrus.SetLevel(parsedLevel)
+	level := parseLogLevel(*logLevel)
+	opts := &slog.HandlerOptions{
+		Level: level,
 	}
+	logger := slog.New(slog.NewTextHandler(os.Stderr, opts))
+	slog.SetDefault(logger)
 
-	logrus.Info("----------------------------------")
-	logrus.Infof("rbac-manager %v running", version.Version)
-	logrus.Info("----------------------------------")
+	// Set up controller-runtime logger to use slog via adapter
+	logrLogger := logr.New(&slogToLogrAdapter{logger: logger})
+	ctrl.SetLogger(logrLogger)
+
+	slog.Info("----------------------------------")
+	slog.Info("rbac-manager running", "version", version.Version)
+	slog.Info("----------------------------------")
 
 	// Get a config to talk to the apiserver
-	logrus.Debug("Setting up client for manager")
+	slog.Debug("Setting up client for manager")
 	cfg, err := config.GetConfig()
 	if err != nil {
-		logrus.Error(err, ": unable to set up client config")
+		slog.Error("unable to set up client config", "error", err)
 		os.Exit(1)
 	}
 
 	// Create a new Cmd to provide shared dependencies and start components
-	logrus.Debug("Setting up manager")
+	slog.Debug("Setting up manager")
 	mgr, err := manager.New(cfg, manager.Options{})
 	if err != nil {
-		logrus.Error(err, ": unable to set up overall controller manager")
+		slog.Error("unable to set up overall controller manager", "error", err)
 		os.Exit(1)
 	}
 
-	logrus.Info("Registering components")
+	slog.Info("Registering components")
 
 	// Setup Scheme for all resources
-	logrus.Debug("Setting up scheme")
+	slog.Debug("Setting up scheme")
 	if err := apis.AddToScheme(mgr.GetScheme()); err != nil {
-		logrus.Error(err, ": unable add APIs to scheme")
+		slog.Error("unable add APIs to scheme", "error", err)
 		os.Exit(1)
 	}
 
 	// Setup all Controllers
-	logrus.Debug("Setting up controller")
+	slog.Debug("Setting up controller")
 	if err := controller.Add(mgr); err != nil {
-		logrus.Error(err, ": unable to register controller to the manager")
+		slog.Error("unable to register controller to the manager", "error", err)
 		os.Exit(1)
 	}
 
 	// Watch Related Resources
-	logrus.Info("Watching resources related to RBAC Definitions")
+	slog.Info("Watching resources related to RBAC Definitions")
 	watcher.WatchRelatedResources()
 
 	// Start metrics endpoint
@@ -99,15 +141,15 @@ func main() {
 		metrics.RegisterMetrics()
 		http.Handle("/metrics", promhttp.Handler())
 		if err := http.ListenAndServe(*addr, nil); err != nil {
-			logrus.Error(err, ": unable to serve the metrics endpoint")
+			slog.Error("unable to serve the metrics endpoint", "error", err)
 			os.Exit(1)
 		}
 	}()
 
 	// Start the Cmd
-	logrus.Info("Watching RBAC Definitions")
+	slog.Info("Watching RBAC Definitions")
 	if err := mgr.Start(signals.SetupSignalHandler()); err != nil {
-		logrus.Error(err, ": unable to run the manager")
+		slog.Error("unable to run the manager", "error", err)
 		os.Exit(1)
 	}
 }

@@ -18,8 +18,8 @@ package watcher
 
 import (
 	"context"
+	"log/slog"
 
-	"github.com/sirupsen/logrus"
 	rbacv1 "k8s.io/api/rbac/v1"
 	"k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/apimachinery/pkg/watch"
@@ -33,7 +33,7 @@ func watchRoleBindings(clientset *kubernetes.Clientset) {
 	watcher, err := clientset.RbacV1().RoleBindings("").Watch(context.TODO(), kube.ListOptions)
 
 	if err != nil {
-		logrus.Error(err, "unable to watch Role Bindings")
+		slog.Error("unable to watch Role Bindings", "error", err)
 		runtime.HandleError(err)
 	}
 
@@ -42,9 +42,9 @@ func watchRoleBindings(clientset *kubernetes.Clientset) {
 	for event := range ch {
 		rb, ok := event.Object.(*rbacv1.RoleBinding)
 		if !ok {
-			logrus.Error("Could not parse Role Binding")
+			slog.Error("Could not parse Role Binding")
 		} else if event.Type == watch.Modified || event.Type == watch.Deleted {
-			logrus.Debugf("Reconciling RBACDefinition for %s RoleBinding after %s event", rb.Name, event.Type)
+			slog.Debug("Reconciling RBACDefinition for RoleBinding", "name", rb.Name, "event", event.Type)
 			r := reconciler.Reconciler{Clientset: kube.GetClientsetOrDie()}
 			_ = r.ReconcileOwners(rb.OwnerReferences, "RoleBinding")
 		}

@@ -17,9 +17,9 @@ limitations under the License.
 package kube
 
 import (
+	"log/slog"
 	"os"
 
-	"github.com/sirupsen/logrus"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
@@ -42,14 +42,14 @@ func GetClientsetOrDie() *kubernetes.Clientset {
 	kubeConf, err := config.GetConfig()
 
 	if err != nil {
-		logrus.Error(err, "unable to get Kubernetes client config")
+		slog.Error("unable to get Kubernetes client config", "error", err)
 		os.Exit(1)
 	}
 
 	clientset, err := kubernetes.NewForConfig(kubeConf)
 
 	if err != nil {
-		logrus.Error(err, "unable to get Kubernetes clientset")
+		slog.Error("unable to get Kubernetes clientset", "error", err)
 		os.Exit(1)
 	}
 
