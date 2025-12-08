@@ -58,7 +58,7 @@ func GetRbacDefinitions() (rbacmanagerv1beta1.RBACDefinitionList, error) {
 func getRbacDefClient() (*rest.RESTClient, error) {
 	_ = rbacmanagerv1beta1.AddToScheme(scheme.Scheme)
 	clientConfig := config.GetConfigOrDie()
-	clientConfig.ContentConfig.GroupVersion = &rbacmanagerv1beta1.SchemeGroupVersion
+	clientConfig.GroupVersion = &rbacmanagerv1beta1.SchemeGroupVersion
 	clientConfig.APIPath = "/apis"
 	clientConfig.NegotiatedSerializer = serializer.WithoutConversionCodecFactory{CodecFactory: scheme.Codecs}
 	clientConfig.UserAgent = rest.DefaultKubernetesUserAgent()

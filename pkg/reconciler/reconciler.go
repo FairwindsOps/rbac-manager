@@ -99,13 +99,14 @@ func (r *Reconciler) ReconcileOwners(ownerRefs []metav1.OwnerReference, kind str
 				ownerRefs: r.ownerRefs,
 			}
 
-			if kind == "RoleBinding" {
+			switch kind {
+			case "RoleBinding":
 				p.parseRoleBindings(&rbacDef, namespaces)
 				return r.reconcileRoleBindings(&p.parsedRoleBindings)
-			} else if kind == "ClusterRoleBinding" {
+			case "ClusterRoleBinding":
 				p.parseClusterRoleBindings(&rbacDef)
 				return r.reconcileClusterRoleBindings(&p.parsedClusterRoleBindings)
-			} else if kind == "ServiceAccount" {
+			case "ServiceAccount":
 				err := p.Parse(rbacDef)
 				if err != nil {
 					return err
@@ -185,7 +186,7 @@ func (r *Reconciler) reconcileServiceAccounts(requested *[]v1.ServiceAccount) er
 	}
 
 	for _, existingSA := range existing.Items {
-		if reflect.DeepEqual(existingSA.ObjectMeta.OwnerReferences, r.ownerRefs) {
+		if reflect.DeepEqual(existingSA.OwnerReferences, r.ownerRefs) {
 			matchingRequest := false
 			for _, matchingSA := range matchingServiceAccounts {
 				if saMatches(&existingSA, &matchingSA) {
