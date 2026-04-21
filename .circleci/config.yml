@@ -73,6 +73,10 @@ jobs:
           registry: "quay.io"
           username: $REACTIVEOPS_QUAY_USER
           password-variable: REACTIVEOPS_QUAY_TOKEN
+      - run:
+          name: docker login Google Artifact Registry
+          command: |
+            docker login -u _json_key -p "$(echo $GCP_ARTIFACTREADWRITE_JSON_KEY | base64 -d)" us-docker.pkg.dev
       - run: goreleaser
   snapshot:
     working_directory: /home/circleci/go/src/github.com/fairwindsops/rbac-manager
@@ -128,6 +132,7 @@ workflows:
   release:
     jobs:
       - build_and_release:
+          context: org-global
           filters:
             branches:
               ignore: /.*/
