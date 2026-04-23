@@ -32,7 +32,7 @@ brews:
     test: |
       assert_match "flag provided but not defined", shell_output("#{bin}/rbac-manager -not-a-goreleaser-test-flag 2>&1", 2)
 release:
-  disable: '{{ eq .Env.GORELEASER_SKIP_RELEASE "true" }}'
+  disable: '{{ eq (envOrDefault "GORELEASER_SKIP_RELEASE" "false") "true" }}'
   prerelease: auto
   github:
     owner: FairwindsOps
