@@ -20,6 +20,44 @@ RBAC Manager is designed to simplify authorization in Kubernetes. This is an ope
 # Documentation
 Check out the [documentation at docs.fairwinds.com](https://rbac-manager.docs.fairwinds.com/)
 
+## Notice: Registry Migration and Immutable Images (v1.9.5 → v1.10.0)
+
+Starting with **v1.10.0**:
+
+- Images moved to `us-docker.pkg.dev/fairwinds-ops/oss/rbac-manager`
+- `quay.io/fairwinds/rbac-manager` is deprecated
+
+### Required action
+
+```diff
+- quay.io/fairwinds/rbac-manager:<tag>
++ us-docker.pkg.dev/fairwinds-ops/oss/rbac-manager:<tag>
+```
+
+---
+
+## Immutable and signed images
+
+* Images are now **signed**
+* Tags are **immutable**
+* No more floating tags:
+
+  * `v1`
+  * `v1.9`
+  * `latest`
+
+Use full version tags:
+
+```
+us-docker.pkg.dev/fairwinds-ops/oss/rbac-manager:v<major>.<minor>.<patch>
+```
+
+Or pin by digest:
+
+```
+us-docker.pkg.dev/fairwinds-ops/oss/rbac-manager@sha256:<digest>
+```
+
 <!-- Begin boilerplate -->
 ## Join the Fairwinds Open Source Community
 
