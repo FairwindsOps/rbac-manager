@@ -25,12 +25,12 @@ Check out the [documentation at docs.fairwinds.com](https://rbac-manager.docs.fa
 Starting with **v1.10.0**:
 
 - Images moved to `us-docker.pkg.dev/fairwinds-ops/oss/rbac-manager`
-- `quay.io/fairwinds/rbac-manager` is deprecated
+- `quay.io/reactiveops/rbac-manager` is deprecated
 
 ### Required action
 
 ```diff
-- quay.io/fairwinds/rbac-manager:<tag>
+- quay.io/reactiveops/rbac-manager:<tag>
 + us-docker.pkg.dev/fairwinds-ops/oss/rbac-manager:<tag>
 ```
 
