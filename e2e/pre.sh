@@ -19,14 +19,14 @@ echo "********************************************************************"
 printf "\n\n"
 docker load --input /tmp/workspace/docker_save/rbac-manager_${CI_SHA1}-amd64.tar
 export PATH=$(pwd)/bin-kind:$PATH
-kind load docker-image --name e2e quay.io/reactiveops/rbac-manager:${CI_SHA1}-amd64
+kind load docker-image --name e2e us-docker.pkg.dev/fairwinds-ops/oss/rbac-manager:${CI_SHA1}-amd64
 printf "\n\n"
 echo "********************************************************************"
 echo "** END LOADING IMAGE **"
 echo "********************************************************************"
 printf "\n\n"
 
-export newImage=quay.io/reactiveops/rbac-manager:${CI_SHA1}-amd64
+export newImage=us-docker.pkg.dev/fairwinds-ops/oss/rbac-manager:${CI_SHA1}-amd64
 yq -i '.spec.template.spec.containers[0].image = env(newImage)' deploy/3_deployment.yaml
 yq -i '.spec.template.spec.containers[0].imagePullPolicy = "IfNotPresent"' deploy/3_deployment.yaml
 cat deploy/3_deployment.yaml
