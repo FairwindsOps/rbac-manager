@@ -69,6 +69,10 @@ jobs:
       - *install_vault
       - rok8s/get_vault_env:
           vault_path: repo/global/env
+      - run:
+          name: docker login
+          command: |
+            docker login -u _json_key -p "$(echo $GCP_ARTIFACTREADWRITE_JSON_KEY | base64 -d)" us-docker.pkg.dev
       - run: goreleaser
   snapshot:
     working_directory: /home/circleci/go/src/github.com/fairwindsops/rbac-manager
