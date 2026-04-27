@@ -60,7 +60,7 @@ jobs:
     resource_class: large
     shell: /bin/bash
     docker:
-      - image: goreleaser/goreleaser:v2.13.1
+      - image: goreleaser/goreleaser:v2.15.4
         environment:
           GO111MODULE: "on"
     steps:
@@ -69,16 +69,12 @@ jobs:
       - *install_vault
       - rok8s/get_vault_env:
           vault_path: repo/global/env
-      - rok8s/docker_login:
-          registry: "quay.io"
-          username: $REACTIVEOPS_QUAY_USER
-          password-variable: REACTIVEOPS_QUAY_TOKEN
       - run: goreleaser
   snapshot:
     working_directory: /home/circleci/go/src/github.com/fairwindsops/rbac-manager
     resource_class: large
     docker:
-      - image: goreleaser/goreleaser:v2.13.1
+      - image: goreleaser/goreleaser:v2.15.4
     steps:
       - checkout
       - setup_remote_docker
@@ -128,6 +124,7 @@ workflows:
   release:
     jobs:
       - build_and_release:
+          context: org-global
           filters:
             branches:
               ignore: /.*/
