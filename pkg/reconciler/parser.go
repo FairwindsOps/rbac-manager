@@ -173,7 +173,7 @@ func (p *Parser) parseRoleBinding(
 
 		for _, namespace := range namespaces.Items {
 			// Lazy way to marshal map[] of labels in to a Set, which we can then match on.
-			if selector.Matches(labels.Merge(namespace.Labels, namespace.Labels)) {
+			if selector.Matches(labels.Set(namespace.Labels)) {
 				slog.Debug("Adding Role Binding With Dynamic Namespace", "namespace", namespace.Name)
 
 				om := objectMeta
