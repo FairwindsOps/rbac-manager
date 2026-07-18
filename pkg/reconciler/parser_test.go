@@ -302,6 +302,52 @@ func TestServiceAccountParsing(t *testing.T) {
 	}
 }
 
+// TestParseLabelsUnlabeledNamespace guards the namespace-label to label.Set
+// conversion in parseRoleBinding against a namespace whose Labels map is nil.
+// A nil map must convert to an empty Set that simply fails to match the
+// selector, rather than panicking or being treated as a match, so an
+// unlabeled namespace is left out of the selected bindings.
+func TestParseLabelsUnlabeledNamespace(t *testing.T) {
+	client := fake.NewSimpleClientset()
+	rbacDef := rbacmanagerv1beta1.RBACDefinition{}
+	rbacDef.Name = "rbac-config"
+
+	createNamespace(t, client, "web", map[string]string{"team": "devs"})
+	createNamespace(t, client, "unlabeled", nil)
+
+	rbacDef.RBACBindings = []rbacmanagerv1beta1.RBACBinding{{
+		Name: "devs",
+		Subjects: []rbacmanagerv1beta1.Subject{{
+			Subject: rbacv1.Subject{
+				Kind: rbacv1.UserKind,
+				Name: "sue",
+			},
+		}},
+		RoleBindings: []rbacmanagerv1beta1.RoleBinding{{
+			NamespaceSelector: metav1.LabelSelector{
+				MatchLabels: map[string]string{"team": "devs"},
+			},
+			ClusterRole: "edit",
+		}},
+	}}
+
+	// Only the labeled namespace matches; the unlabeled one is excluded.
+	newParseTest(t, client, rbacDef, []rbacv1.RoleBinding{{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "rbac-config-devs-edit",
+			Namespace: "web",
+		},
+		RoleRef: rbacv1.RoleRef{
+			Kind: "ClusterRole",
+			Name: "edit",
+		},
+		Subjects: []rbacv1.Subject{{
+			Kind: rbacv1.UserKind,
+			Name: "sue",
+		}},
+	}}, []rbacv1.ClusterRoleBinding{}, []corev1.ServiceAccount{})
+}
+
 func newParseTest(t *testing.T, client *fake.Clientset, rbacDef rbacmanagerv1beta1.RBACDefinition, expectedRb []rbacv1.RoleBinding, expectedCrb []rbacv1.ClusterRoleBinding, expectedSa []corev1.ServiceAccount) {
 	p := Parser{Clientset: client}
 
