@@ -7,9 +7,6 @@
     <a href="https://github.com/FairwindsOps/rbac-manager/releases">
         <img src="https://img.shields.io/github/v/release/FairwindsOps/rbac-manager">
     </a>
-    <a href="https://goreportcard.com/report/github.com/FairwindsOps/rbac-manager">
-        <img src="https://goreportcard.com/badge/github.com/FairwindsOps/rbac-manager">
-    </a>
     <a href="https://insights.fairwinds.com/gh/FairwindsOps/rbac-manager">
       <img src="https://insights.fairwinds.com/v0/gh/FairwindsOps/polaris/badge.svg">
     </a>
