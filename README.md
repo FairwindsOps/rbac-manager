@@ -4,9 +4,6 @@
     <a href="https://github.com/FairwindsOps/rbac-manager/releases">
         <img src="https://img.shields.io/github/v/release/FairwindsOps/rbac-manager">
     </a>
-    <a href="https://insights.fairwinds.com/gh/FairwindsOps/rbac-manager">
-      <img src="https://insights.fairwinds.com/v0/gh/FairwindsOps/polaris/badge.svg">
-    </a>
 </div>
 
 RBAC Manager is designed to simplify authorization in Kubernetes. This is an operator that supports declarative configuration for RBAC with new custom resources. Instead of managing role bindings or service accounts directly, you can specify a desired state and RBAC Manager will make the necessary changes to achieve that state.
