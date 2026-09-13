@@ -41,7 +41,7 @@ references:
 jobs:
   test:
     docker:
-      - image: cimg/go:1.25
+      - image: cimg/go:1.27
     working_directory: /home/circleci/go/src/github.com/fairwindsops/rbac-manager
     steps:
       - checkout
@@ -49,7 +49,7 @@ jobs:
 
   lint:
     docker:
-      - image: golangci/golangci-lint:v2.7.2
+      - image: golangci/golangci-lint:v2.13.2
     resource_class: large
     steps:
       - checkout
@@ -60,7 +60,7 @@ jobs:
     resource_class: large
     shell: /bin/bash
     docker:
-      - image: goreleaser/goreleaser:v2.15.4
+      - image: goreleaser/goreleaser:v2.18.1
         environment:
           GO111MODULE: "on"
     steps:
@@ -78,7 +78,7 @@ jobs:
     working_directory: /home/circleci/go/src/github.com/fairwindsops/rbac-manager
     resource_class: large
     docker:
-      - image: goreleaser/goreleaser:v2.15.4
+      - image: goreleaser/goreleaser:v2.18.1
     steps:
       - checkout
       - setup_remote_docker
