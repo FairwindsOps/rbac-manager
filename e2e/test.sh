@@ -10,6 +10,8 @@ printf "\n\n"
 
 set -e
 
+# CircleCI copies this path out of e2e-command-runner even when tests fail.
+mkdir -p /tmp/test-results
 
 printf "\n\n"
 echo "********************************************************************"
@@ -33,8 +35,4 @@ tar -xvf linux_amd64.tar.gz chainsaw
 rm linux_amd64.tar.gz
 chmod +x chainsaw
 
-./chainsaw test
-
-if [ $? -ne 0 ]; then
-  exit 1
-fi
+./chainsaw test --report-format JUNIT-TEST --report-path /tmp/test-results

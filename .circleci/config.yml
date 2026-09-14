@@ -1,34 +1,37 @@
+## DO NOT EDIT - Managed by Terraform
 version: 2.1
 
 orbs:
-  rok8s: fairwinds/rok8s-scripts@15
+  rok8s: fairwinds/rok8s-scripts@17.0.0
   oss-docs: fairwinds/oss-docs@0
 
-executors:
-  dev-rok8s:
-    docker:
-      - image: quay.io/reactiveops/ci-images:v15.0-cimg-24.04
-
 references:
-  install_vault: &install_vault
+  install_vault_machine: &install_vault_machine
     run:
       name: install hashicorp vault
       command: |
-        apk --update add curl yq
+        sudo apt-get update -y && sudo apt-get install -y curl unzip
         cd /tmp
-        curl -LO https://releases.hashicorp.com/vault/1.13.2/vault_1.13.2_linux_amd64.zip
-        sha256sum vault_1.13.2_linux_amd64.zip | grep f7930279de8381de7c532164b4a4408895d9606c0d24e2e9d2f9acb5dfe99b3c
-        unzip vault_1.13.2_linux_amd64.zip
-        mv vault /usr/bin/vault
-
-  chainsaw_configuration: &chainsaw_configuration
+        curl -LO https://releases.hashicorp.com/vault/1.21.4/vault_1.21.4_linux_amd64.zip
+        echo '889b681990fe221b884b7932fa9c9dd0ee9811b9349554f1aa287ab63c9f3dae  vault_1.21.4_linux_amd64.zip' | sha256sum -c
+        unzip -o vault_1.21.4_linux_amd64.zip
+        sudo mv vault /usr/bin/vault
+  setup_qemu_binfmt: &setup_qemu_binfmt
+    run:
+      name: Setup QEMU for multi-arch Docker builds
+      command: |
+        sudo apt-get update -y
+        sudo apt-get install -y qemu-user-static binfmt-support
+        docker buildx create --use || true
+        docker buildx inspect --bootstrap
+  e2e_configuration: &e2e_configuration
+    executor: golang-exec
     pre_script: e2e/pre.sh
     script: e2e/test.sh
-    command_runner_image: quay.io/reactiveops/ci-images:v15.0-cimg-24.04
-    kind_version: "0.30.0"
+    command_runner_image: quay.io/reactiveops/ci-images:v17.0-cimg-24.04
     enable_docker_layer_caching: true
+    store-test-results: /tmp/test-results
     attach-workspace: true
-    executor: dev-rok8s
     requires:
       - test
       - snapshot
@@ -36,98 +39,143 @@ references:
       branches:
         only: /.*/
       tags:
-        ignore: /v.*/
+        ignore: /.*/
+
+executors:
+  golang-exec:
+    docker:
+      - image: cimg/go:1.27.1
 
 jobs:
   test:
     docker:
-      - image: cimg/go:1.25
-    working_directory: /home/circleci/go/src/github.com/fairwindsops/rbac-manager
+      - image: cimg/go:1.27.1
     steps:
       - checkout
-      - run: go test ./... -coverprofile=coverage.txt -covermode=atomic
-
-  lint:
-    docker:
-      - image: golangci/golangci-lint:v2.7.2
-    resource_class: large
-    steps:
-      - checkout
-      - run: golangci-lint run --timeout=10m -v
-
-  build_and_release:
-    working_directory: /home/circleci/go/src/github.com/fairwindsops/rbac-manager
-    resource_class: large
-    shell: /bin/bash
-    docker:
-      - image: goreleaser/goreleaser:v2.15.4
-        environment:
-          GO111MODULE: "on"
-    steps:
-      - checkout
-      - setup_remote_docker
-      - *install_vault
-      - rok8s/get_vault_env:
-          vault_path: repo/global/env
       - run:
-          name: docker login
+          name: Go Mod Download
+          command: go mod download && go mod verify
+      - run:
+          name: golangci-lint
           command: |
-            docker login -u _json_key -p "$(echo $GCP_ARTIFACTREADWRITE_JSON_KEY | base64 -d)" us-docker.pkg.dev
-      - run: goreleaser
+            curl -fsSL -o golangci-lint.tar.gz https://github.com/golangci/golangci-lint/releases/download/v2.13.2/golangci-lint-2.13.2-linux-amd64.tar.gz
+            echo '2277d43b98ec0054280f2ac26b53268bae97682444678a59a657dd565da021d6  golangci-lint.tar.gz' | sha256sum -c
+            tar -xzf golangci-lint.tar.gz
+            mv golangci-lint-2.13.2-linux-amd64/golangci-lint "$(go env GOPATH)/bin/golangci-lint"
+            golangci-lint run --timeout 5m
+      - run:
+          name: test
+          command: |
+            go test -v -coverprofile=coverage.txt -covermode=atomic ./...
+            go vet ./...
   snapshot:
-    working_directory: /home/circleci/go/src/github.com/fairwindsops/rbac-manager
+    machine:
+      image: ubuntu-2204:current
     resource_class: large
-    docker:
-      - image: goreleaser/goreleaser:v2.15.4
     steps:
       - checkout
-      - setup_remote_docker
-      - run: goreleaser --snapshot --skip sign
-      - run: mkdir -p /tmp/workspace/docker_save/
-      - run: docker save us-docker.pkg.dev/fairwinds-ops/oss/rbac-manager:${CIRCLE_SHA1}-amd64 > /tmp/workspace/docker_save/rbac-manager_${CIRCLE_SHA1}-amd64.tar
-      - run: pwd; ls -la *
+      - *setup_qemu_binfmt
+      - run:
+          name: Run GoReleaser snapshot
+          command: |
+            docker run --rm \
+              -v /var/run/docker.sock:/var/run/docker.sock \
+              -v "$(pwd):/workspace" -w /workspace \
+              -e CIRCLE_SHA1 \
+              -e CIRCLE_BRANCH \
+              -e CIRCLE_TAG \
+              goreleaser/goreleaser:v2.18.1 release --snapshot --skip=sign
+      - run:
+          name: Save snapshot amd64 image for e2e
+          command: |
+            mkdir -p /tmp/workspace/docker_save
+            docker save us-docker.pkg.dev/fairwinds-ops/oss/rbac-manager:${CIRCLE_SHA1}-amd64 > /tmp/workspace/docker_save/rbac-manager_${CIRCLE_SHA1}-amd64.tar
       - persist_to_workspace:
           root: /tmp/workspace/
           paths:
-          - docker_save
+            - docker_save
       - store_artifacts:
           path: dist
           destination: snapshot
+  release:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large
+    shell: /bin/bash
+    steps:
+      - checkout
+      - *install_vault_machine
+      - rok8s/get_vault_env:
+          vault_path: repo/global/env
+      - run:
+          name: docker login Google Artifact Registry
+          command: |
+            echo "$GCP_ARTIFACTREADWRITE_JSON_KEY" | base64 -d | docker login -u _json_key --password-stdin us-docker.pkg.dev
+      - *setup_qemu_binfmt
+      - run:
+          name: Run GoReleaser release
+          command: |
+            export GORELEASER_CURRENT_TAG="${CIRCLE_TAG}"
+            docker run --rm \
+              -v /var/run/docker.sock:/var/run/docker.sock \
+              -v "$(pwd):/workspace" -w /workspace \
+              -v "${HOME}/.docker:/root/.docker" \
+              -e GORELEASER_CURRENT_TAG \
+              -e CIRCLE_TAG \
+              -e CIRCLE_SHA1 \
+              -e GO111MODULE=on \
+              -e GITHUB_TOKEN \
+              -e VAULT_ADDR \
+              -e VAULT_TOKEN \
+              goreleaser/goreleaser:v2.18.1 release
 
 workflows:
   version: 2
-  tests:
+  test_and_build:
     jobs:
-      - test
-      - lint
+      - test:
+          filters:
+            tags:
+              ignore: /.*/
       - snapshot:
-          context: org-global
           requires:
             - test
-            - lint
+          filters:
+            branches:
+              only: /.*/
+            tags:
+              ignore: /.*/
       - rok8s/kubernetes_e2e_tests:
           name: "End-To-End Kubernetes 1.30"
           kind_node_image: "kindest/node:v1.30.0@sha256:047357ac0cfea04663786a612ba1eaba9702bef25227a794b52890dd8bcd692e"
-          <<: *chainsaw_configuration
+          <<: *e2e_configuration
       - rok8s/kubernetes_e2e_tests:
           name: "End-To-End Kubernetes 1.31"
           kind_node_image: "kindest/node:v1.31.12@sha256:0f5cc49c5e73c0c2bb6e2df56e7df189240d83cf94edfa30946482eb08ec57d2"
-          <<: *chainsaw_configuration
+          <<: *e2e_configuration
       - rok8s/kubernetes_e2e_tests:
           name: "End-To-End Kubernetes 1.32"
           kind_node_image: "kindest/node:v1.32.8@sha256:abd489f042d2b644e2d033f5c2d900bc707798d075e8186cb65e3f1367a9d5a1"
-          <<: *chainsaw_configuration
+          <<: *e2e_configuration
       - rok8s/kubernetes_e2e_tests:
           name: "End-To-End Kubernetes 1.33"
           kind_node_image: "kindest/node:v1.33.4@sha256:25a6018e48dfcaee478f4a59af81157a437f15e6e140bf103f85a2e7cd0cbbf2"
-          <<: *chainsaw_configuration
+          <<: *e2e_configuration
       - rok8s/kubernetes_e2e_tests:
           name: "End-To-End Kubernetes 1.34"
           kind_node_image: "kindest/node:v1.34.0@sha256:7416a61b42b1662ca6ca89f02028ac133a309a2a30ba309614e8ec94d976dc5a"
-          <<: *chainsaw_configuration
+          <<: *e2e_configuration
   release:
     jobs:
-      - build_and_release:
+      - test:
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /v.*/
+      - release:
+          requires:
+            - test
           context: org-global
           filters:
             branches:
@@ -135,9 +183,11 @@ workflows:
             tags:
               only: /v.*/
       - oss-docs/publish-docs:
+          requires:
+            - release
           repository: rbac-manager
           filters:
             branches:
               ignore: /.*/
             tags:
-              only: /^.*/
+              only: /v.*/
