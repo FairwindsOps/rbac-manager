@@ -34,3 +34,6 @@ coverage.txt
 cover-report.html
 node_modules
 /dist
+docs/index.md
+docs/.vitepress/cache
+docs/.vitepress/dist
