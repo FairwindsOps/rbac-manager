@@ -73,7 +73,3 @@ type RBACDefinitionList struct {
 	metav1.ListMeta `json:"metadata,omitempty"`
 	Items           []RBACDefinition `json:"items"`
 }
-
-func init() {
-	SchemeBuilder.Register(&RBACDefinition{}, &RBACDefinitionList{})
-}
